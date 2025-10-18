@@ -1,11 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { 
-  fetchInventario, 
-  updateFiltro, 
-  selectFilteredItems,
-  addInventarioItem
-} from '../redux/features/inventarioSlice';
+import React, { useState } from 'react';
 import { 
   Container, 
   Typography, 
@@ -17,214 +10,224 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
   Button,
-  CircularProgress,
-  Alert,
+  InputAdornment,
+  MenuItem,
+  Select,
   FormControl,
   InputLabel,
-  Select,
-  MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField
+  Breadcrumbs,
+  Link,
+  Chip
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
+import { Link as RouterLink } from 'react-router-dom';
+
+// Mock data para las bodegas
+const mockBodegas = [
+  { id: 1, nombre: 'Centro Norte', ciudad: 'Bogotá', capacidad: '5.000', estado: 'Activo' },
+  { id: 2, nombre: 'Centro Urbano', ciudad: 'Medellín', capacidad: '5.500', estado: 'Activo' },
+  { id: 3, nombre: 'Centro Industrial', ciudad: 'Cúcuta', capacidad: '4.000', estado: 'Inactivo' },
+  { id: 4, nombre: 'Centro Oriente', ciudad: 'Cali', capacidad: '6.000', estado: 'Activo' },
+];
+
+// Mock data para filtros
+const ciudades = ['Bogotá', 'Medellín', 'Cúcuta', 'Cali'];
+const bodegas = ['Centro Norte', 'Centro Urbano', 'Centro Industrial', 'Centro Oriente'];
 
 function Inventarios() {
-  const dispatch = useDispatch();
-  const inventarioItems = useSelector(selectFilteredItems);
-  const { status, error, filtro, items } = useSelector(state => state.inventario);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredBodegas, setFilteredBodegas] = useState(mockBodegas);
+  const [selectedBodega, setSelectedBodega] = useState('');
+  const [selectedCiudad, setSelectedCiudad] = useState('');
 
-  // Estado local para el formulario de nuevo item
-  const [open, setOpen] = useState(false);
-  const [newItem, setNewItem] = useState({
-    nombre: '',
-    cantidad: 0,
-    categoria: '',
-    ubicacion: ''
-  });
+  // Manejar cambio en el campo de búsqueda
+  const handleSearchChange = (event) => {
+    const value = event.target.value;
+    setSearchTerm(value);
+    
+    // Filtrar bodegas según el término de búsqueda y filtros seleccionados
+    filterBodegas(value, selectedBodega, selectedCiudad);
+  };
 
-  // Obtener categorías y ubicaciones únicas para los filtros
-  const categorias = [...new Set(items.map(item => item.categoria))];
-  const ubicaciones = [...new Set(items.map(item => item.ubicacion))];
-
-  useEffect(() => {
-    if (status === 'idle') {
-      dispatch(fetchInventario());
-    }
-  }, [status, dispatch]);
-
+  // Manejar cambio en los filtros
   const handleFilterChange = (event) => {
     const { name, value } = event.target;
-    dispatch(updateFiltro({ [name]: value }));
+    
+    if (name === 'bodega') {
+      setSelectedBodega(value);
+      filterBodegas(searchTerm, value, selectedCiudad);
+    } else if (name === 'ciudad') {
+      setSelectedCiudad(value);
+      filterBodegas(searchTerm, selectedBodega, value);
+    }
   };
 
-  const handleClickOpen = () => {
-    setOpen(true);
+  // Función para limpiar los filtros
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setSelectedBodega('');
+    setSelectedCiudad('');
+    setFilteredBodegas(mockBodegas);
   };
 
-  const handleClose = () => {
-    setOpen(false);
-  };
+  // Filtrar bodegas según criterios
+  const filterBodegas = (search, bodega, ciudad) => {
+    let filtered = mockBodegas;
 
-  const handleNewItemChange = (e) => {
-    const { name, value } = e.target;
-    setNewItem({
-      ...newItem,
-      [name]: name === 'cantidad' ? parseInt(value) || 0 : value
-    });
-  };
+    if (search) {
+      filtered = filtered.filter(item => 
+        item.nombre.toLowerCase().includes(search.toLowerCase())
+      );
+    }
 
-  const handleAddItem = () => {
-    dispatch(addInventarioItem(newItem));
-    setOpen(false);
-    setNewItem({
-      nombre: '',
-      cantidad: 0,
-      categoria: '',
-      ubicacion: ''
-    });
+    if (bodega) {
+      filtered = filtered.filter(item => item.nombre === bodega);
+    }
+
+    if (ciudad) {
+      filtered = filtered.filter(item => item.ciudad === ciudad);
+    }
+
+    setFilteredBodegas(filtered);
   };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      {/* Breadcrumbs */}
+      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
+        <Link component={RouterLink} to="/" underline="hover" color="inherit">
+          Inicio
+        </Link>
+        <Link component={RouterLink} to="/inventarios" underline="hover" color="inherit">
+          Inventarios
+        </Link>
+        <Typography color="text.primary">Bodegas</Typography>
+      </Breadcrumbs>
+      
       <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Gestión de Inventarios
-          </Typography>
-          <Button 
-            variant="contained" 
-            startIcon={<AddIcon />}
-            onClick={handleClickOpen}
-          >
-            Nuevo Item
-          </Button>
-        </Box>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Bodegas
+        </Typography>
         
-        {/* Filtros */}
-        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-          <FormControl variant="outlined" sx={{ minWidth: 200 }}>
-            <InputLabel>Categoría</InputLabel>
+        {/* Barra de búsqueda y filtros */}
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3, alignItems: 'flex-end' }}>
+          {/* Buscador */}
+          <TextField
+            variant="outlined"
+            placeholder="Buscar por nombre..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+            sx={{ flexGrow: 1, minWidth: 250 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+          
+          {/* Filtro de Bodega */}
+          <FormControl sx={{ minWidth: 120 }}>
+            <InputLabel id="bodega-select-label">Bodega</InputLabel>
             <Select
-              name="categoria"
-              value={filtro.categoria}
+              labelId="bodega-select-label"
+              id="bodega-select"
+              value={selectedBodega}
+              label="Bodega"
+              name="bodega"
               onChange={handleFilterChange}
-              label="Categoría"
+              displayEmpty
             >
-              <MenuItem value="">Todas</MenuItem>
-              {categorias.map(cat => (
-                <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+              <MenuItem value="">
+                <em>Todas</em>
+              </MenuItem>
+              {bodegas.map((bodega) => (
+                <MenuItem key={bodega} value={bodega}>{bodega}</MenuItem>
               ))}
             </Select>
           </FormControl>
           
-          <FormControl variant="outlined" sx={{ minWidth: 200 }}>
-            <InputLabel>Ubicación</InputLabel>
+          {/* Filtro de Ciudad */}
+          <FormControl sx={{ minWidth: 120 }}>
+            <InputLabel id="ciudad-select-label">Ciudad</InputLabel>
             <Select
-              name="ubicacion"
-              value={filtro.ubicacion}
+              labelId="ciudad-select-label"
+              id="ciudad-select"
+              value={selectedCiudad}
+              label="Ciudad"
+              name="ciudad"
               onChange={handleFilterChange}
-              label="Ubicación"
+              displayEmpty
             >
-              <MenuItem value="">Todas</MenuItem>
-              {ubicaciones.map(ubi => (
-                <MenuItem key={ubi} value={ubi}>{ubi}</MenuItem>
+              <MenuItem value="">
+                <em>Todas</em>
+              </MenuItem>
+              {ciudades.map((ciudad) => (
+                <MenuItem key={ciudad} value={ciudad}>{ciudad}</MenuItem>
               ))}
             </Select>
           </FormControl>
+          
+          {/* Botón de Búsqueda */}
+          <Button variant="contained" onClick={() => filterBodegas(searchTerm, selectedBodega, selectedCiudad)}>
+            Buscar
+          </Button>
+          
+          {/* Botón para limpiar filtros */}
+          <Button variant="outlined" onClick={handleClearFilters}>
+            Limpiar filtros
+          </Button>
         </Box>
         
-        {status === 'loading' && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-            <CircularProgress />
-          </Box>
-        )}
-        
-        {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            Error al cargar los datos: {error}
-          </Alert>
-        )}
-        
-        {status === 'succeeded' && (
-          <TableContainer component={Paper} sx={{ mt: 2 }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Nombre</TableCell>
-                  <TableCell>Cantidad</TableCell>
-                  <TableCell>Categoría</TableCell>
-                  <TableCell>Ubicación</TableCell>
+        {/* Tabla de Bodegas */}
+        <TableContainer component={Paper} variant="outlined">
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Bodega</TableCell>
+                <TableCell>Ciudad</TableCell>
+                <TableCell>Capacidad total</TableCell>
+                <TableCell>Estado</TableCell>
+                <TableCell align="center">Acciones</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredBodegas.map((bodega) => (
+                <TableRow key={bodega.id}>
+                  <TableCell>{bodega.nombre}</TableCell>
+                  <TableCell>{bodega.ciudad}</TableCell>
+                  <TableCell>{bodega.capacidad}</TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={bodega.estado} 
+                      color={bodega.estado === 'Activo' ? 'success' : 'error'}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell align="center">
+                    <Button 
+                      component={RouterLink} 
+                      to={`/inventarios/bodegas/${bodega.id}`}
+                      variant="outlined"
+                      size="small"
+                    >
+                      Ver detalle
+                    </Button>
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {inventarioItems.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{item.id}</TableCell>
-                    <TableCell>{item.nombre}</TableCell>
-                    <TableCell>{item.cantidad}</TableCell>
-                    <TableCell>{item.categoria}</TableCell>
-                    <TableCell>{item.ubicacion}</TableCell>
-                  </TableRow>
-                ))}
-                {inventarioItems.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={5} align="center">No se encontraron items</TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
+              ))}
+              {filteredBodegas.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} align="center">No se encontraron bodegas</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Paper>
-      
-      {/* Diálogo para nuevo item */}
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Agregar Nuevo Item</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1, minWidth: '400px' }}>
-            <TextField
-              name="nombre"
-              label="Nombre del producto"
-              fullWidth
-              value={newItem.nombre}
-              onChange={handleNewItemChange}
-            />
-            <TextField
-              name="cantidad"
-              label="Cantidad"
-              type="number"
-              fullWidth
-              value={newItem.cantidad}
-              onChange={handleNewItemChange}
-            />
-            <TextField
-              name="categoria"
-              label="Categoría"
-              fullWidth
-              value={newItem.categoria}
-              onChange={handleNewItemChange}
-            />
-            <TextField
-              name="ubicacion"
-              label="Ubicación"
-              fullWidth
-              value={newItem.ubicacion}
-              onChange={handleNewItemChange}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="inherit">Cancelar</Button>
-          <Button onClick={handleAddItem} variant="contained" color="primary">
-            Agregar
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Container>
   );
 }

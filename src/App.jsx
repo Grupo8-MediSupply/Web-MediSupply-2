@@ -26,6 +26,9 @@ import Reportes from "./pages/Reportes";
 import Configuracion from "./pages/Configuracion";
 import ApiModeIndicator from "./components/ApiModeIndicator";
 
+// Importar página de detalle de bodega
+import BodegaDetalle from "./pages/BodegaDetalle";
+
 // Contexto para gestionar el modo oscuro/claro
 export const ColorModeContext = createContext({ 
   toggleColorMode: () => {},
@@ -104,6 +107,7 @@ function App() {
                   <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
                   <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
                   <Route path="/inventarios" element={<ProtectedRoute><Inventarios /></ProtectedRoute>} />
+                  <Route path="/inventarios/bodegas/:id" element={<ProtectedRoute><BodegaDetalle /></ProtectedRoute>} />
                   <Route path="/catalogo" element={<ProtectedRoute><Catalogo /></ProtectedRoute>} />
                   <Route path="/proveedores" element={<ProtectedRoute><Proveedores /></ProtectedRoute>} />
                   <Route path="/ordenes" element={<ProtectedRoute><Ordenes /></ProtectedRoute>} />
