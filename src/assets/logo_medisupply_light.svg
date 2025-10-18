@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60">
+  <rect x="10" y="15" width="30" height="30" rx="5" fill="#00696F" />
+  <text x="50" y="35" font-size="20" font-family="Arial, sans-serif" font-weight="bold" fill="#00696F">MediSupply</text>
+  <path d="M25 20v20M15 30h20" stroke="white" stroke-width="3" />
+</svg>

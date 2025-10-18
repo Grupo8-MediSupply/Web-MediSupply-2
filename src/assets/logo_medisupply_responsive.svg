@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60">
+  <style>
+    .logo-bg { fill: #00696F; }
+    .logo-text { fill: #00696F; }
+    .logo-symbol { stroke: white; }
+    
+    @media (prefers-color-scheme: dark) {
+      .logo-bg { fill: #80D4DB; }
+      .logo-text { fill: #80D4DB; }
+      .logo-symbol { stroke: #0E1415; }
+    }
+  </style>
+  <rect x="10" y="15" width="30" height="30" rx="5" class="logo-bg" />
+  <text x="50" y="35" font-size="20" font-family="Arial, sans-serif" font-weight="bold" class="logo-text">MediSupply</text>
+  <path d="M25 20v20M15 30h20" stroke-width="3" class="logo-symbol" />
+</svg>

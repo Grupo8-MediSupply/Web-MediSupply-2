@@ -23,8 +23,9 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 
-// Importar el logo
-import logo from '../assets/logo_medisupply.png';
+// Importar logos para modo claro y oscuro
+import logoLight from '../assets/logo_medisupply.png';
+import logoDark from '../assets/logo_medisupply_dark.svg';
 
 const drawerWidth = 240;
 
@@ -34,6 +35,9 @@ function Navbar() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  
+  // Seleccionar el logo correcto según el modo
+  const currentLogo = theme.palette.mode === 'dark' ? logoDark : logoLight;
 
   const menuItems = [
     { text: 'Inicio', path: '/' },
@@ -58,17 +62,17 @@ function Navbar() {
         sx={{ 
           display: 'flex', 
           alignItems: 'center', 
-          justifyContent: 'flex-start', // Cambio de 'center' a 'flex-start' para alinear a la izquierda
+          justifyContent: 'flex-start',
           py: 1.5,
-          pl: 3, // Añadido padding izquierdo para que no esté pegado al borde
+          pl: 3,
         }}
       >
         <Box 
           component="img"
-          src={logo}
+          src={currentLogo}
           alt="MediSupply Logo"
           sx={{ 
-            height: 32, // Tamaño reducido del logo
+            height: 32,
             objectFit: 'contain'
           }}
         />
@@ -139,10 +143,10 @@ function Navbar() {
             </IconButton>
             <Box 
               component="img"
-              src={logo}
+              src={currentLogo}
               alt="MediSupply Logo"
               sx={{ 
-                height: 24, // También reducido el tamaño aquí para consistencia
+                height: 24,
                 objectFit: 'contain'
               }}
             />
@@ -168,6 +172,8 @@ function Navbar() {
               boxSizing: 'border-box', 
               width: drawerWidth,
               backgroundColor: theme.palette.mode === 'light' ? 'background.default' : 'background.paper',
+              borderTopRightRadius: 16, // Añadido borde redondeado superior derecho
+              borderBottomRightRadius: 16, // Añadido borde redondeado inferior derecho
             },
           }}
         >
@@ -185,6 +191,10 @@ function Navbar() {
               backgroundColor: theme.palette.mode === 'light' ? 'background.default' : 'background.paper',
               borderRight: `1px solid ${theme.palette.divider}`,
               height: '100vh',
+              borderTopRightRadius: 24, // Añadido borde redondeado superior derecho más pronunciado
+              borderBottomRightRadius: 24, // Añadido borde redondeado inferior derecho más pronunciado
+              boxShadow: 3, // Añadido sombra para dar profundidad
+              overflow: 'hidden', // Para evitar que el contenido sobresalga de los bordes redondeados
             },
           }}
           open
