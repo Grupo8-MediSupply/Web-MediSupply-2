@@ -7,73 +7,102 @@ import {
   Paper,
   Card,
   CardContent,
-  Grid
+  Grid,
+  Divider
 } from '@mui/material';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
+import { Link as RouterLink } from 'react-router-dom';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import CategoryIcon from '@mui/icons-material/Category';
+import AssessmentIcon from '@mui/icons-material/Assessment';
 
 function Home() {
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: 2, mb: 4 }}>
       <Box
         sx={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           textAlign: 'center',
-          py: 4
+          py: 3
         }}
       >
         <MedicalServicesIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-        <Typography variant="h2" component="h1" gutterBottom>
+        <Typography variant="h3" component="h1" gutterBottom>
           Bienvenido a MediSupply
         </Typography>
-        <Typography variant="h5" component="p" color="text.secondary" sx={{ mb: 4 }}>
-          Sistema de gestión de suministros médicos para clínicas y hospitales
+        <Typography variant="h6" component="p" color="text.secondary" sx={{ mb: 3, maxWidth: '800px' }}>
+          Sistema de gestión integral de suministros médicos para clínicas y hospitales
         </Typography>
-        <Button 
-          variant="contained" 
-          size="large" 
-          color="primary"
-          sx={{ px: 4, py: 1 }}
-        >
-          Comenzar
-        </Button>
       </Box>
 
-      <Grid container spacing={3} sx={{ mt: 4 }}>
-        <Grid item xs={12} md={4}>
+      <Grid container spacing={3} sx={{ mt: 2 }}>
+        <Grid item xs={12} md={6} lg={4}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
-              <Typography variant="h5" component="h2" gutterBottom>
+              <Typography variant="h5" component="h2" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                <InventoryIcon sx={{ mr: 1, color: 'primary.main' }} />
                 Inventario
               </Typography>
-              <Typography variant="body1">
+              <Divider sx={{ mb: 2 }} />
+              <Typography variant="body1" sx={{ mb: 2 }}>
                 Gestiona fácilmente tu inventario de suministros médicos con una interfaz intuitiva.
               </Typography>
+              <Button 
+                component={RouterLink} 
+                to="/inventarios" 
+                variant="outlined" 
+                size="small"
+              >
+                Ir a Inventarios
+              </Button>
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={4}>
+        
+        <Grid item xs={12} md={6} lg={4}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
-              <Typography variant="h5" component="h2" gutterBottom>
+              <Typography variant="h5" component="h2" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                <CategoryIcon sx={{ mr: 1, color: 'primary.main' }} />
+                Catálogo
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                Explora nuestro catálogo completo de productos médicos disponibles.
+              </Typography>
+              <Button 
+                component={RouterLink} 
+                to="/catalogo" 
+                variant="outlined" 
+                size="small"
+              >
+                Ver Catálogo
+              </Button>
+            </CardContent>
+          </Card>
+        </Grid>
+        
+        <Grid item xs={12} md={6} lg={4}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent>
+              <Typography variant="h5" component="h2" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                <AssessmentIcon sx={{ mr: 1, color: 'primary.main' }} />
                 Reportes
               </Typography>
-              <Typography variant="body1">
+              <Divider sx={{ mb: 2 }} />
+              <Typography variant="body1" sx={{ mb: 2 }}>
                 Genera informes detallados sobre el uso y disponibilidad de tus suministros.
               </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography variant="h5" component="h2" gutterBottom>
-                Alertas
-              </Typography>
-              <Typography variant="body1">
-                Recibe notificaciones automáticas cuando tus suministros estén por agotarse.
-              </Typography>
+              <Button 
+                component={RouterLink} 
+                to="/reportes" 
+                variant="outlined" 
+                size="small"
+              >
+                Ver Reportes
+              </Button>
             </CardContent>
           </Card>
         </Grid>
@@ -81,5 +110,4 @@ function Home() {
     </Container>
   );
 }
-
 export default Home;
