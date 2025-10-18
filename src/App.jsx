@@ -75,14 +75,21 @@ function App() {
               component="main"
               sx={{ 
                 flexGrow: 1, 
-                p: 3, 
+                px: { xs: 2, sm: 3 }, // Padding horizontal diferenciado
+                py: { xs: 2, sm: 3 }, // Padding vertical diferenciado
                 width: { sm: `calc(100% - ${drawerWidth}px)` }, 
                 ml: { sm: `${drawerWidth}px` },
-                overflowX: 'hidden'
+                transition: theme => theme.transitions.create('margin', {
+                  easing: theme.transitions.easing.easeOut,
+                  duration: theme.transitions.duration.enteringScreen,
+                }),
+                overflowX: 'hidden',
+                minHeight: '100vh', // Asegura que el contenido ocupe al menos toda la altura
+                boxSizing: 'border-box'
               }}
             >
               {/* Espaciado para dispositivos móviles con AppBar */}
-              <Box sx={{ height: { xs: '56px', sm: '0px' }, display: { sm: 'none' } }} />
+              <Box sx={{ height: { xs: '64px', sm: '0px' }, display: { sm: 'none' } }} />
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<About />} />

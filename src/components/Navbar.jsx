@@ -125,10 +125,14 @@ function Navbar() {
       {isMobile && (
         <AppBar
           position="fixed"
+          elevation={0}  // Eliminamos la sombra para un diseño más limpio
           sx={{
             width: { sm: `calc(100% - ${drawerWidth}px)` },
             ml: { sm: `${drawerWidth}px` },
-            display: { sm: 'none' }
+            display: { sm: 'none' },
+            backgroundColor: theme.palette.background.default,
+            color: theme.palette.text.primary,
+            borderBottom: `1px solid ${theme.palette.divider}`
           }}
         >
           <Toolbar>
@@ -155,7 +159,14 @@ function Navbar() {
       )}
       <Box
         component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+        sx={{ 
+          width: { sm: drawerWidth },
+          flexShrink: { sm: 0 },
+          // Aseguramos que el drawer no afecte al flujo del documento
+          position: 'fixed',
+          height: '100%',
+          zIndex: theme.zIndex.drawer
+        }}
         aria-label="menu opciones"
       >
         {/* Drawer para dispositivos móviles */}
@@ -172,8 +183,8 @@ function Navbar() {
               boxSizing: 'border-box', 
               width: drawerWidth,
               backgroundColor: theme.palette.mode === 'light' ? 'background.default' : 'background.paper',
-              borderTopRightRadius: 16, // Añadido borde redondeado superior derecho
-              borderBottomRightRadius: 16, // Añadido borde redondeado inferior derecho
+              borderTopRightRadius: 16,
+              borderBottomRightRadius: 16,
             },
           }}
         >
@@ -191,10 +202,12 @@ function Navbar() {
               backgroundColor: theme.palette.mode === 'light' ? 'background.default' : 'background.paper',
               borderRight: `1px solid ${theme.palette.divider}`,
               height: '100vh',
-              borderTopRightRadius: 24, // Añadido borde redondeado superior derecho más pronunciado
-              borderBottomRightRadius: 24, // Añadido borde redondeado inferior derecho más pronunciado
-              boxShadow: 3, // Añadido sombra para dar profundidad
-              overflow: 'hidden', // Para evitar que el contenido sobresalga de los bordes redondeados
+              borderTopRightRadius: 24,
+              borderBottomRightRadius: 24,
+              boxShadow: 3,
+              overflow: 'hidden',
+              // Asegurar que el drawer siempre esté visible
+              zIndex: theme.zIndex.drawer
             },
           }}
           open
