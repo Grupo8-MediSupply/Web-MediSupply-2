@@ -1,14 +1,15 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
-import { jwtDecode } from 'jwt-decode'; // Corrección de la importación
+import { jwtDecode } from 'jwt-decode';
 
 // Acción asíncrona para el login
 export const login = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
+      // Usar el servicio de autenticación del dominio auth
       const response = await api.auth.login({
-        email: credentials.username, // Adaptamos el username a email para la API
+        email: credentials.username,
         password: credentials.password
       });
       
@@ -44,7 +45,7 @@ export const login = createAsyncThunk(
 // Verificar token almacenado y obtener información del usuario
 export const checkAuth = createAsyncThunk(
   'auth/checkAuth',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, dispatch }) => {
     try {
       const token = localStorage.getItem('access_token');
       
@@ -68,6 +69,9 @@ export const checkAuth = createAsyncThunk(
         localStorage.removeItem('access_token');
         return rejectWithValue('Token inválido');
       }
+      
+      // En una app real, podríamos intentar refrescar el token
+      // const refreshResponse = await api.auth.refreshToken();
       
       return {
         token,

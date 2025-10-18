@@ -89,6 +89,9 @@ function Login() {
     setShowPassword(!showPassword);
   };
 
+  // Mostrar estado de error para depuración
+  console.log('Login component rendering with error:', error);
+
   return (
     <Box 
       sx={{
@@ -142,10 +145,13 @@ function Login() {
                 Login
               </Typography>
                
+              {/* Mostrar mensaje de error si existe */}
               {error && (
-                <Alert severity="error" sx={{ mb: 3 }}>
-                  {error}
-                </Alert>
+                <Box data-testid="login-error-message" sx={{ mb: 3 }}>
+                  <Typography color="error" variant="body2">
+                    {error}
+                  </Typography>
+                </Box>
               )}
 
               <TextField 
