@@ -24,6 +24,7 @@ import Ventas from "./pages/Ventas";
 import Clientes from "./pages/Clientes";
 import Reportes from "./pages/Reportes";
 import Configuracion from "./pages/Configuracion";
+import ApiModeIndicator from "./components/ApiModeIndicator";
 
 // Contexto para gestionar el modo oscuro/claro
 export const ColorModeContext = createContext({ 
@@ -119,14 +120,20 @@ function App() {
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Box>
+              {/* Indicador de modo API */}
+              {import.meta.env.DEV && <ApiModeIndicator />}
             </Box>
           ) : (
             // Layout para usuarios no autenticados
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              {/* Redirigir cualquier otra ruta a /login */}
-              <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
+            <>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                {/* Redirigir cualquier otra ruta a /login */}
+                <Route path="*" element={<Navigate to="/login" replace />} />
+              </Routes>
+              {/* Indicador de modo API */}
+              {import.meta.env.DEV && <ApiModeIndicator />}
+            </>
           )}
         </Router>
       </ThemeProvider>

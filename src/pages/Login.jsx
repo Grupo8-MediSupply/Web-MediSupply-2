@@ -19,7 +19,7 @@ import logo from '../assets/logo_medisupply_principal.png';
 
 function Login() {
   const [credentials, setCredentials] = useState({
-    username: '',
+    username: '', // Esto se mapeará a email en el login thunk
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -149,7 +149,7 @@ function Login() {
               )}
 
               <TextField 
-                label="Usuario"
+                label="Email" // Cambiado de "Usuario" a "Email" para reflejar la API
                 name="username"
                 value={credentials.username}
                 onChange={handleChange}
@@ -160,7 +160,8 @@ function Login() {
                 error={!!formErrors.username}
                 helperText={formErrors.username}
                 disabled={loading}
-                autoComplete="username"
+                autoComplete="email"
+                type="email" // Especificar tipo email
               />
               
               <TextField 

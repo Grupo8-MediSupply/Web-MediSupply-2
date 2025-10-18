@@ -2,6 +2,8 @@
  * Servicio para manejar todas las llamadas a la API
  */
 
+import { mockApiRequest } from './mockApi';
+
 // Configuración base para las llamadas a la API
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const API_VERSION = import.meta.env.VITE_API_VERSION;
@@ -22,6 +24,9 @@ const ENDPOINTS = {
   reports: import.meta.env.VITE_REPORTS_ENDPOINT,
 };
 
+// Verificar si estamos en modo desarrollo y usando mocks
+const USE_MOCKS = import.meta.env.VITE_USE_MOCK_API === 'true';
+
 /**
  * Opciones por defecto para fetch
  */
@@ -37,7 +42,7 @@ const defaultOptions = {
  * @returns {Object} - Opciones con el token incluido
  */
 const withAuth = (options = {}) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('access_token'); // Cambiado a access_token según la estructura de la API
   if (!token) return options;
 
   return {
@@ -56,6 +61,11 @@ const withAuth = (options = {}) => {
  * @returns {Promise} - Promesa con la respuesta
  */
 const apiRequest = async (endpoint, options = {}) => {
+  // Si estamos usando mocks, usar el servicio de mock
+  if (USE_MOCKS) {
+    return mockApiRequest(endpoint, options);
+  }
+
   const url = `${BASE_API_URL}${endpoint}`;
   const requestOptions = {
     ...defaultOptions,
@@ -69,24 +79,14 @@ const apiRequest = async (endpoint, options = {}) => {
   try {
     const response = await fetch(url, requestOptions);
     
-    // Si la respuesta no es exitosa, lanzar un error
-    if (!response.ok) {
-      // Si el error es 401 (Unauthorized), intentar refresh token o logout
-      if (response.status === 401) {
-        // Aquí podría ir lógica para refrescar el token o hacer logout
-        console.log('Token expirado o inválido');
-      }
-      
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Error en la petición');
+    const responseData = await response.json();
+    
+    // Si la API devuelve success: false, tratar como error
+    if (responseData && responseData.success === false) {
+      throw new Error(responseData.message || 'Error en la petición');
     }
 
-    // Verificar si hay contenido antes de intentar parsearlo como JSON
-    if (response.status === 204) {
-      return null; // No content
-    }
-
-    return await response.json();
+    return responseData;
   } catch (error) {
     console.error('API request error:', error);
     throw error;
@@ -98,7 +98,7 @@ const apiRequest = async (endpoint, options = {}) => {
  */
 export const api = {
   auth: {
-    login: (credentials) => apiRequest(`${ENDPOINTS.auth}${ENDPOINTS.login}`, {
+    login: (credentials) => apiRequest(`/api/login`, {
       method: 'POST',
       body: JSON.stringify(credentials),
     }),

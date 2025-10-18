@@ -1,37 +1,42 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-
-// Simulación de una API de autenticación
-const simulateApiCall = (credentials) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (credentials.username === 'admin' && credentials.password === 'admin') {
-        resolve({ 
-          user: { 
-            id: 1, 
-            name: 'Administrador', 
-            email: 'admin@medisupply.com',
-            role: 'admin'
-          }, 
-          token: 'fake-jwt-token' 
-        });
-      } else {
-        reject(new Error('Credenciales incorrectas'));
-      }
-    }, 1000);
-  });
-};
+import api from '../../services/api';
+import { jwtDecode } from 'jwt-decode'; // Corrección de la importación
 
 // Acción asíncrona para el login
 export const login = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await simulateApiCall(credentials);
+      const response = await api.auth.login({
+        email: credentials.username, // Adaptamos el username a email para la API
+        password: credentials.password
+      });
+      
+      if (!response || !response.success || !response.result?.access_token) {
+        return rejectWithValue(response?.message || 'Error en la autenticación');
+      }
+      
       // Guardar token en localStorage
-      localStorage.setItem('token', response.token);
-      return response;
+      localStorage.setItem('access_token', response.result.access_token);
+      
+      // Decodificar el token para obtener información del usuario
+      let userData = {};
+      try {
+        userData = jwtDecode(response.result.access_token); // Usamos la función importada correctamente
+      } catch (error) {
+        console.error('Error al decodificar el token:', error);
+      }
+      
+      return {
+        token: response.result.access_token,
+        user: {
+          id: userData.sub || '',
+          role: userData.role || '',
+          pais: userData.pais || ''
+        }
+      };
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || 'Error en la autenticación');
     }
   }
 );
@@ -41,28 +46,37 @@ export const checkAuth = createAsyncThunk(
   'auth/checkAuth',
   async (_, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       
       if (!token) {
         return rejectWithValue('No token found');
       }
       
-      // Simulación de verificación de token
-      // En una app real, harías una llamada a la API para validar el token
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          // Simula que el token es válido y devuelve datos del usuario
-          resolve({
-            user: {
-              id: 1,
-              name: 'Administrador',
-              email: 'admin@medisupply.com',
-              role: 'admin'
-            },
-            token
-          });
-        }, 500);
-      });
+      // Decodificar el token para verificar que no esté expirado
+      let userData = {};
+      try {
+        userData = jwtDecode(token); // Usamos la función importada correctamente
+        
+        // Verificar si el token ha expirado
+        const currentTime = Date.now() / 1000;
+        if (userData.exp && userData.exp < currentTime) {
+          localStorage.removeItem('access_token');
+          return rejectWithValue('Token expirado');
+        }
+        
+      } catch (error) {
+        localStorage.removeItem('access_token');
+        return rejectWithValue('Token inválido');
+      }
+      
+      return {
+        token,
+        user: {
+          id: userData.sub || '',
+          role: userData.role || '',
+          pais: userData.pais || ''
+        }
+      };
     } catch (error) {
       return rejectWithValue(error.message || 'Error al verificar autenticación');
     }
@@ -72,7 +86,7 @@ export const checkAuth = createAsyncThunk(
 // Estado inicial
 const initialState = {
   user: null,
-  token: localStorage.getItem('token') || null,
+  token: localStorage.getItem('access_token') || null,
   isAuthenticated: false,
   loading: false,
   error: null
@@ -87,7 +101,7 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
-      localStorage.removeItem('token');
+      localStorage.removeItem('access_token');
     },
     clearError: (state) => {
       state.error = null;
