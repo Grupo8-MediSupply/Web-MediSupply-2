@@ -1,6 +1,8 @@
 import { useState, useContext } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { ColorModeContext } from '../App';
+import { useDispatch } from 'react-redux';
+import { logout } from '../redux/features/authSlice';
 
 // Importaciones de Material UI
 import Box from '@mui/material/Box';
@@ -17,11 +19,13 @@ import IconButton from '@mui/material/IconButton';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import Button from '@mui/material/Button';
 
 // Importaciones de íconos
 import MenuIcon from '@mui/icons-material/Menu';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 // Importar logos para modo claro y oscuro
 import logoLight from '../assets/logo_medisupply.png';
@@ -35,6 +39,7 @@ function Navbar() {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const dispatch = useDispatch();
   
   // Seleccionar el logo correcto según el modo
   const currentLogo = theme.palette.mode === 'dark' ? logoDark : logoLight;
@@ -54,6 +59,10 @@ function Navbar() {
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
   };
 
   const drawer = (
@@ -111,10 +120,24 @@ function Navbar() {
         })}
       </List>
       <Box sx={{ flexGrow: 1 }} />
-      <Box sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
-        <IconButton onClick={colorMode.toggleColorMode} color="inherit">
-          {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-        </IconButton>
+      
+      {/* Añadir el botón de cerrar sesión */}
+      <Box sx={{ p: 2 }}>
+        <Button
+          variant="outlined"
+          color="primary"
+          fullWidth
+          startIcon={<LogoutIcon />}
+          onClick={handleLogout}
+          sx={{ mb: 2 }}
+        >
+          Cerrar Sesión
+        </Button>
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <IconButton onClick={colorMode.toggleColorMode} color="inherit">
+            {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+          </IconButton>
+        </Box>
       </Box>
     </>
   );
