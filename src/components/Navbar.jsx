@@ -12,7 +12,6 @@ import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@mui/material/IconButton';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -23,17 +22,9 @@ import CssBaseline from '@mui/material/CssBaseline';
 import MenuIcon from '@mui/icons-material/Menu';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
-import HomeIcon from '@mui/icons-material/Home';
-import InventoryIcon from '@mui/icons-material/Inventory';
-import CategoryIcon from '@mui/icons-material/Category';
-import BusinessIcon from '@mui/icons-material/Business';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
-import PeopleIcon from '@mui/icons-material/People';
-import AssessmentIcon from '@mui/icons-material/Assessment';
-import SettingsIcon from '@mui/icons-material/Settings';
-import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
+
+// Importar el logo
+import logo from '../assets/logo_medisupply.png';
 
 const drawerWidth = 240;
 
@@ -45,16 +36,16 @@ function Navbar() {
   const location = useLocation();
 
   const menuItems = [
-    { text: 'Inicio', icon: <HomeIcon />, path: '/' },
-    { text: 'Inventarios', icon: <InventoryIcon />, path: '/inventarios' },
-    { text: 'Catálogo', icon: <CategoryIcon />, path: '/catalogo' },
-    { text: 'Proveedores', icon: <BusinessIcon />, path: '/proveedores' },
-    { text: 'Ordenes', icon: <ShoppingCartIcon />, path: '/ordenes' },
-    { text: 'Logisticas', icon: <LocalShippingIcon />, path: '/logisticas' },
-    { text: 'Ventas', icon: <PointOfSaleIcon />, path: '/ventas' },
-    { text: 'Clientes', icon: <PeopleIcon />, path: '/clientes' },
-    { text: 'Reportes', icon: <AssessmentIcon />, path: '/reportes' },
-    { text: 'Configuración', icon: <SettingsIcon />, path: '/configuracion' },
+    { text: 'Inicio', path: '/' },
+    { text: 'Inventarios', path: '/inventarios' },
+    { text: 'Catálogo', path: '/catalogo' },
+    { text: 'Proveedores', path: '/proveedores' },
+    { text: 'Ordenes', path: '/ordenes' },
+    { text: 'Logisticas', path: '/logisticas' },
+    { text: 'Ventas', path: '/ventas' },
+    { text: 'Clientes', path: '/clientes' },
+    { text: 'Reportes', path: '/reportes' },
+    { text: 'Configuración', path: '/configuracion' },
   ];
 
   const handleDrawerToggle = () => {
@@ -67,16 +58,20 @@ function Navbar() {
         sx={{ 
           display: 'flex', 
           alignItems: 'center', 
-          justifyContent: 'center', 
-          py: 2,
-          backgroundColor: theme.palette.mode === 'light' ? 'background.paper' : 'background.default',
-          color: theme.palette.primary.main
+          justifyContent: 'flex-start', // Cambio de 'center' a 'flex-start' para alinear a la izquierda
+          py: 1.5,
+          pl: 3, // Añadido padding izquierdo para que no esté pegado al borde
         }}
       >
-        <MedicalServicesIcon sx={{ fontSize: 32, mr: 1 }} />
-        <Typography variant="h6" sx={{ fontWeight: 700 }}>
-          MediSupply
-        </Typography>
+        <Box 
+          component="img"
+          src={logo}
+          alt="MediSupply Logo"
+          sx={{ 
+            height: 32, // Tamaño reducido del logo
+            objectFit: 'contain'
+          }}
+        />
       </Box>
       <Divider />
       <List>
@@ -96,16 +91,9 @@ function Navbar() {
                   },
                   borderRadius: '0 20px 20px 0',
                   mr: 1,
+                  pl: 3, // Padding izquierdo aumentado para compensar la falta de iconos
                 }}
               >
-                <ListItemIcon 
-                  sx={{ 
-                    color: isActive ? 'primary.main' : 'inherit',
-                    minWidth: 40
-                  }}
-                >
-                  {item.icon}
-                </ListItemIcon>
                 <ListItemText 
                   primary={item.text} 
                   primaryTypographyProps={{
@@ -149,9 +137,15 @@ function Navbar() {
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" noWrap component="div">
-              MediSupply
-            </Typography>
+            <Box 
+              component="img"
+              src={logo}
+              alt="MediSupply Logo"
+              sx={{ 
+                height: 24, // También reducido el tamaño aquí para consistencia
+                objectFit: 'contain'
+              }}
+            />
           </Toolbar>
         </AppBar>
       )}

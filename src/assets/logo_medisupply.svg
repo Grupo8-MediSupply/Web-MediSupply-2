@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60">
+  <style>
+    text {
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+    }
+    .primary {
+      fill: #00696F;
+    }
+    .secondary {
+      fill: #4A6365;
+    }
+    @media (prefers-color-scheme: dark) {
+      .primary {
+        fill: #80D4DB;
+      }
+      .secondary {
+        fill: #B1CBCE;
+      }
+    }
+  </style>
+  <rect x="10" y="15" width="30" height="30" rx="5" class="primary" />
+  <text x="50" y="35" font-size="24" class="secondary">MediSupply</text>
+</svg>
