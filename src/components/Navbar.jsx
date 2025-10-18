@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import { ColorModeContext } from '../App';
 
 // Importaciones específicas en lugar de la importación general
 import AppBar from '@mui/material/AppBar';
@@ -19,6 +20,8 @@ import { useTheme } from '@mui/material/styles';
 // Importaciones de íconos
 import MenuIcon from '@mui/icons-material/Menu';
 import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 
 import './Navbar.css'
 
@@ -26,6 +29,7 @@ function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const colorMode = useContext(ColorModeContext);
 
   const navItems = [
     { text: 'Inicio', path: '/' },
@@ -81,6 +85,15 @@ function Navbar() {
           >
             MediSupply
           </Typography>
+
+          {/* Botón para cambiar entre modo claro/oscuro */}
+          <IconButton 
+            sx={{ mr: 1 }}
+            onClick={colorMode.toggleColorMode} 
+            color="inherit"
+          >
+            {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+          </IconButton>
 
           {isMobile ? (
             <IconButton
