@@ -15,6 +15,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import CategoryIcon from '@mui/icons-material/Category';
 import AssessmentIcon from '@mui/icons-material/Assessment';
+import logo from '../assets/logo_medisupply_principal.png';
 
 function Home() {
   return (
@@ -28,9 +29,9 @@ function Home() {
           py: 3
         }}
       >
-        <MedicalServicesIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
+        <img height="200" src={logo} alt="Medical Supplies" />
         <Typography variant="h3" component="h1" gutterBottom>
-          Bienvenido a MediSupply
+          Bienvenido
         </Typography>
         <Typography variant="h6" component="p" color="text.secondary" sx={{ mb: 3, maxWidth: '800px' }}>
           Sistema de gestión integral de suministros médicos para clínicas y hospitales
