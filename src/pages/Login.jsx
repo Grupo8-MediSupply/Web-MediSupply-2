@@ -11,7 +11,8 @@ import {
   CircularProgress,
   Alert,
   InputAdornment,
-  IconButton
+  IconButton,
+  Grid
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import logo from '../assets/logo_medisupply_principal.png';
@@ -97,141 +98,175 @@ function Login() {
       }}
     >
       {/* Contenedor principal */}
-      <Box 
+      <Grid 
+        container 
         sx={{ 
-          display: 'flex',
           width: '100%',
-          justifyContent: 'center',
-          alignItems: 'center',
-          px: 2
+          maxWidth: '1200px',
+          mx: 'auto',
+          px: { xs: 2, md: 4 }
         }}
       >
-        <Paper 
-          elevation={3} 
-          sx={{
-            display: 'flex',
-            width: '100%',
-            maxWidth: 1000,
-            minHeight: 500,
-            overflow: 'hidden',
-            borderRadius: 2
+        {/* Formulario de login (izquierda con tarjeta) */}
+        <Grid 
+          item 
+          xs={12} 
+          md={6} 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            order: { xs: 2, md: 1 } // En móvil aparece segundo, en desktop primero
           }}
         >
-          {/* Formulario de login (lado izquierdo) */}
-          <Box 
-            component="form" 
-            onSubmit={handleSubmit}
+          <Paper 
+            elevation={3} 
             sx={{
-              flex: { xs: '1', md: '1 1 50%' },
-              display: 'flex',
-              flexDirection: 'column',
-              p: { xs: 3, sm: 4, md: 5 },
-              justifyContent: 'center'
-            }}
-          >
-            <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
-              Login
-            </Typography>
-             
-            {error && (
-              <Alert severity="error" sx={{ mb: 3 }}>
-                {error}
-              </Alert>
-            )}
-
-            <TextField 
-              label="Usuario"
-              name="username"
-              value={credentials.username}
-              onChange={handleChange}
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              placeholder="ejemplo@medisupply.com"
-              error={!!formErrors.username}
-              helperText={formErrors.username}
-              disabled={loading}
-              autoComplete="username"
-            />
-            
-            <TextField 
-              label="Contraseña"
-              name="password"
-              value={credentials.password}
-              onChange={handleChange}
-              type={showPassword ? 'text' : 'password'}
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              placeholder="***************"
-              error={!!formErrors.password}
-              helperText={formErrors.password}
-              disabled={loading}
-              autoComplete="current-password"
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={handleClickShowPassword}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-            
-            <Button 
-              type="submit"
-              variant="contained" 
-              color="primary" 
-              size="large"
-              fullWidth
-              disabled={loading}
-              sx={{ 
-                mt: 3, 
-                py: 1.5,
-                position: 'relative'
-              }}
-            >
-              {loading ? (
-                <CircularProgress 
-                  size={24} 
-                  sx={{
-                    color: theme => theme.palette.primary.contrastText
-                  }}
-                />
-              ) : 'Iniciar sesión'}
-            </Button>
-          </Box>
-          
-          {/* Logo y branding (lado derecho) */}
-          <Box 
-            sx={{
-              flex: '1 1 50%',
-              display: { xs: 'none', md: 'flex' },
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              bgcolor: 'background.paper',
-              position: 'relative'
+              width: '100%',
+              maxWidth: '500px',
+              mx: 'auto',
+              p: { xs: 3, sm: 4 },
+              borderRadius: 2,
+              my: { xs: 3, md: 0 }
             }}
           >
             <Box 
-              component="img" 
-              src={logo} 
-              alt="MediSupply Logo"
+              component="form" 
+              onSubmit={handleSubmit}
               sx={{
-                width: '80%',
-                maxWidth: 300,
-                objectFit: 'contain'
+                display: 'flex',
+                flexDirection: 'column',
+                width: '100%'
               }}
-            />
-          </Box>
-        </Paper>
-      </Box>
+            >
+              <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
+                Login
+              </Typography>
+               
+              {error && (
+                <Alert severity="error" sx={{ mb: 3 }}>
+                  {error}
+                </Alert>
+              )}
+
+              <TextField 
+                label="Usuario"
+                name="username"
+                value={credentials.username}
+                onChange={handleChange}
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                placeholder="ejemplo@medisupply.com"
+                error={!!formErrors.username}
+                helperText={formErrors.username}
+                disabled={loading}
+                autoComplete="username"
+              />
+              
+              <TextField 
+                label="Contraseña"
+                name="password"
+                value={credentials.password}
+                onChange={handleChange}
+                type={showPassword ? 'text' : 'password'}
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                placeholder="***************"
+                error={!!formErrors.password}
+                helperText={formErrors.password}
+                disabled={loading}
+                autoComplete="current-password"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleClickShowPassword}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              
+              <Button 
+                type="submit"
+                variant="contained" 
+                color="primary" 
+                size="large"
+                fullWidth
+                disabled={loading}
+                sx={{ 
+                  mt: 3, 
+                  py: 1.5,
+                  position: 'relative'
+                }}
+              >
+                {loading ? (
+                  <CircularProgress 
+                    size={24} 
+                    sx={{
+                      color: theme => theme.palette.primary.contrastText
+                    }}
+                  />
+                ) : 'Iniciar sesión'}
+              </Button>
+            </Box>
+          </Paper>
+        </Grid>
+        
+        {/* Logo (derecha sin tarjeta) */}
+        <Grid 
+          item 
+          xs={12} 
+          md={6} 
+          sx={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            order: { xs: 1, md: 2 } // En móvil aparece primero, en desktop segundo
+          }}
+        >
+          <Box 
+            component="img" 
+            src={logo} 
+            alt="MediSupply Logo"
+            sx={{
+              width: { xs: '70%', sm: '60%', md: '80%' },
+              maxWidth: '350px',
+              objectFit: 'contain',
+              mb: { xs: 2, md: 0 }
+            }}
+          />
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              color: 'primary.main',
+              fontWeight: 700,
+              textAlign: 'center',
+              display: { xs: 'block', md: 'block' }
+            }}
+          >
+            MediSupply
+          </Typography>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              mt: 2,
+              color: 'text.secondary',
+              textAlign: 'center',
+              maxWidth: '80%',
+              display: { xs: 'block', md: 'block' }
+            }}
+          >
+            Sistema de gestión de inventarios para suministros médicos
+          </Typography>
+        </Grid>
+      </Grid>
     </Box>
   );
 }
