@@ -12,7 +12,7 @@ const authService = {
    * @param {Object} credentials - Credenciales del usuario (email, password)
    * @returns {Promise} - Promesa con la respuesta de la API
    */
-  login: (credentials) => apiRequest('/api/login', {
+  login: (credentials) => apiRequest('/login', {
     method: 'POST',
     body: JSON.stringify(credentials),
   }),
@@ -21,7 +21,7 @@ const authService = {
    * Refrescar el token de autenticación
    * @returns {Promise} - Promesa con la respuesta de la API
    */
-  refreshToken: () => apiRequest('/api/refresh-token', {
+  refreshToken: () => apiRequest('/refresh-token', {
     method: 'POST',
     ...withAuth(),
   }),
@@ -30,7 +30,7 @@ const authService = {
    * Cerrar sesión de usuario
    * @returns {Promise} - Promesa con la respuesta de la API
    */
-  logout: () => apiRequest('/api/logout', {
+  logout: () => apiRequest('/logout', {
     method: 'POST',
     ...withAuth(),
   }),
