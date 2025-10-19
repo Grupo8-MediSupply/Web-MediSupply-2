@@ -1,0 +1,34 @@
+name: Deploy to Firebase Hosting on merge
+
+on:
+  push:
+    branches:
+      - main   # 👈 Cada push a main (merge, rebase, o directo)
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+
+      # 🧠 Crear .env.production a partir del .env.example
+      - name: Create .env.production file
+        run: |
+          cp .env.example .env.production
+          sed -i 's|VITE_API_BASE_URL=.*|VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}|' .env.production
+          sed -i 's|VITE_NODE_ENV=.*|VITE_NODE_ENV=production|' .env.production
+          sed -i 's|VITE_USE_MOCK_API=.*|VITE_USE_MOCK_API=false|' .env.production
+
+      # 🏗️ Construir la app
+      - name: Build app
+        run: npm run build
+
+      # 🚀 Desplegar a Firebase Hosting
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MEDISUPPLY_474900 }}
+          channelId: live
+          projectId: medisupply-474900
