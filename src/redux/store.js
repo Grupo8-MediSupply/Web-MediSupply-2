@@ -2,12 +2,14 @@ import { configureStore } from '@reduxjs/toolkit';
 import inventarioReducer from './features/inventarioSlice';
 import authReducer from './features/authSlice';
 import catalogoReducer from './features/catalogoSlice';
+import bodegasReducer from './features/bodegasSlice';
 
 export const store = configureStore({
   reducer: {
     inventario: inventarioReducer,
     auth: authReducer,
-    catalogo: catalogoReducer
+    catalogo: catalogoReducer,
+    bodegas: bodegasReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
