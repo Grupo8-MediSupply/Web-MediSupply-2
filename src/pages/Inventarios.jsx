@@ -111,75 +111,110 @@ function Inventarios() {
           Bodegas
         </Typography>
         
-        {/* Barra de búsqueda y filtros */}
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3, alignItems: 'flex-end' }}>
-          {/* Buscador */}
-          <TextField
-            variant="outlined"
-            placeholder="Buscar por nombre..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            sx={{ flexGrow: 1, minWidth: 250 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
+        {/* Barra de búsqueda y filtros - REORGANIZADO */}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
+          {/* Primera fila: Campo de búsqueda y botones */}
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            {/* Campo de búsqueda */}
+            <TextField
+              variant="outlined"
+              placeholder="Buscar por nombre..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              sx={{ flexGrow: 1 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            
+            {/* Botones junto al campo de búsqueda */}
+            <Button variant="contained" onClick={() => filterBodegas(searchTerm, selectedBodega, selectedCiudad)}>
+              Buscar
+            </Button>
+            
+            <Button variant="outlined" onClick={handleClearFilters}>
+              Limpiar filtros
+            </Button>
+          </Box>
           
-          {/* Filtro de Bodega */}
-          <FormControl sx={{ minWidth: 120 }}>
-            <InputLabel id="bodega-select-label">Bodega</InputLabel>
-            <Select
-              labelId="bodega-select-label"
-              id="bodega-select"
-              value={selectedBodega}
-              label="Bodega"
-              name="bodega"
-              onChange={handleFilterChange}
-              displayEmpty
-            >
-              <MenuItem value="">
-                <em>Todas</em>
-              </MenuItem>
-              {bodegas.map((bodega) => (
-                <MenuItem key={bodega} value={bodega}>{bodega}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          
-          {/* Filtro de Ciudad */}
-          <FormControl sx={{ minWidth: 120 }}>
-            <InputLabel id="ciudad-select-label">Ciudad</InputLabel>
-            <Select
-              labelId="ciudad-select-label"
-              id="ciudad-select"
-              value={selectedCiudad}
-              label="Ciudad"
-              name="ciudad"
-              onChange={handleFilterChange}
-              displayEmpty
-            >
-              <MenuItem value="">
-                <em>Todas</em>
-              </MenuItem>
-              {ciudades.map((ciudad) => (
-                <MenuItem key={ciudad} value={ciudad}>{ciudad}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          
-          {/* Botón de Búsqueda */}
-          <Button variant="contained" onClick={() => filterBodegas(searchTerm, selectedBodega, selectedCiudad)}>
-            Buscar
-          </Button>
-          
-          {/* Botón para limpiar filtros */}
-          <Button variant="outlined" onClick={handleClearFilters}>
-            Limpiar filtros
-          </Button>
+          {/* Segunda fila: Filtros con ancho limitado */}
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            {/* Filtro de Bodega */}
+            <FormControl sx={{ width: '250px' }}>
+              <InputLabel id="bodega-select-label" shrink>
+                Bodega
+              </InputLabel>
+              <Select
+                labelId="bodega-select-label"
+                id="bodega-select"
+                value={selectedBodega}
+                label="Bodega"
+                name="bodega"
+                onChange={handleFilterChange}
+                displayEmpty
+                notched
+                sx={{ 
+                  '& .MuiSelect-select': { 
+                    paddingTop: '8px',
+                    paddingBottom: '8px',
+                  },
+                  '& .MuiInputLabel-shrink': {
+                    top: 0
+                  }
+                }}
+                renderValue={(selected) => {
+                  return selected ? selected : "";
+                }}
+              >
+                <MenuItem value="">
+                  <em>Todas</em>
+                </MenuItem>
+                {bodegas.map((bodega) => (
+                  <MenuItem key={bodega} value={bodega}>{bodega}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            
+            {/* Filtro de Ciudad */}
+            <FormControl sx={{ width: '250px' }}>
+              <InputLabel id="ciudad-select-label" shrink>
+                Ciudad
+              </InputLabel>
+              <Select
+                labelId="ciudad-select-label"
+                id="ciudad-select"
+                value={selectedCiudad}
+                label="Ciudad"
+                name="ciudad"
+                onChange={handleFilterChange}
+                displayEmpty
+                notched
+                sx={{ 
+                  '& .MuiSelect-select': { 
+                    paddingTop: '8px',
+                    paddingBottom: '8px',
+                  },
+                  '& .MuiInputLabel-shrink': {
+                    top: 0
+                  }
+                }}
+                renderValue={(selected) => {
+                  return selected ? selected : "";
+                }}
+              >
+                <MenuItem value="">
+                  <em>Todas</em>
+                </MenuItem>
+                {ciudades.map((ciudad) => (
+                  <MenuItem key={ciudad} value={ciudad}>{ciudad}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
         
         {/* Tabla de Bodegas */}
