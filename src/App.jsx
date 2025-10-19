@@ -26,6 +26,9 @@ import Reportes from "./pages/Reportes";
 import Configuracion from "./pages/Configuracion";
 import ApiModeIndicator from "./components/ApiModeIndicator";
 
+// Importar página de vendedores
+import Vendedores from "./pages/ventas/Vendedores";
+
 // Importar página de detalle de bodega
 import BodegaDetalle from "./pages/BodegaDetalle";
 
@@ -113,6 +116,7 @@ function App() {
                   <Route path="/ordenes" element={<ProtectedRoute><Ordenes /></ProtectedRoute>} />
                   <Route path="/logisticas" element={<ProtectedRoute><Logisticas /></ProtectedRoute>} />
                   <Route path="/ventas" element={<ProtectedRoute><Ventas /></ProtectedRoute>} />
+                  <Route path="/ventas/vendedores" element={<ProtectedRoute><Vendedores /></ProtectedRoute>} />
                   <Route path="/clientes" element={<ProtectedRoute><Clientes /></ProtectedRoute>} />
                   <Route path="/reportes" element={<ProtectedRoute><Reportes /></ProtectedRoute>} />
                   <Route path="/configuracion" element={<ProtectedRoute><Configuracion /></ProtectedRoute>} />
