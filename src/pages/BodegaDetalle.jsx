@@ -14,13 +14,15 @@ import {
   Tab,
   Tabs,
   CircularProgress,
-  Alert
+  Alert,
+  TextField,
+  InputAdornment
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SearchIcon from '@mui/icons-material/Search';
 
 // Componentes personalizados
 import BreadcrumbsNav from '../components/ui/BreadcrumbsNav';
-import SearchBar from '../components/ui/SearchBar';
 import FilterBar from '../components/ui/FilterBar';
 import ProductosTable from '../components/inventarios/ProductosTable';
 
@@ -38,7 +40,7 @@ import {
 
 // Función de filtrado para los productos (local)
 const filterProductos = (data, search, filters) => {
-  let filtered = data;
+  let filtered = [...data]; // Crear una copia para no modificar el original
 
   if (search) {
     filtered = filtered.filter(item => 
@@ -81,7 +83,7 @@ function BodegaDetalle() {
     dispatch(fetchProductosInBodega(id));
   }, [dispatch, id]);
 
-  // Actualizar productos filtrados cuando cambian los productos, búsqueda o filtros
+  // Actualizar productos filtrados cuando cambian los productos o filtros
   useEffect(() => {
     setFilteredProductos(filterProductos(productos, searchTerm, localFilters));
   }, [productos, searchTerm, localFilters]);
@@ -276,13 +278,31 @@ function BodegaDetalle() {
               
               {/* Barra de búsqueda y filtros */}
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
-                {/* Barra de búsqueda */}
-                <SearchBar
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  onSearch={executeSearch}
-                  onClear={clearFilters}
-                />
+                {/* Barra de búsqueda personalizada, en lugar de usar el componente SearchBar */}
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                  <TextField
+                    variant="outlined"
+                    placeholder="Buscar por nombre..."
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    sx={{ flexGrow: 1 }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                  
+                  <Button variant="contained" onClick={executeSearch}>
+                    Buscar
+                  </Button>
+                  
+                  <Button variant="outlined" onClick={clearFilters}>
+                    Limpiar filtros
+                  </Button>
+                </Box>
                 
                 {/* Barra de filtros */}
                 <FilterBar

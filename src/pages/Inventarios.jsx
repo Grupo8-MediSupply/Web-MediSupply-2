@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Container, Typography, Paper, Box, CircularProgress, Alert } from '@mui/material';
 
@@ -32,6 +32,11 @@ function Inventarios() {
   const error = useSelector(selectBodegasError);
   const filtros = useSelector(selectFiltros);
   
+  // Estado local para el término de búsqueda
+  const [searchTerm, setSearchTerm] = useState('');
+  // Estado local para las bodegas filtradas por búsqueda
+  const [filteredBodegas, setFilteredBodegas] = useState([]);
+  
   // Extraer ciudades y nombres de bodegas únicos para filtros
   const allBodegas = useSelector(state => state.bodegas.bodegas);
   const ciudades = [...new Set(allBodegas.map(item => item.ciudad))];
@@ -64,11 +69,25 @@ function Inventarios() {
     }
   }, [status, dispatch]);
 
+  // Actualizar bodegas filtradas cuando cambian las bodegas de Redux o el término de búsqueda
+  useEffect(() => {
+    if (!bodegas) return;
+    
+    if (searchTerm.trim() === '') {
+      setFilteredBodegas(bodegas);
+    } else {
+      const lowercaseSearch = searchTerm.toLowerCase();
+      const filtered = bodegas.filter(bodega => 
+        bodega.nombre.toLowerCase().includes(lowercaseSearch) ||
+        bodega.ciudad.toLowerCase().includes(lowercaseSearch)
+      );
+      setFilteredBodegas(filtered);
+    }
+  }, [bodegas, searchTerm]);
+
   // Manejar cambios en la búsqueda
   const handleSearchChange = (e) => {
-    // Para este ejemplo, la búsqueda por nombre se podría implementar con un filtro adicional
-    // o directamente en el componente utilizando la tabla
-    console.log("Búsqueda:", e.target.value);
+    setSearchTerm(e.target.value);
   };
   
   // Manejar cambios en los filtros
@@ -77,13 +96,15 @@ function Inventarios() {
     dispatch(setFiltros({ [name]: value }));
   };
 
-  // Ejecutar búsqueda (placeholder para funcionalidad futura)
+  // Ejecutar búsqueda (ahora realmente filtra por nombre)
   const executeSearch = () => {
-    console.log("Ejecutando búsqueda");
+    // La búsqueda ya se ejecuta automáticamente en el useEffect
+    // Esta función se mantiene por si se necesita alguna lógica adicional
   };
 
-  // Limpiar todos los filtros
+  // Limpiar todos los filtros y la búsqueda
   const clearFilters = () => {
+    setSearchTerm('');
     dispatch(clearFiltros());
   };
 
@@ -102,7 +123,7 @@ function Inventarios() {
       </Alert>
     );
   } else {
-    content = <BodegasTable bodegas={bodegas} />;
+    content = <BodegasTable bodegas={filteredBodegas} />;
   }
 
   return (
@@ -122,7 +143,7 @@ function Inventarios() {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
           {/* Barra de búsqueda con botones */}
           <SearchBar
-            value=""
+            value={searchTerm}
             onChange={handleSearchChange}
             onSearch={executeSearch}
             onClear={clearFilters}
