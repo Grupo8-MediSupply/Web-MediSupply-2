@@ -3,44 +3,42 @@ import { Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 
 /**
  * Barra de filtros reutilizable
- * @param {Array} filters - Array de configuración de filtros
- * @param {Function} onChange - Función para manejar cambios en los filtros
+ * 
+ * @param {Object} props
+ * @param {Array} props.filters - Array de configuraciones de filtro
+ * @param {Function} props.onChange - Función a ejecutar cuando cambia un filtro
+ * @returns {JSX.Element}
  */
-function FilterBar({ filters, onChange }) {
+const FilterBar = ({ filters = [], onChange }) => {
   return (
-    <Box sx={{ display: 'flex', gap: 2 }}>
-      {filters.map((filter) => (
-        <FormControl key={filter.name} sx={{ width: filter.width || '250px' }}>
-          <InputLabel id={`${filter.name}-select-label`} shrink>
-            {filter.label}
-          </InputLabel>
+    <Box sx={{ 
+      display: 'flex', 
+      flexWrap: 'wrap', 
+      gap: 2,
+      alignItems: 'center'
+    }}>
+      {filters.map((filter, index) => (
+        <FormControl 
+          key={filter.name || index} 
+          size="small" 
+          sx={{ minWidth: filter.width || 120 }}
+        >
+          <InputLabel id={`${filter.name}-label`}>{filter.label}</InputLabel>
           <Select
-            labelId={`${filter.name}-select-label`}
-            id={`${filter.name}-select`}
+            labelId={`${filter.name}-label`}
+            name={filter.name}
             value={filter.value}
             label={filter.label}
-            name={filter.name}
             onChange={onChange}
-            displayEmpty
-            notched
-            sx={{ 
-              '& .MuiSelect-select': { 
-                paddingTop: '8px',
-                paddingBottom: '8px',
-              },
-              '& .MuiInputLabel-shrink': {
-                top: 0
-              }
-            }}
-            renderValue={(selected) => {
-              return selected ? selected : "";
-            }}
           >
             <MenuItem value="">
-              <em>{filter.emptyOptionText}</em>
+              <em>{filter.emptyOptionText || 'Todos'}</em>
             </MenuItem>
-            {filter.options.map((option) => (
-              <MenuItem key={option} value={option}>
+            {filter.options.map((option, i) => (
+              <MenuItem 
+                key={option} 
+                value={filter.values ? filter.values[i] : option}
+              >
                 {option}
               </MenuItem>
             ))}
@@ -49,6 +47,6 @@ function FilterBar({ filters, onChange }) {
       ))}
     </Box>
   );
-}
+};
 
 export default FilterBar;

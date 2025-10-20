@@ -4,6 +4,7 @@ import authReducer from './features/authSlice';
 import catalogoReducer from './features/catalogoSlice';
 import bodegasReducer from './features/bodegasSlice';
 import vendedoresReducer from './features/vendedoresSlice';
+import proveedoresReducer from './features/proveedoresSlice';
 
 export const store = configureStore({
   reducer: {
@@ -11,7 +12,8 @@ export const store = configureStore({
     auth: authReducer,
     catalogo: catalogoReducer,
     bodegas: bodegasReducer,
-    vendedores: vendedoresReducer
+    vendedores: vendedoresReducer,
+    proveedores: proveedoresReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
