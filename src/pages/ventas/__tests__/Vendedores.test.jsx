@@ -109,7 +109,9 @@ describe('Vendedores Page', () => {
       </Provider>
     );
     
-    expect(screen.getByText('Vendedores')).toBeInTheDocument();
+    // Use a more specific selector to get the main heading
+    const heading = screen.getByRole('heading', { name: 'Vendedores', level: 1 });
+    expect(heading).toBeInTheDocument();
   });
 
   it('fetches vendedores on component mount', () => {
@@ -172,8 +174,6 @@ describe('Vendedores Page', () => {
     fireEvent.change(searchInput, { target: { value: 'Edwin' } });
     
     // Verificar que se actualiza el valor de búsqueda
-    // Nota: No podemos probar el estado interno del componente directamente,
-    // pero podemos verificar que el input refleja el cambio
     expect(searchInput.value).toBe('Edwin');
   });
 

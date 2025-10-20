@@ -67,11 +67,11 @@ describe('VendedoresTable', () => {
       </BrowserRouter>
     );
     
-    // Buscar los iconos de acciones (usamos getAllBy porque hay múltiples instancias)
-    const verDetallesIcons = screen.getAllByTitle('Ver detalles');
-    const verVisitasIcons = screen.getAllByTitle('Ver visitas');
-    const editarIcons = screen.getAllByTitle('Editar');
-    const eliminarIcons = screen.getAllByTitle('Eliminar');
+    // Buscar los iconos de acciones por su data-testid en lugar de title
+    const verDetallesIcons = screen.getAllByTestId('VisibilityIcon');
+    const verVisitasIcons = screen.getAllByTestId('CalendarMonthIcon');
+    const editarIcons = screen.getAllByTestId('EditIcon');
+    const eliminarIcons = screen.getAllByTestId('DeleteIcon');
     
     // Verificar que hay un botón para cada vendedor
     expect(verDetallesIcons).toHaveLength(mockVendedores.length);
