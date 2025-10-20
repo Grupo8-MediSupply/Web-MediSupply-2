@@ -7,26 +7,38 @@ const mockUsers = [
   {
     email: "admin@medisupply.com",
     password: "admin123",
-    role: "20",
-    userId: "00854bb1-488a-4a2d-ba62-e90004b5d462"
+    role: "1", // ADMIN
+    userId: "00854bb1-488a-4a2d-ba62-e90004b5d462",
+    pais: "10" // Colombia
   },
   {
     email: "test20@correo.com.co",
     password: "deploy1",
-    role: "20",
-    userId: "12345678-488a-4a2d-ba62-e90004b5d462"
+    role: "20", // VENDEDOR
+    userId: "12345678-488a-4a2d-ba62-e90004b5d462",
+    pais: "10" // Colombia
+  },
+  {
+    email: "vendedor@mexico.com",
+    password: "password123",
+    role: "20", // VENDEDOR
+    userId: "87654321-488a-4a2d-ba62-e90004b5d462",
+    pais: "20" // Mexico
   }
 ];
 
 // Genera un token JWT simulado
-const generateMockToken = (userId, role) => {
+const generateMockToken = (userId, email, role, pais) => {
   return `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${btoa(
     JSON.stringify({
       sub: userId,
+      email: email,
       role: role,
-      pais: "10",
+      pais: pais,
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 3600
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      aud: "medi-supply-users",
+      iss: "https://autenticacion-863271810141.us-central1.run.app"
     })
   )}.mockSignature123456789`;
 };
@@ -72,8 +84,8 @@ const mockAuthService = {
       };
     }
     
-    // Generar token
-    const token = generateMockToken(user.userId, user.role);
+    // Generar token con todos los campos requeridos
+    const token = generateMockToken(user.userId, user.email, user.role, user.pais);
     
     // Login exitoso
     return {

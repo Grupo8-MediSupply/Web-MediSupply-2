@@ -1,30 +1,41 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { Countries } from '../../constants/auth';
 
 // Mock data para vendedores
 const mockVendedores = [
-  { id: '123456', nombre: 'Edwin', territorio: 'Colombia', visitasCompletadas: 15, visitasProgramadas: 20 },
-  { id: '123456', nombre: 'Maria', territorio: 'Colombia', visitasCompletadas: 18, visitasProgramadas: 20 },
-  { id: '123456', nombre: 'Martin', territorio: 'Colombia', visitasCompletadas: 10, visitasProgramadas: 15 },
-  { id: '123456', nombre: 'Dolores', territorio: 'Colombia', visitasCompletadas: 12, visitasProgramadas: 15 },
-  { id: '123456', nombre: 'Ana', territorio: 'Colombia', visitasCompletadas: 20, visitasProgramadas: 20 },
-  { id: '234567', nombre: 'Juan', territorio: 'México', visitasCompletadas: 8, visitasProgramadas: 15 },
-  { id: '345678', nombre: 'Carlos', territorio: 'Argentina', visitasCompletadas: 12, visitasProgramadas: 18 },
-  { id: '456789', nombre: 'Sofía', territorio: 'Perú', visitasCompletadas: 7, visitasProgramadas: 10 },
-  { id: '567890', nombre: 'Valentina', territorio: 'Chile', visitasCompletadas: 14, visitasProgramadas: 15 },
-  { id: '678901', nombre: 'Ricardo', territorio: 'México', visitasCompletadas: 6, visitasProgramadas: 12 },
+  { id: '123456', nombre: 'Edwin', territorio: 'Colombia', visitasCompletadas: 15, visitasProgramadas: 20, pais: '10' },
+  { id: '123457', nombre: 'Maria', territorio: 'Colombia', visitasCompletadas: 18, visitasProgramadas: 20, pais: '10' },
+  { id: '123458', nombre: 'Martin', territorio: 'Colombia', visitasCompletadas: 10, visitasProgramadas: 15, pais: '10' },
+  { id: '123459', nombre: 'Dolores', territorio: 'Colombia', visitasCompletadas: 12, visitasProgramadas: 15, pais: '10' },
+  { id: '123460', nombre: 'Ana', territorio: 'Colombia', visitasCompletadas: 20, visitasProgramadas: 20, pais: '10' },
+  { id: '234567', nombre: 'Juan', territorio: 'México', visitasCompletadas: 8, visitasProgramadas: 15, pais: '20' },
+  { id: '345678', nombre: 'Carlos', territorio: 'Argentina', visitasCompletadas: 12, visitasProgramadas: 18, pais: '10' },
+  { id: '456789', nombre: 'Sofía', territorio: 'Perú', visitasCompletadas: 7, visitasProgramadas: 10, pais: '10' },
+  { id: '567890', nombre: 'Valentina', territorio: 'Chile', visitasCompletadas: 14, visitasProgramadas: 15, pais: '10' },
+  { id: '678901', nombre: 'Ricardo', territorio: 'México', visitasCompletadas: 6, visitasProgramadas: 12, pais: '20' },
 ];
 
 // Simulación de API
-const fetchVendedoresAPI = () => {
+const fetchVendedoresAPI = (userPais) => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(mockVendedores);
+      // Si es admin o no tiene país definido, devolver todos los vendedores
+      if (!userPais) {
+        resolve(mockVendedores);
+        return;
+      }
+      
+      // Filtrar vendedores por país del usuario
+      const filteredVendedores = mockVendedores.filter(
+        vendedor => vendedor.pais === userPais
+      );
+      resolve(filteredVendedores);
     }, 500);
   });
 };
 
 // Simular la adición de un nuevo vendedor
-const addVendedorAPI = (vendedor) => {
+const addVendedorAPI = (vendedor, userPais) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       // Generar un ID único para el nuevo vendedor
@@ -32,7 +43,8 @@ const addVendedorAPI = (vendedor) => {
         ...vendedor,
         id: Math.random().toString(36).substr(2, 6),
         visitasCompletadas: 0,
-        visitasProgramadas: 0
+        visitasProgramadas: 0,
+        pais: userPais // Asignar el país del usuario actual
       };
       resolve(newVendedor);
     }, 500);
@@ -42,8 +54,9 @@ const addVendedorAPI = (vendedor) => {
 // Acción asíncrona para obtener vendedores
 export const fetchVendedores = createAsyncThunk(
   'vendedores/fetchVendedores',
-  async () => {
-    const response = await fetchVendedoresAPI();
+  async (_, { getState }) => {
+    const userPais = getState().auth.user?.pais;
+    const response = await fetchVendedoresAPI(userPais);
     return response;
   }
 );
@@ -51,8 +64,9 @@ export const fetchVendedores = createAsyncThunk(
 // Acción asíncrona para añadir un nuevo vendedor
 export const addVendedor = createAsyncThunk(
   'vendedores/addVendedor',
-  async (vendedor) => {
-    const response = await addVendedorAPI(vendedor);
+  async (vendedor, { getState }) => {
+    const userPais = getState().auth.user?.pais;
+    const response = await addVendedorAPI(vendedor, userPais);
     return response;
   }
 );

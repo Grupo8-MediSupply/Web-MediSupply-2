@@ -23,7 +23,12 @@ export const login = createAsyncThunk(
       // Decodificar el token para obtener información del usuario
       let userData = {};
       try {
-        userData = jwtDecode(response.result.access_token); // Usamos la función importada correctamente
+        userData = jwtDecode(response.result.access_token);
+        
+        // Verificar que el token tenga la estructura esperada
+        if (!userData.sub) {
+          console.error('Token JWT no contiene ID de usuario (sub)');
+        }
       } catch (error) {
         console.error('Error al decodificar el token:', error);
       }
@@ -32,8 +37,9 @@ export const login = createAsyncThunk(
         token: response.result.access_token,
         user: {
           id: userData.sub || '',
+          email: userData.email || '',
           role: userData.role || '',
-          pais: userData.pais || ''
+          pais: userData.pais || '',
         }
       };
     } catch (error) {
@@ -56,7 +62,7 @@ export const checkAuth = createAsyncThunk(
       // Decodificar el token para verificar que no esté expirado
       let userData = {};
       try {
-        userData = jwtDecode(token); // Usamos la función importada correctamente
+        userData = jwtDecode(token);
         
         // Verificar si el token ha expirado
         const currentTime = Date.now() / 1000;
@@ -77,6 +83,7 @@ export const checkAuth = createAsyncThunk(
         token,
         user: {
           id: userData.sub || '',
+          email: userData.email || '',
           role: userData.role || '',
           pais: userData.pais || ''
         }

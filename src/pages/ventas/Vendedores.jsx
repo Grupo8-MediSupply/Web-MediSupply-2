@@ -7,10 +7,11 @@ import {
   Box, 
   Button, 
   CircularProgress,
-  Alert
+  Alert,
+  Chip
 } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
+import { Roles, RoleNames, CountryNames } from '../../constants/auth';
 
 // Componentes personalizados
 import BreadcrumbsNav from '../../components/ui/BreadcrumbsNav';
@@ -18,6 +19,7 @@ import SearchBar from '../../components/ui/SearchBar';
 import FilterBar from '../../components/ui/FilterBar';
 import VendedoresTable from '../../components/ventas/VendedoresTable';
 import VendedorForm from '../../components/ventas/VendedorForm';
+import RoleBasedComponent from '../../components/auth/RoleBasedComponent';
 
 // Redux actions y selectors
 import { 
@@ -44,6 +46,7 @@ function Vendedores() {
   const error = useSelector(selectVendedoresError);
   const filtros = useSelector(selectFiltros);
   const territorios = useSelector(selectTerritorios);
+  const { user } = useSelector(state => state.auth);
   
   // Estado local para búsqueda
   const [searchTerm, setSearchTerm] = useState('');
@@ -78,6 +81,22 @@ function Vendedores() {
       dispatch(fetchVendedores());
     }
   }, [status, dispatch]);
+
+  // Mostrar información de filtrado basada en el rol y país del usuario
+  const getUserContextInfo = () => {
+    if (!user) return null;
+    
+    const roleName = RoleNames[user.role] || `Rol ${user.role}`;
+    const paisName = CountryNames[user.pais] || `País ${user.pais}`;
+    
+    return (
+      <Box sx={{ mb: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
+        <Typography variant="body2">Mostrando datos para:</Typography>
+        <Chip size="small" label={roleName} color="primary" />
+        <Chip size="small" label={paisName} color="secondary" />
+      </Box>
+    );
+  };
 
   // Filtrar por búsqueda
   useEffect(() => {
@@ -166,15 +185,20 @@ function Vendedores() {
             Vendedores
           </Typography>
           
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={handleOpenForm}
-          >
-            Nuevo Vendedor
-          </Button>
+          <RoleBasedComponent roles={[Roles.ADMIN, Roles.VENDEDOR]} fallback={null}>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={handleOpenForm}
+            >
+              Nuevo Vendedor
+            </Button>
+          </RoleBasedComponent>
         </Box>
+        
+        {/* Mostrar contexto del usuario actual */}
+        {getUserContextInfo()}
         
         {/* Barra de búsqueda y filtros */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
