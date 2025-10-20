@@ -17,6 +17,7 @@ import BreadcrumbsNav from '../../components/ui/BreadcrumbsNav';
 import SearchBar from '../../components/ui/SearchBar';
 import FilterBar from '../../components/ui/FilterBar';
 import VendedoresTable from '../../components/ventas/VendedoresTable';
+import VendedorForm from '../../components/ventas/VendedorForm';
 
 // Redux actions y selectors
 import { 
@@ -47,6 +48,9 @@ function Vendedores() {
   // Estado local para búsqueda
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredVendedores, setFilteredVendedores] = useState([]);
+  
+  // Estado para controlar el modal de nuevo vendedor
+  const [isFormOpen, setIsFormOpen] = useState(false);
   
   // Configuración de filtros
   const filterConfig = [
@@ -114,6 +118,16 @@ function Vendedores() {
     dispatch(clearFiltros());
   };
 
+  // Abrir el formulario de nuevo vendedor
+  const handleOpenForm = () => {
+    setIsFormOpen(true);
+  };
+  
+  // Cerrar el formulario de nuevo vendedor
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+  };
+
   // Renderizado condicional según el estado
   let content;
   if (status === 'loading') {
@@ -156,8 +170,7 @@ function Vendedores() {
             variant="contained"
             color="primary"
             startIcon={<AddIcon />}
-            component={RouterLink}
-            to="/ventas/vendedores/nuevo"
+            onClick={handleOpenForm}
           >
             Nuevo Vendedor
           </Button>
@@ -184,6 +197,12 @@ function Vendedores() {
         {/* Tabla de Vendedores */}
         {content}
       </Paper>
+      
+      {/* Modal de Nuevo Vendedor */}
+      <VendedorForm 
+        open={isFormOpen}
+        onClose={handleCloseForm}
+      />
     </Container>
   );
 }

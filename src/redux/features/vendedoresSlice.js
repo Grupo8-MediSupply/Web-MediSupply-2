@@ -23,11 +23,36 @@ const fetchVendedoresAPI = () => {
   });
 };
 
+// Simular la adición de un nuevo vendedor
+const addVendedorAPI = (vendedor) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // Generar un ID único para el nuevo vendedor
+      const newVendedor = {
+        ...vendedor,
+        id: Math.random().toString(36).substr(2, 6),
+        visitasCompletadas: 0,
+        visitasProgramadas: 0
+      };
+      resolve(newVendedor);
+    }, 500);
+  });
+};
+
 // Acción asíncrona para obtener vendedores
 export const fetchVendedores = createAsyncThunk(
   'vendedores/fetchVendedores',
   async () => {
     const response = await fetchVendedoresAPI();
+    return response;
+  }
+);
+
+// Acción asíncrona para añadir un nuevo vendedor
+export const addVendedor = createAsyncThunk(
+  'vendedores/addVendedor',
+  async (vendedor) => {
+    const response = await addVendedorAPI(vendedor);
     return response;
   }
 );
@@ -39,7 +64,8 @@ const initialState = {
   filtros: {
     territorio: '',
     equipo: ''
-  }
+  },
+  addStatus: 'idle' // 'idle' | 'loading' | 'succeeded' | 'failed'
 };
 
 const vendedoresSlice = createSlice({
@@ -51,10 +77,14 @@ const vendedoresSlice = createSlice({
     },
     clearFiltros: (state) => {
       state.filtros = { territorio: '', equipo: '' };
+    },
+    resetAddStatus: (state) => {
+      state.addStatus = 'idle';
     }
   },
   extraReducers: (builder) => {
     builder
+      // Manejar fetchVendedores
       .addCase(fetchVendedores.pending, (state) => {
         state.status = 'loading';
       })
@@ -65,11 +95,23 @@ const vendedoresSlice = createSlice({
       .addCase(fetchVendedores.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message;
+      })
+      // Manejar addVendedor
+      .addCase(addVendedor.pending, (state) => {
+        state.addStatus = 'loading';
+      })
+      .addCase(addVendedor.fulfilled, (state, action) => {
+        state.addStatus = 'succeeded';
+        state.vendedores.push(action.payload);
+      })
+      .addCase(addVendedor.rejected, (state, action) => {
+        state.addStatus = 'failed';
+        state.error = action.error.message;
       });
   }
 });
 
-export const { setFiltros, clearFiltros } = vendedoresSlice.actions;
+export const { setFiltros, clearFiltros, resetAddStatus } = vendedoresSlice.actions;
 
 // Selector para obtener todos los vendedores
 export const selectAllVendedores = (state) => state.vendedores.vendedores;
@@ -100,5 +142,8 @@ export const selectTerritorios = (state) => {
   const territorios = [...new Set(state.vendedores.vendedores.map(v => v.territorio))];
   return territorios;
 };
+
+// Selector para el estado de añadir vendedor
+export const selectAddVendedorStatus = (state) => state.vendedores.addStatus;
 
 export default vendedoresSlice.reducer;
