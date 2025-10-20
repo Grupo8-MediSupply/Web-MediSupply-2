@@ -20,8 +20,7 @@ const VendedorForm = ({ open, onClose }) => {
   // Estado del formulario
   const [formData, setFormData] = useState({
     nombre: '',
-    correo: '',
-    territorio: '',
+    email: '', // Cambiado de correo a email para coincidir con API
     supervisor: ''
   });
   
@@ -33,8 +32,7 @@ const VendedorForm = ({ open, onClose }) => {
     if (open) {
       setFormData({
         nombre: '',
-        correo: '',
-        territorio: '',
+        email: '',
         supervisor: ''
       });
       setErrors({});
@@ -82,14 +80,10 @@ const VendedorForm = ({ open, onClose }) => {
       newErrors.nombre = 'El nombre es obligatorio';
     }
     
-    if (!formData.correo.trim()) {
-      newErrors.correo = 'El correo es obligatorio';
-    } else if (!/\S+@\S+\.\S+/.test(formData.correo)) {
-      newErrors.correo = 'El correo no es válido';
-    }
-    
-    if (!formData.territorio.trim()) {
-      newErrors.territorio = 'El territorio es obligatorio';
+    if (!formData.email.trim()) {
+      newErrors.email = 'El email es obligatorio';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'El email no es válido';
     }
     
     // Supervisor puede ser opcional
@@ -103,7 +97,12 @@ const VendedorForm = ({ open, onClose }) => {
     e.preventDefault();
     
     if (validateForm()) {
-      dispatch(addVendedor(formData));
+      // Enviar solo los campos requeridos por la API
+      const vendedorData = {
+        nombre: formData.nombre,
+        email: formData.email
+      };
+      dispatch(addVendedor(vendedorData));
     }
   };
   
@@ -138,30 +137,20 @@ const VendedorForm = ({ open, onClose }) => {
             />
             
             <TextField
-              name="correo"
-              label="Correo"
+              name="email"
+              label="Email"
               fullWidth
-              value={formData.correo}
+              value={formData.email}
               onChange={handleChange}
-              error={!!errors.correo}
-              helperText={errors.correo}
+              error={!!errors.email}
+              helperText={errors.email}
               disabled={addStatus === 'loading'}
-            />
-            
-            <TextField
-              name="territorio"
-              label="Territorio"
-              fullWidth
-              value={formData.territorio}
-              onChange={handleChange}
-              error={!!errors.territorio}
-              helperText={errors.territorio}
-              disabled={addStatus === 'loading'}
+              type="email"
             />
             
             <TextField
               name="supervisor"
-              label="Supervisor"
+              label="Supervisor (opcional)"
               fullWidth
               value={formData.supervisor}
               onChange={handleChange}

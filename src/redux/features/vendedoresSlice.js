@@ -1,73 +1,52 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import api from '../../services/api';
 import { Countries } from '../../constants/auth';
-
-// Mock data para vendedores
-const mockVendedores = [
-  { id: '123456', nombre: 'Edwin', territorio: 'Colombia', visitasCompletadas: 15, visitasProgramadas: 20, pais: '10' },
-  { id: '123457', nombre: 'Maria', territorio: 'Colombia', visitasCompletadas: 18, visitasProgramadas: 20, pais: '10' },
-  { id: '123458', nombre: 'Martin', territorio: 'Colombia', visitasCompletadas: 10, visitasProgramadas: 15, pais: '10' },
-  { id: '123459', nombre: 'Dolores', territorio: 'Colombia', visitasCompletadas: 12, visitasProgramadas: 15, pais: '10' },
-  { id: '123460', nombre: 'Ana', territorio: 'Colombia', visitasCompletadas: 20, visitasProgramadas: 20, pais: '10' },
-  { id: '234567', nombre: 'Juan', territorio: 'México', visitasCompletadas: 8, visitasProgramadas: 15, pais: '20' },
-  { id: '345678', nombre: 'Carlos', territorio: 'Argentina', visitasCompletadas: 12, visitasProgramadas: 18, pais: '10' },
-  { id: '456789', nombre: 'Sofía', territorio: 'Perú', visitasCompletadas: 7, visitasProgramadas: 10, pais: '10' },
-  { id: '567890', nombre: 'Valentina', territorio: 'Chile', visitasCompletadas: 14, visitasProgramadas: 15, pais: '10' },
-  { id: '678901', nombre: 'Ricardo', territorio: 'México', visitasCompletadas: 6, visitasProgramadas: 12, pais: '20' },
-];
-
-// Simulación de API
-const fetchVendedoresAPI = (userPais) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Si es admin o no tiene país definido, devolver todos los vendedores
-      if (!userPais) {
-        resolve(mockVendedores);
-        return;
-      }
-      
-      // Filtrar vendedores por país del usuario
-      const filteredVendedores = mockVendedores.filter(
-        vendedor => vendedor.pais === userPais
-      );
-      resolve(filteredVendedores);
-    }, 500);
-  });
-};
-
-// Simular la adición de un nuevo vendedor
-const addVendedorAPI = (vendedor, userPais) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Generar un ID único para el nuevo vendedor
-      const newVendedor = {
-        ...vendedor,
-        id: Math.random().toString(36).substr(2, 6),
-        visitasCompletadas: 0,
-        visitasProgramadas: 0,
-        pais: userPais // Asignar el país del usuario actual
-      };
-      resolve(newVendedor);
-    }, 500);
-  });
-};
 
 // Acción asíncrona para obtener vendedores
 export const fetchVendedores = createAsyncThunk(
   'vendedores/fetchVendedores',
-  async (_, { getState }) => {
-    const userPais = getState().auth.user?.pais;
-    const response = await fetchVendedoresAPI(userPais);
-    return response;
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.vendedores.getVendedores();
+      
+      if (!response.success) {
+        return rejectWithValue(response.message || 'Error al obtener vendedores');
+      }
+      
+      return response.result;
+    } catch (error) {
+      return rejectWithValue(error.message || 'Error al obtener vendedores');
+    }
   }
 );
 
 // Acción asíncrona para añadir un nuevo vendedor
 export const addVendedor = createAsyncThunk(
   'vendedores/addVendedor',
-  async (vendedor, { getState }) => {
-    const userPais = getState().auth.user?.pais;
-    const response = await addVendedorAPI(vendedor, userPais);
-    return response;
+  async (vendedorData, { rejectWithValue }) => {
+    try {
+      const response = await api.vendedores.createVendedor(vendedorData);
+      
+      if (!response.success) {
+        return rejectWithValue(response.message || 'Error al crear vendedor');
+      }
+      
+      // Crear un objeto vendedor completo para el estado local
+      // usando los datos enviados y la respuesta de la API
+      const newVendedor = {
+        id: Math.random().toString(36).substr(2, 6), // ID temporal para UI
+        nombre: vendedorData.nombre,
+        email: response.result.email,
+        pais: response.result.paisCreacion,
+        territorio: response.result.paisCreacion === '10' ? 'Colombia' : 'México',
+        visitasCompletadas: 0,
+        visitasProgramadas: 0,
+      };
+      
+      return newVendedor;
+    } catch (error) {
+      return rejectWithValue(error.message || 'Error al crear vendedor');
+    }
   }
 );
 

@@ -43,9 +43,8 @@ describe('VendedorForm Component', () => {
     
     expect(screen.getByText('Nuevo Vendedor')).toBeInTheDocument();
     expect(screen.getByLabelText('Nombre')).toBeInTheDocument();
-    expect(screen.getByLabelText('Correo')).toBeInTheDocument();
-    expect(screen.getByLabelText('Territorio')).toBeInTheDocument();
-    expect(screen.getByLabelText('Supervisor')).toBeInTheDocument();
+    expect(screen.getByLabelText('Email')).toBeInTheDocument();
+    expect(screen.getByLabelText(/Supervisor/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Aceptar' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Cancelar' })).toBeInTheDocument();
   });
@@ -62,8 +61,7 @@ describe('VendedorForm Component', () => {
     
     await waitFor(() => {
       expect(screen.getByText('El nombre es obligatorio')).toBeInTheDocument();
-      expect(screen.getByText('El correo es obligatorio')).toBeInTheDocument();
-      expect(screen.getByText('El territorio es obligatorio')).toBeInTheDocument();
+      expect(screen.getByText('El email es obligatorio')).toBeInTheDocument();
     });
     
     expect(addVendedor).not.toHaveBeenCalled();
@@ -78,9 +76,8 @@ describe('VendedorForm Component', () => {
     
     // Fill out the form
     fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Roberto' } });
-    fireEvent.change(screen.getByLabelText('Correo'), { target: { value: 'r.amaya@medisupply.com' } });
-    fireEvent.change(screen.getByLabelText('Territorio'), { target: { value: 'Colombia' } });
-    fireEvent.change(screen.getByLabelText('Supervisor'), { target: { value: 'Supervisor' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'r.amaya@medisupply.com' } });
+    fireEvent.change(screen.getByLabelText(/Supervisor/), { target: { value: 'Supervisor' } });
     
     // Submit form
     fireEvent.click(screen.getByRole('button', { name: 'Aceptar' }));
@@ -88,9 +85,7 @@ describe('VendedorForm Component', () => {
     await waitFor(() => {
       expect(addVendedor).toHaveBeenCalledWith({
         nombre: 'Roberto',
-        correo: 'r.amaya@medisupply.com',
-        territorio: 'Colombia',
-        supervisor: 'Supervisor'
+        email: 'r.amaya@medisupply.com'
       });
     });
   });
