@@ -120,8 +120,10 @@ export const selectFiltros = (state) => state.vendedores.filtros;
 
 // Selector para vendedores filtrados
 export const selectFilteredVendedores = (state) => {
-  const { vendedores } = state.vendedores;
-  const { territorio, equipo } = state.vendedores.filtros;
+  // Add fallbacks for potentially undefined values in state
+  const vendedores = state.vendedores?.vendedores || [];
+  const filtros = state.vendedores?.filtros || { territorio: '', equipo: '' };
+  const { territorio, equipo } = filtros;
   
   return vendedores.filter(item => {
     const territorioMatch = !territorio || item.territorio === territorio;

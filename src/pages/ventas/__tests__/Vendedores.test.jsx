@@ -4,7 +4,7 @@ import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { configureStore } from '@reduxjs/toolkit';
 import Vendedores from '../Vendedores';
-import vendedoresReducer, { 
+import { 
   fetchVendedores, 
   setFiltros, 
   clearFiltros 
@@ -67,32 +67,60 @@ vi.mock('../../../components/ui/FilterBar', () => ({
   )
 }));
 
+// Mock del componente RoleBasedComponent
+vi.mock('../../../components/auth/RoleBasedComponent', () => ({
+  default: ({ children }) => <div data-testid="mock-role-based">{children}</div>
+}));
+
 describe('Vendedores Page', () => {
   let store;
 
-  // Mock data para el estado inicial
+  // Mock data para el estado inicial con estructura completa
   const initialState = {
-    vendedores: [
-      { id: '123456', nombre: 'Edwin', territorio: 'Colombia', visitasCompletadas: 15, visitasProgramadas: 20 },
-      { id: '234567', nombre: 'Juan', territorio: 'México', visitasCompletadas: 8, visitasProgramadas: 15 }
-    ],
-    status: 'succeeded',
-    error: null,
-    filtros: {
-      territorio: '',
-      equipo: ''
+    vendedores: {
+      vendedores: [
+        { id: '123456', nombre: 'Edwin', territorio: 'Colombia', visitasCompletadas: 15, visitasProgramadas: 20 },
+        { id: '234567', nombre: 'Juan', territorio: 'México', visitasCompletadas: 8, visitasProgramadas: 15 }
+      ],
+      status: 'succeeded',
+      error: null,
+      filtros: {
+        territorio: '',
+        equipo: ''
+      }
+    },
+    auth: {
+      user: {
+        id: 'test-user',
+        email: 'test@example.com',
+        role: '1',
+        pais: '10'
+      },
+      isAuthenticated: true
     }
+  };
+
+  // Helper function to create store with different states for specific tests
+  const createTestStore = (overrideState = {}) => {
+    return configureStore({
+      reducer: {
+        vendedores: () => ({
+          ...initialState.vendedores,
+          ...overrideState.vendedores
+        }),
+        auth: () => ({
+          ...initialState.auth,
+          ...overrideState.auth
+        })
+      }
+    });
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
     
-    // Configurar store con datos de prueba
-    store = configureStore({
-      reducer: {
-        vendedores: (state = { ...initialState }) => state
-      }
-    });
+    // Default store setup
+    store = createTestStore();
     
     // Mock de las acciones
     fetchVendedores.mockImplementation(() => ({ type: 'vendedores/fetchVendedores' }));
@@ -115,18 +143,13 @@ describe('Vendedores Page', () => {
   });
 
   it('fetches vendedores on component mount', () => {
-    // Modificar el estado para simular que no se han cargado los datos
-    store = configureStore({
-      reducer: {
-        vendedores: () => ({
-          ...initialState,
-          status: 'idle',
-        })
-      }
+    // Create store with idle status to trigger fetch
+    const idleStore = createTestStore({ 
+      vendedores: { status: 'idle' }
     });
     
     render(
-      <Provider store={store}>
+      <Provider store={idleStore}>
         <BrowserRouter>
           <Vendedores />
         </BrowserRouter>
@@ -194,18 +217,13 @@ describe('Vendedores Page', () => {
   });
 
   it('shows loading state when vendedores are loading', () => {
-    // Modificar el estado para simular carga
-    store = configureStore({
-      reducer: {
-        vendedores: () => ({
-          ...initialState,
-          status: 'loading',
-        })
-      }
+    // Create store with loading status
+    const loadingStore = createTestStore({
+      vendedores: { status: 'loading' }
     });
     
     render(
-      <Provider store={store}>
+      <Provider store={loadingStore}>
         <BrowserRouter>
           <Vendedores />
         </BrowserRouter>
@@ -217,19 +235,16 @@ describe('Vendedores Page', () => {
   });
 
   it('shows error message when loading vendedores fails', () => {
-    // Modificar el estado para simular error
-    store = configureStore({
-      reducer: {
-        vendedores: () => ({
-          ...initialState,
-          status: 'failed',
-          error: 'Error al cargar vendedores',
-        })
+    // Create store with failed status and error
+    const errorStore = createTestStore({
+      vendedores: { 
+        status: 'failed',
+        error: 'Error al cargar vendedores'
       }
     });
     
     render(
-      <Provider store={store}>
+      <Provider store={errorStore}>
         <BrowserRouter>
           <Vendedores />
         </BrowserRouter>

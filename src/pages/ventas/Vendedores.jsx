@@ -46,7 +46,8 @@ function Vendedores() {
   const error = useSelector(selectVendedoresError);
   const filtros = useSelector(selectFiltros);
   const territorios = useSelector(selectTerritorios);
-  const { user } = useSelector(state => state.auth);
+  const authState = useSelector(state => state.auth || {});
+  const user = authState.user || null;
   
   // Estado local para búsqueda
   const [searchTerm, setSearchTerm] = useState('');

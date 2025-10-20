@@ -20,7 +20,7 @@ const mockVendedores = [
 const getTokenPais = () => {
   try {
     const token = localStorage.getItem('access_token');
-    if (!token) return null;
+    if (!token) return '10'; // Default to Colombia (10) if no token exists
 
     // Extraer la parte de datos del token
     const payload = token.split('.')[1];
