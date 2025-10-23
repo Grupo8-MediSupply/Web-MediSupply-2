@@ -17,6 +17,7 @@ import "./App.css";
 // Importar páginas para las nuevas rutas
 import Inventarios from "./pages/Inventarios";
 import Catalogo from "./pages/Catalogo";
+import ProductoDetalle from "./pages/ProductoDetalle"; // Añadimos la importación
 import Proveedores from "./pages/Proveedores";
 import Ordenes from "./pages/Ordenes";
 import Logisticas from "./pages/Logisticas";
@@ -112,6 +113,7 @@ function App() {
                   <Route path="/inventarios" element={<ProtectedRoute><Inventarios /></ProtectedRoute>} />
                   <Route path="/inventarios/bodegas/:id" element={<ProtectedRoute><BodegaDetalle /></ProtectedRoute>} />
                   <Route path="/catalogo" element={<ProtectedRoute><Catalogo /></ProtectedRoute>} />
+                  <Route path="/catalogo/productos/:id" element={<ProtectedRoute><ProductoDetalle /></ProtectedRoute>} />
                   <Route path="/proveedores" element={<ProtectedRoute><Proveedores /></ProtectedRoute>} />
                   <Route path="/ordenes" element={<ProtectedRoute><Ordenes /></ProtectedRoute>} />
                   <Route path="/logisticas" element={<ProtectedRoute><Logisticas /></ProtectedRoute>} />
