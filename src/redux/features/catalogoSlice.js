@@ -50,7 +50,6 @@ const initialState = {
   estados: ['ACTIVO', 'INACTIVO', 'AGOTADO'],
   filtros: {
     tipo: '',
-    nombre: ''
   },
   productoSeleccionado: null,
   loadingCargaMasiva: false,
@@ -66,8 +65,7 @@ const catalogoSlice = createSlice({
     },
     limpiarFiltros: (state) => {
       state.filtros = {
-        tipo: '',
-        nombre: ''
+        tipo: ''
       };
     },
     selectProducto: (state, action) => {

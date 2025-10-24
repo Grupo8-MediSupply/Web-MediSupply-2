@@ -66,6 +66,7 @@ function Catalogo() {
   const proveedores = useSelector(selectProveedores);
   const paises = useSelector(selectPaises);
   const estados = useSelector(selectEstados);
+  const filtros = useSelector(state => state.catalogo.filtros);
   
   // Estados locales para controlar diálogos y búsquedas
   const [searchTerm, setSearchTerm] = useState('');
@@ -170,21 +171,9 @@ function Catalogo() {
     {
       name: 'tipo',
       label: 'Tipo',
-      value: useSelector(state => state.catalogo.filtros.tipo),
+      value: filtros.tipo || '',
       options: ['MEDICAMENTO', 'INSUMO', 'DISPOSITIVO'], // Tipos disponibles en la API
       emptyOptionText: 'Todos',
-      width: '200px'
-    },
-    {
-      name: 'precio',
-      label: 'Rango de precio',
-      value: useSelector(state => state.catalogo.filtros.precio),
-      options: [
-        'Menos de 50.000',
-        '50.000 - 100.000',
-        'Más de 100.000'
-      ],
-      emptyOptionText: 'Todos los precios',
       width: '200px'
     }
   ];
