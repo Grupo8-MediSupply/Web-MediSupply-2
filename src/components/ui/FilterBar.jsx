@@ -27,14 +27,14 @@ const FilterBar = ({ filters = [], onChange }) => {
           <Select
             labelId={`${filter.name}-label`}
             name={filter.name}
-            value={filter.value}
+            value={filter.value || ''}
             label={filter.label}
             onChange={onChange}
           >
             <MenuItem value="">
               <em>{filter.emptyOptionText || 'Todos'}</em>
             </MenuItem>
-            {filter.options.map((option, i) => (
+            {filter.options?.map((option, i) => (
               <MenuItem 
                 key={option} 
                 value={filter.values ? filter.values[i] : option}

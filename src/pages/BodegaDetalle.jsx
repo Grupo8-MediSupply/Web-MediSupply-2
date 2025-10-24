@@ -15,16 +15,14 @@ import {
   Tabs,
   CircularProgress,
   Alert,
-  TextField,
-  InputAdornment
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import SearchIcon from '@mui/icons-material/Search';
 
 // Componentes personalizados
 import BreadcrumbsNav from '../components/ui/BreadcrumbsNav';
 import FilterBar from '../components/ui/FilterBar';
 import ProductosTable from '../components/inventarios/ProductosTable';
+import SearchBar from '../components/ui/SearchBar'; // Importando el componente SearchBar
 
 // Redux actions and selectors
 import {
@@ -278,31 +276,14 @@ function BodegaDetalle() {
               
               {/* Barra de búsqueda y filtros */}
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
-                {/* Barra de búsqueda personalizada, en lugar de usar el componente SearchBar */}
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                  <TextField
-                    variant="outlined"
-                    placeholder="Buscar por nombre..."
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                    sx={{ flexGrow: 1 }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                  
-                  <Button variant="contained" onClick={executeSearch}>
-                    Buscar
-                  </Button>
-                  
-                  <Button variant="outlined" onClick={clearFilters}>
-                    Limpiar filtros
-                  </Button>
-                </Box>
+                {/* Usando el componente SearchBar reutilizable en lugar de la implementación personalizada */}
+                <SearchBar
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  onSearch={executeSearch}
+                  onClear={clearFilters}
+                  placeholder="Buscar por nombre..."
+                />
                 
                 {/* Barra de filtros */}
                 <FilterBar
