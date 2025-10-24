@@ -56,6 +56,22 @@ export const createProducto = createAsyncThunk(
   }
 );
 
+// Add fetchProductoById thunk
+export const fetchProductoById = createAsyncThunk(
+  'catalogo/fetchProductoById',
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await catalogoService.getProductoById(id);
+      if (!response.success) {
+        return rejectWithValue(response.message || 'Error al obtener producto');
+      }
+      return response.result;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const initialState = {
   productos: [],
   status: 'idle',
@@ -71,7 +87,10 @@ const initialState = {
   loadingCargaMasiva: false,
   loadingNormativas: false,
   createStatus: 'idle',
-  createError: null
+  createError: null,
+  productoDetalle: null,
+  productoDetalleStatus: 'idle',
+  productoDetalleError: null
 };
 
 const catalogoSlice = createSlice({
@@ -98,6 +117,11 @@ const catalogoSlice = createSlice({
     resetCreateStatus: (state) => {
       state.createStatus = 'idle';
       state.createError = null;
+    },
+    clearProductoDetalle: (state) => {
+      state.productoDetalle = null;
+      state.productoDetalleStatus = 'idle';
+      state.productoDetalleError = null;
     }
   },
   extraReducers: (builder) => {
@@ -161,6 +185,37 @@ const catalogoSlice = createSlice({
       .addCase(createProducto.rejected, (state, action) => {
         state.createStatus = 'failed';
         state.createError = action.payload;
+      })
+      // Add fetchProductoById cases
+      .addCase(fetchProductoById.pending, (state) => {
+        state.productoDetalleStatus = 'loading';
+      })
+      .addCase(fetchProductoById.fulfilled, (state, action) => {
+        state.productoDetalleStatus = 'succeeded';
+        state.productoDetalle = {
+          ...action.payload,
+          // Add placeholder values for UI fields not in API response
+          stock: {
+            disponible: 0,
+            total: 0,
+            reservado: 0
+          },
+          condicionesAlmacenamiento: {
+            temperatura: 'No especificado',
+            humedad: 'No especificado'
+          },
+          cadenaFrio: false,
+          estado: 'ACTIVO',
+          normativa: {
+            tiene: false,
+            documentos: []
+          },
+          ubicaciones: []
+        };
+      })
+      .addCase(fetchProductoById.rejected, (state, action) => {
+        state.productoDetalleStatus = 'failed';
+        state.productoDetalleError = action.payload;
       });
   }
 });
@@ -171,7 +226,7 @@ export const {
   selectProducto, 
   clearProductoSeleccionado,
   clearNotificacion,
-  resetCreateStatus
+  clearProductoDetalle
 } = catalogoSlice.actions;
 
 // Selector para obtener datos básicos
@@ -205,5 +260,9 @@ export const selectPaises = state => state.catalogo.paises;
 // Add create status selector
 export const selectCreateStatus = state => state.catalogo.createStatus;
 export const selectCreateError = state => state.catalogo.createError;
+// Add producto detalle selectors
+export const selectProductoDetalle = (state) => state.catalogo.productoDetalle;
+export const selectProductoDetalleStatus = (state) => state.catalogo.productoDetalleStatus;
+export const selectProductoDetalleError = (state) => state.catalogo.productoDetalleError;
 
 export default catalogoSlice.reducer;

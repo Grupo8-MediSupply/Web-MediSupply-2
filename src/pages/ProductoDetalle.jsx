@@ -34,7 +34,13 @@ import WallpaperIcon from '@mui/icons-material/Wallpaper';
 import BreadcrumbsNav from '../components/ui/BreadcrumbsNav';
 
 // Redux actions y selectors
-import { fetchCatalogo, selectProducto } from '../redux/features/catalogoSlice';
+import { 
+  fetchProductoById, 
+  selectProductoDetalle, 
+  selectProductoDetalleStatus, 
+  selectProductoDetalleError,
+  clearProductoDetalle 
+} from '../redux/features/catalogoSlice';
 
 // Mapeo de códigos de países
 const PAISES = {
@@ -50,23 +56,20 @@ function ProductoDetalle() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   
-  const producto = useSelector(state => state.catalogo.productoSeleccionado);
-  const productos = useSelector(state => state.catalogo.productos);
-  const catalogoStatus = useSelector(state => state.catalogo.status);
+  const producto = useSelector(selectProductoDetalle);
+  const status = useSelector(selectProductoDetalleStatus);
+  const error = useSelector(selectProductoDetalleError);
   
   // Si no hay producto seleccionado, buscar en el catálogo por ID
   useEffect(() => {
-    if (!producto) {
-      if (catalogoStatus === 'idle') {
-        dispatch(fetchCatalogo());
-      } else if (catalogoStatus === 'succeeded') {
-        const foundProduct = productos.find(p => p.id === id);
-        if (foundProduct) {
-          dispatch(selectProducto(foundProduct));
-        }
-      }
+    if (id) {
+      dispatch(fetchProductoById(id));
     }
-  }, [producto, productos, id, catalogoStatus, dispatch]);
+    
+    return () => {
+      dispatch(clearProductoDetalle());
+    };
+  }, [id, dispatch]);
 
   // Navegación para breadcrumbs
   const breadcrumbsItems = [
@@ -85,7 +88,7 @@ function ProductoDetalle() {
   };
 
   // Estado de carga
-  if (catalogoStatus === 'loading') {
+  if (status === 'loading') {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <LinearProgress />
@@ -283,10 +286,10 @@ function ProductoDetalle() {
                         Proveedor
                       </Typography>
                       <Typography variant="body2">
-                        {producto.proveedor}
+                        {producto.proveedor?.nombre || 'No especificado'}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {PAISES[producto.pais] || producto.pais}
+                        {producto.proveedor?.pais || 'País no especificado'}
                       </Typography>
                     </Box>
                     

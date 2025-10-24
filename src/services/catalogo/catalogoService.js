@@ -9,6 +9,10 @@ const catalogoService = {
     method: 'POST',
     body: JSON.stringify(productoData),
     ...withAuth()
+  }),
+  getProductoById: (id) => apiRequest(`/producto/${id}`, {
+    method: 'GET',
+    ...withAuth()
   })
 };
 

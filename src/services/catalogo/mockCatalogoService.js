@@ -41,6 +41,28 @@ const mockCatalogoService = {
       timestamp: new Date().toISOString()
     };
     return mockResponse;
+  },
+
+  getProductoById: async (id) => {
+    await new Promise(resolve => setTimeout(resolve, 800));
+    return {
+      success: true,
+      result: {
+        id: "03700796-ef17-4923-8368-22d718c5a5cd",
+        sku: "MED-20",
+        nombre: "Paracetamol 800mg",
+        descripcion: "Analgésico y antipirético",
+        tipo: "MEDICAMENTO",
+        precio: 80000,
+        proveedor: {
+          id: "18c1a721-39f6-4f55-9b83-51cee9cfb96e",
+          nombre: "Prueba gcp2",
+          pais: "México"
+        },
+        productoPaisId: "10"
+      },
+      timestamp: new Date().toISOString()
+    };
   }
 };
 
