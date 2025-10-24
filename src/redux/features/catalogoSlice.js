@@ -1,226 +1,41 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-
-// Datos de ejemplo para el catálogo adaptados al mockup
-const fakeCatalogoData = [
-  { 
-    id: 'MED-001', 
-    nombre: 'Amoxicilina 500mg',
-    sku: 'MED-001',  // Added SKU
-    descripcion: 'Antibiótico de amplio espectro',
-    precio: 12500,
-    proveedor: 'FarmaLatam',
-    pais: 'CO',
-    stock: {
-      total: 320,
-      reservado: 40,
-      disponible: 280
-    },
-    condicionesAlmacenamiento: {
-      temperatura: '2-8°C',
-      humedad: '30-65%',
-      requiereRefrigeracion: true
-    },
-    cadenaFrio: true,
-    estado: 'Activo',
-    categoria: 'Medicamentos',
-    normativa: {
-      tiene: true,
-      documentos: [
-        { id: 1, nombre: 'Registro INVIMA', archivo: 'invima-med-001.pdf' },
-        { id: 2, nombre: 'Ficha técnica', archivo: 'ficha-med-001.pdf' }
-      ]
-    },
-    esInsumo: false,
-    ubicaciones: [
-      { bodega: 'Bodega Central', cantidad: 200 },
-      { bodega: 'Bodega Norte', cantidad: 120 }
-    ]
-  },
-  { 
-    id: 'MED-014', 
-    nombre: 'Vacuna Influenza', 
-    descripcion: 'Vacuna contra la influenza estacional',
-    precio: 58000,
-    proveedor: 'SaludGlobal',
-    pais: 'MX',
-    stock: {
-      total: 45,
-      reservado: 5,
-      disponible: 40
-    },
-    condicionesAlmacenamiento: {
-      temperatura: '2-8°C',
-      humedad: '30-65%',
-      requiereRefrigeracion: true
-    },
-    cadenaFrio: true,
-    estado: 'Activo',
-    categoria: 'Vacunas',
-    normativa: {
-      tiene: true,
-      documentos: [
-        { id: 1, nombre: 'Registro VACUNAS', archivo: 'registro-vacuna-014.pdf' },
-        { id: 2, nombre: 'Instrucciones de uso', archivo: 'instrucciones-vacuna-014.pdf' }
-      ]
-    },
-    esInsumo: false,
-    ubicaciones: [
-      { bodega: 'Bodega Sur', cantidad: 25 },
-      { bodega: 'Bodega Este', cantidad: 20 }
-    ]
-  },
-  { 
-    id: 'INS-220', 
-    nombre: 'Guantes Nitrilo M', 
-    descripcion: 'Guantes de nitrilo talla M, caja x100',
-    precio: 1900,
-    proveedor: 'MediSupply',
-    pais: 'CO',
-    stock: {
-      total: 1200,
-      reservado: 300,
-      disponible: 900
-    },
-    condicionesAlmacenamiento: {
-      temperatura: '10-30°C',
-      humedad: '40-60%',
-      requiereRefrigeracion: false
-    },
-    cadenaFrio: false,
-    estado: 'Activo',
-    categoria: 'Protección',
-    normativa: false,
-    esInsumo: true,
-    ubicaciones: [
-      { bodega: 'Bodega Central', cantidad: 600 },
-      { bodega: 'Bodega Norte', cantidad: 600 }
-    ]
-  },
-  { 
-    id: 'EQP-030', 
-    nombre: 'Monitor Signos V', 
-    descripcion: 'Monitor de signos vitales avanzado',
-    precio: 2450000,
-    proveedor: 'CareTech',
-    pais: 'PE',
-    stock: {
-      total: 12,
-      reservado: 2,
-      disponible: 10
-    },
-    condicionesAlmacenamiento: {
-      temperatura: '15-25°C',
-      humedad: '30-50%',
-      requiereRefrigeracion: false
-    },
-    cadenaFrio: false,
-    estado: 'Activo',
-    categoria: 'Equipamiento',
-    normativa: true,
-    esInsumo: false,
-    ubicaciones: [
-      { bodega: 'Bodega Equipos', cantidad: 5 },
-      { bodega: 'Bodega Sur', cantidad: 7 }
-    ]
-  },
-  { 
-    id: 'MED-099', 
-    nombre: 'Metformina 850mg', 
-    descripcion: 'Medicamento para diabetes tipo 2',
-    precio: 9800,
-    proveedor: 'MediSupply',
-    pais: 'CO',
-    stock: {
-      total: 640,
-      reservado: 80,
-      disponible: 560
-    },
-    condicionesAlmacenamiento: {
-      temperatura: '10-30°C',
-      humedad: '40-60%',
-      requiereRefrigeracion: false
-    },
-    cadenaFrio: false,
-    estado: 'Activo',
-    categoria: 'Medicamentos',
-    normativa: true,
-    esInsumo: false,
-    ubicaciones: [
-      { bodega: 'Bodega Central', cantidad: 320 },
-      { bodega: 'Bodega Norte', cantidad: 320 }
-    ]
-  },
-  { 
-    id: 'INS-045', 
-    nombre: 'Jeringa 5 ml', 
-    descripcion: 'Jeringa desechable de 5ml',
-    precio: 750,
-    proveedor: 'FarmaLatam',
-    pais: 'CL',
-    stock: {
-      total: 4600,
-      reservado: 600,
-      disponible: 4000
-    },
-    condicionesAlmacenamiento: {
-      temperatura: '10-30°C',
-      humedad: '40-60%',
-      requiereRefrigeracion: false
-    },
-    cadenaFrio: false,
-    estado: 'Activo',
-    categoria: 'Insumos',
-    normativa: false,
-    esInsumo: true,
-    ubicaciones: [
-      { bodega: 'Bodega Insumos', cantidad: 2300 },
-      { bodega: 'Bodega Sur', cantidad: 2300 }
-    ]
-  },
-];
-
-// Simulación de API
-const fetchCatalogoApi = () => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(fakeCatalogoData);
-    }, 800);
-  });
-};
+import catalogoService from '../../services/catalogo';
 
 // Acción asíncrona para obtener el catálogo
 export const fetchCatalogo = createAsyncThunk(
   'catalogo/fetchCatalogo',
-  async () => {
-    const response = await fetchCatalogoApi();
-    return response;
-  }
-);
-
-// Acción asíncrona para cargar normativas
-export const cargarNormativas = createAsyncThunk(
-  'catalogo/cargarNormativas',
   async (_, { rejectWithValue }) => {
     try {
-      // Simulación de carga de normativas
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return { success: true, message: 'Normativas cargadas correctamente' };
+      const response = await catalogoService.getProductos();
+      return response.result;
     } catch (error) {
-      return rejectWithValue('Error al cargar normativas');
+      return rejectWithValue(error.message);
     }
   }
 );
 
-// Acción asíncrona para carga masiva de productos
+// Add cargaMasiva thunk
 export const cargaMasiva = createAsyncThunk(
   'catalogo/cargaMasiva',
   async (archivo, { rejectWithValue }) => {
     try {
-      // Simulación de carga masiva
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      return { success: true, message: 'Productos cargados correctamente', count: 5 };
+      const response = await catalogoService.cargaMasiva(archivo);
+      return response;
     } catch (error) {
-      return rejectWithValue('Error en la carga masiva de productos');
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// Add cargarNormativas thunk
+export const cargarNormativas = createAsyncThunk(
+  'catalogo/cargarNormativas',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await catalogoService.cargarNormativas();
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.message);
     }
   }
 );
@@ -229,19 +44,17 @@ const initialState = {
   productos: [],
   status: 'idle',
   error: null,
-  notificacion: null,
+  categorias: ['MEDICAMENTO', 'INSUMO', 'DISPOSITIVO', 'EQUIPO'],
+  proveedores: [],
+  paises: ['CO', 'MX', 'PE', 'CL', 'AR'], // Add countries array
+  estados: ['ACTIVO', 'INACTIVO', 'AGOTADO'],
   filtros: {
-    categoria: '',
-    proveedor: '',
-    pais: '',
-    estado: '',
-    cadenaFrio: '',
-    normativa: '',
-    esInsumo: ''
+    tipo: '',
+    nombre: ''
   },
   productoSeleccionado: null,
-  loadingNormativas: false,
-  loadingCargaMasiva: false
+  loadingCargaMasiva: false,
+  loadingNormativas: false
 };
 
 const catalogoSlice = createSlice({
@@ -253,13 +66,8 @@ const catalogoSlice = createSlice({
     },
     limpiarFiltros: (state) => {
       state.filtros = {
-        categoria: '',
-        proveedor: '',
-        pais: '',
-        estado: '',
-        cadenaFrio: '',
-        normativa: '',
-        esInsumo: ''
+        tipo: '',
+        nombre: ''
       };
     },
     selectProducto: (state, action) => {
@@ -286,25 +94,7 @@ const catalogoSlice = createSlice({
         state.status = 'failed';
         state.error = action.error.message;
       })
-      // Manejar cargarNormativas
-      .addCase(cargarNormativas.pending, (state) => {
-        state.loadingNormativas = true;
-      })
-      .addCase(cargarNormativas.fulfilled, (state, action) => {
-        state.loadingNormativas = false;
-        state.notificacion = {
-          tipo: 'success',
-          mensaje: action.payload.message
-        };
-      })
-      .addCase(cargarNormativas.rejected, (state, action) => {
-        state.loadingNormativas = false;
-        state.notificacion = {
-          tipo: 'error',
-          mensaje: action.payload || 'Error al cargar normativas'
-        };
-      })
-      // Manejar cargaMasiva
+      // Add cargaMasiva cases
       .addCase(cargaMasiva.pending, (state) => {
         state.loadingCargaMasiva = true;
       })
@@ -312,14 +102,32 @@ const catalogoSlice = createSlice({
         state.loadingCargaMasiva = false;
         state.notificacion = {
           tipo: 'success',
-          mensaje: `${action.payload.message}: ${action.payload.count} productos`
+          mensaje: `Se cargaron ${action.payload.result.count} productos correctamente`
         };
       })
       .addCase(cargaMasiva.rejected, (state, action) => {
         state.loadingCargaMasiva = false;
         state.notificacion = {
           tipo: 'error',
-          mensaje: action.payload || 'Error en la carga masiva'
+          mensaje: action.payload || 'Error al cargar los productos'
+        };
+      })
+      // Add cargarNormativas cases
+      .addCase(cargarNormativas.pending, (state) => {
+        state.loadingNormativas = true;
+      })
+      .addCase(cargarNormativas.fulfilled, (state, action) => {
+        state.loadingNormativas = false;
+        state.notificacion = {
+          tipo: 'success',
+          mensaje: 'Normativas cargadas correctamente'
+        };
+      })
+      .addCase(cargarNormativas.rejected, (state, action) => {
+        state.loadingNormativas = false;
+        state.notificacion = {
+          tipo: 'error',
+          mensaje: action.payload || 'Error al cargar normativas'
         };
       });
   }
@@ -338,48 +146,28 @@ export const selectCatalogoStatus = state => state.catalogo.status;
 export const selectCatalogoError = state => state.catalogo.error;
 export const selectNotificacion = state => state.catalogo.notificacion;
 
-// Selector para filtrar productos
+// Selectores para obtener opciones únicas para los filtros
+export const selectTipos = state => {
+  return [...new Set(state.catalogo.productos.map(p => p.tipo))];
+};
+
+export const selectCategorias = state => state.catalogo.categorias;
+export const selectProveedores = state => state.catalogo.proveedores;
+export const selectProductos = state => state.catalogo.productos;
+
 export const selectFilteredProductos = (state) => {
   const { productos, filtros } = state.catalogo;
   return productos.filter(producto => {
-    const categoriaMatch = !filtros.categoria || producto.categoria === filtros.categoria;
-    const proveedorMatch = !filtros.proveedor || producto.proveedor === filtros.proveedor;
-    const paisMatch = !filtros.pais || producto.pais === filtros.pais;
-    const estadoMatch = !filtros.estado || producto.estado === filtros.estado;
-    
-    // Para cadena de frío, normativa y esInsumo, comparamos con strings ya que vienen de un select
-    const cadenaFrioMatch = filtros.cadenaFrio === '' || 
-      (filtros.cadenaFrio === 'true' && producto.cadenaFrio) || 
-      (filtros.cadenaFrio === 'false' && !producto.cadenaFrio);
-    
-    const normativaMatch = filtros.normativa === '' || 
-      (filtros.normativa === 'true' && producto.normativa) || 
-      (filtros.normativa === 'false' && !producto.normativa);
-    
-    const insumoMatch = filtros.esInsumo === '' || 
-      (filtros.esInsumo === 'true' && producto.esInsumo) || 
-      (filtros.esInsumo === 'false' && !producto.esInsumo);
-    
-    return categoriaMatch && proveedorMatch && paisMatch && 
-           estadoMatch && cadenaFrioMatch && normativaMatch && insumoMatch;
+    const tipoMatch = !filtros.tipo || producto.tipo === filtros.tipo;
+    const nombreMatch = !filtros.nombre || 
+      producto.nombre.toLowerCase().includes(filtros.nombre.toLowerCase());
+    return tipoMatch && nombreMatch;
   });
 };
 
-// Selectores para obtener opciones únicas para los filtros
-export const selectCategorias = state => {
-  return [...new Set(state.catalogo.productos.map(p => p.categoria))];
-};
-
-export const selectProveedores = state => {
-  return [...new Set(state.catalogo.productos.map(p => p.proveedor))];
-};
-
-export const selectPaises = state => {
-  return [...new Set(state.catalogo.productos.map(p => p.pais))];
-};
-
-export const selectEstados = state => {
-  return [...new Set(state.catalogo.productos.map(p => p.estado))];
-};
+// Add estados selector
+export const selectEstados = state => state.catalogo.estados;
+// Add paises selector
+export const selectPaises = state => state.catalogo.paises;
 
 export default catalogoSlice.reducer;

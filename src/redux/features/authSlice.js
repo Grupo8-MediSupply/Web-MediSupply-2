@@ -6,24 +6,17 @@ import { fetchConfiguracion } from './configuracionSlice';
 // Acción asíncrona para el login
 export const login = createAsyncThunk(
   'auth/login',
-  async (credentials, { rejectWithValue, dispatch }) => {
-    try {
-      const response = await api.auth.login({
-        email: credentials.username,
-        password: credentials.password
-      });
-      
-      if (!response.success) {
-        return rejectWithValue(response.message || 'Error en el inicio de sesión');
-      }
-
-      // Store token in localStorage
+  async (credentials, { dispatch }) => {
+    const response = await api.auth.login({
+      email: credentials.username,
+      password: credentials.password
+    });
+    
+    if (response.success) {
       localStorage.setItem('access_token', response.result.access_token);
-
-      // Decode token and extract user info
       const userData = jwtDecode(response.result.access_token);
       
-      // After successful login, fetch configuration
+      // Fetch configuration based on user's country
       await dispatch(fetchConfiguracion()).unwrap();
       
       return {
@@ -35,14 +28,9 @@ export const login = createAsyncThunk(
           pais: userData.pais || ''
         }
       };
-    } catch (error) {
-      console.error('Login error:', error);
-      return rejectWithValue(
-        error.message || 
-        (error.response?.message) || 
-        'Error en el inicio de sesión'
-      );
     }
+    
+    throw new Error(response.message || 'Error en el inicio de sesión');
   }
 );
 

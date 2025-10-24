@@ -1,11 +1,23 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { jwtDecode } from 'jwt-decode';
 import configuracionService from '../../services/configuracion';
 
 export const fetchConfiguracion = createAsyncThunk(
   'configuracion/fetchConfiguracion',
   async (_, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        return rejectWithValue('No hay token disponible');
+      }
+
+      const userData = jwtDecode(token);
       const response = await configuracionService.getConfiguracion();
+      
+      if (!response.success) {
+        return rejectWithValue(response.message);
+      }
+
       return response.result;
     } catch (error) {
       return rejectWithValue(error.message);
