@@ -32,6 +32,7 @@ import {
   clearFiltros,
   selectTerritorios
 } from '../../redux/features/vendedoresSlice';
+import { fetchConfiguracion } from '../../redux/features/configuracionSlice';
 
 // Navegación para el breadcrumbs
 const breadcrumbsItems = [
@@ -76,10 +77,11 @@ function Vendedores() {
     }
   ];
 
-  // Cargar vendedores al montar el componente
+  // Cargar vendedores y configuración al montar el componente
   useEffect(() => {
     if (status === 'idle') {
       dispatch(fetchVendedores());
+      dispatch(fetchConfiguracion());
     }
   }, [status, dispatch]);
 

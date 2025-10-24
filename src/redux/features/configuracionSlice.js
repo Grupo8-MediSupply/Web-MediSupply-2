@@ -60,8 +60,8 @@ const configuracionSlice = createSlice({
 export const { clearConfiguracion } = configuracionSlice.actions;
 
 // Selectores
-export const selectPaisConfig = state => state.configuracion.pais;
-export const selectTiposIdentificacion = state => state.configuracion.tiposIdentificacion;
-export const selectConfigStatus = state => state.configuracion.status;
+export const selectPaisConfig = state => state.configuracion?.pais || null;
+export const selectTiposIdentificacion = state => state.configuracion?.tiposIdentificacion || [];
+export const selectConfigStatus = state => state.configuracion?.status || 'idle';
 
 export default configuracionSlice.reducer;

@@ -45,10 +45,10 @@ const mockVendedoresService = {
     await new Promise(resolve => setTimeout(resolve, 500)); // Simular latencia
 
     // Validar datos requeridos
-    if (!vendedorData.nombre || !vendedorData.email) {
+    if (!vendedorData.nombre || !vendedorData.email || !vendedorData.identificacion || !vendedorData.tipoIdentificacion) {
       return {
         success: false,
-        message: 'Nombre y email son campos requeridos',
+        message: 'Todos los campos son requeridos',
         status: 400
       };
     }

@@ -9,19 +9,38 @@ import {
   Button,
   Box,
   CircularProgress,
-  Alert
+  Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormHelperText
 } from '@mui/material';
 import { addVendedor, selectAddVendedorStatus, resetAddStatus } from '../../redux/features/vendedoresSlice';
+import { 
+  selectTiposIdentificacion, 
+  selectConfigStatus,
+  fetchConfiguracion
+} from '../../redux/features/configuracionSlice';
 
 const VendedorForm = ({ open, onClose }) => {
   const dispatch = useDispatch();
   const addStatus = useSelector(selectAddVendedorStatus);
-  
+  const configStatus = useSelector(selectConfigStatus);
+  const tiposIdentificacion = useSelector(selectTiposIdentificacion);
+
+  useEffect(() => {
+    if (open && configStatus === 'idle') {
+      dispatch(fetchConfiguracion());
+    }
+  }, [open, configStatus, dispatch]);
+
   // Estado del formulario
   const [formData, setFormData] = useState({
     nombre: '',
     email: '', // Cambiado de correo a email para coincidir con API
-    supervisor: ''
+    identificacion: '',
+    tipoIdentificacion: ''
   });
   
   // Estado de errores de validación
@@ -33,7 +52,8 @@ const VendedorForm = ({ open, onClose }) => {
       setFormData({
         nombre: '',
         email: '',
-        supervisor: ''
+        identificacion: '',
+        tipoIdentificacion: ''
       });
       setErrors({});
     }
@@ -85,8 +105,14 @@ const VendedorForm = ({ open, onClose }) => {
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'El email no es válido';
     }
-    
-    // Supervisor puede ser opcional
+
+    if (!formData.identificacion.trim()) {
+      newErrors.identificacion = 'La identificación es obligatoria';
+    }
+
+    if (!formData.tipoIdentificacion) {
+      newErrors.tipoIdentificacion = 'El tipo de identificación es obligatorio';
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -100,17 +126,27 @@ const VendedorForm = ({ open, onClose }) => {
       // Enviar solo los campos requeridos por la API
       const vendedorData = {
         nombre: formData.nombre,
-        email: formData.email
+        email: formData.email,
+        identificacion: formData.identificacion,
+        tipoIdentificacion: Number(formData.tipoIdentificacion)
       };
       dispatch(addVendedor(vendedorData));
     }
   };
   
+  const isLoading = addStatus === 'loading' || configStatus === 'loading';
+
   return (
-    <Dialog open={open} onClose={addStatus !== 'loading' ? onClose : undefined} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={!isLoading ? onClose : undefined} maxWidth="sm" fullWidth>
       <form onSubmit={handleSubmit}>
         <DialogTitle>Nuevo Vendedor</DialogTitle>
         <DialogContent dividers>
+          {isLoading && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+              <CircularProgress />
+            </Box>
+          )}
+          
           {addStatus === 'failed' && (
             <Alert severity="error" sx={{ mb: 2 }}>
               Error al agregar el vendedor. Por favor intente nuevamente.
@@ -133,7 +169,7 @@ const VendedorForm = ({ open, onClose }) => {
               onChange={handleChange}
               error={!!errors.nombre}
               helperText={errors.nombre}
-              disabled={addStatus === 'loading'}
+              disabled={isLoading}
             />
             
             <TextField
@@ -144,17 +180,45 @@ const VendedorForm = ({ open, onClose }) => {
               onChange={handleChange}
               error={!!errors.email}
               helperText={errors.email}
-              disabled={addStatus === 'loading'}
+              disabled={isLoading}
               type="email"
             />
             
-            <TextField
-              name="supervisor"
-              label="Supervisor (opcional)"
+            <FormControl
               fullWidth
-              value={formData.supervisor}
+              error={!!errors.tipoIdentificacion}
+              disabled={isLoading || configStatus !== 'succeeded'}
+            >
+              <InputLabel>Tipo de Identificación</InputLabel>
+              <Select
+                name="tipoIdentificacion"
+                value={formData.tipoIdentificacion}
+                onChange={handleChange}
+                label="Tipo de Identificación"
+              >
+                <MenuItem value="">
+                  <em>Seleccione un tipo</em>
+                </MenuItem>
+                {tiposIdentificacion.map((tipo) => (
+                  <MenuItem key={tipo.id} value={tipo.id}>
+                    {tipo.nombre}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.tipoIdentificacion && (
+                <FormHelperText>{errors.tipoIdentificacion}</FormHelperText>
+              )}
+            </FormControl>
+            
+            <TextField
+              name="identificacion"
+              label="Número de Identificación"
+              fullWidth
+              value={formData.identificacion}
               onChange={handleChange}
-              disabled={addStatus === 'loading'}
+              error={!!errors.identificacion}
+              helperText={errors.identificacion}
+              disabled={isLoading}
             />
           </Box>
         </DialogContent>
@@ -163,7 +227,7 @@ const VendedorForm = ({ open, onClose }) => {
           <Button 
             onClick={onClose} 
             color="inherit" 
-            disabled={addStatus === 'loading'}
+            disabled={isLoading}
           >
             Cancelar
           </Button>
@@ -171,8 +235,8 @@ const VendedorForm = ({ open, onClose }) => {
             type="submit" 
             variant="contained" 
             color="primary" 
-            disabled={addStatus === 'loading'}
-            startIcon={addStatus === 'loading' ? <CircularProgress size={20} /> : null}
+            disabled={isLoading || configStatus !== 'succeeded'}
+            startIcon={isLoading ? <CircularProgress size={20} /> : null}
           >
             Aceptar
           </Button>
