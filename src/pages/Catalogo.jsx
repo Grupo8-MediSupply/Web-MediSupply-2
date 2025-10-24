@@ -255,7 +255,13 @@ function Catalogo() {
         </Typography>
         
         {/* Botones de acción */}
-        <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid
+          container
+          spacing={2}
+          justifyContent="flex-end"   // Alinea los botones a la derecha
+          alignItems="center"
+          sx={{ mb: 3 }}
+        >
           <Grid item>
             <Button
               variant="contained"
