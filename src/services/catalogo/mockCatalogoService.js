@@ -1,7 +1,6 @@
 const mockCatalogoService = {
   getProductos: async () => {
     await new Promise(resolve => setTimeout(resolve, 800));
-    
     return {
       success: true,
       result: [
@@ -22,6 +21,21 @@ const mockCatalogoService = {
           precio: 20000
         }
       ],
+      timestamp: new Date().toISOString()
+    };
+  },
+
+  createProducto: async (productoData) => {
+    await new Promise(resolve => setTimeout(resolve, 800));
+    return {
+      success: true,
+      result: {
+        sku: productoData.sku,
+        nombre: productoData.nombre,
+        descripcion: productoData.descripcion,
+        tipo: productoData.tipo,
+        precio: productoData.precioVenta
+      },
       timestamp: new Date().toISOString()
     };
   }

@@ -40,6 +40,22 @@ export const cargarNormativas = createAsyncThunk(
   }
 );
 
+// Add createProducto thunk
+export const createProducto = createAsyncThunk(
+  'catalogo/createProducto',
+  async (productoData, { rejectWithValue }) => {
+    try {
+      const response = await catalogoService.createProducto(productoData);
+      if (!response.success) {
+        return rejectWithValue(response.message || 'Error al crear producto');
+      }
+      return response.result;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const initialState = {
   productos: [],
   status: 'idle',
@@ -53,7 +69,9 @@ const initialState = {
   },
   productoSeleccionado: null,
   loadingCargaMasiva: false,
-  loadingNormativas: false
+  loadingNormativas: false,
+  createStatus: 'idle',
+  createError: null
 };
 
 const catalogoSlice = createSlice({
@@ -76,6 +94,10 @@ const catalogoSlice = createSlice({
     },
     clearNotificacion: (state) => {
       state.notificacion = null;
+    },
+    resetCreateStatus: (state) => {
+      state.createStatus = 'idle';
+      state.createError = null;
     }
   },
   extraReducers: (builder) => {
@@ -127,6 +149,18 @@ const catalogoSlice = createSlice({
           tipo: 'error',
           mensaje: action.payload || 'Error al cargar normativas'
         };
+      })
+      // Add createProducto cases
+      .addCase(createProducto.pending, (state) => {
+        state.createStatus = 'loading';
+      })
+      .addCase(createProducto.fulfilled, (state, action) => {
+        state.createStatus = 'succeeded';
+        state.productos.push(action.payload);
+      })
+      .addCase(createProducto.rejected, (state, action) => {
+        state.createStatus = 'failed';
+        state.createError = action.payload;
       });
   }
 });
@@ -136,7 +170,8 @@ export const {
   limpiarFiltros, 
   selectProducto, 
   clearProductoSeleccionado,
-  clearNotificacion
+  clearNotificacion,
+  resetCreateStatus
 } = catalogoSlice.actions;
 
 // Selector para obtener datos básicos
@@ -167,5 +202,8 @@ export const selectFilteredProductos = (state) => {
 export const selectEstados = state => state.catalogo.estados;
 // Add paises selector
 export const selectPaises = state => state.catalogo.paises;
+// Add create status selector
+export const selectCreateStatus = state => state.catalogo.createStatus;
+export const selectCreateError = state => state.catalogo.createError;
 
 export default catalogoSlice.reducer;

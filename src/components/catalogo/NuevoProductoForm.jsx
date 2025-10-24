@@ -7,18 +7,12 @@ import {
   DialogActions,
   Button,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormControlLabel,
-  Checkbox,
   Grid,
   Typography,
   InputAdornment
 } from '@mui/material';
-import { useSelector } from 'react-redux';
-import { selectCategorias, selectProveedores } from '../../redux/features/catalogoSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { createProducto, selectCreateStatus } from '../../redux/features/catalogoSlice';
 
 const PAISES = [
   { code: 'CO', name: 'Colombia' },
@@ -29,20 +23,21 @@ const PAISES = [
 ];
 
 function NuevoProductoForm({ open, onClose }) {
-  const categorias = useSelector(selectCategorias);
-  const proveedores = useSelector(selectProveedores);
-
+  const dispatch = useDispatch();
+  const createStatus = useSelector(selectCreateStatus);
+  
   const [formData, setFormData] = useState({
+    sku: '',
     nombre: '',
     descripcion: '',
-    precio: '',
-    categoria: '',
-    proveedor: '',
-    pais: '',
-    stock: '',
-    cadenaFrio: false,
-    normativa: false,
-    esInsumo: false
+    tipo: 'MEDICAMENTO',
+    precioVenta: '',
+    medicamento: {
+      principioActivo: '',
+      concentracion: '',
+      formaFarmaceutica: ''
+    },
+    proveedorId: ''
   });
 
   const handleChange = (e) => {
@@ -53,19 +48,24 @@ function NuevoProductoForm({ open, onClose }) {
     });
   };
 
-  const handleCheckboxChange = (e) => {
-    const { name, checked } = e.target;
+  const handleNestedChange = (e) => {
+    const { name, value } = e.target;
+    const [field, subfield] = name.split('.');
     setFormData({
       ...formData,
-      [name]: checked
+      [field]: {
+        ...formData[field],
+        [subfield]: value
+      }
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Aquí se implementaría la lógica para guardar el producto
-    console.log('Datos del producto a guardar:', formData);
-    onClose();
+    const response = await dispatch(createProducto(formData));
+    if (response.meta.requestStatus === 'fulfilled') {
+      onClose();
+    }
   };
 
   return (
@@ -80,6 +80,16 @@ function NuevoProductoForm({ open, onClose }) {
           <Grid container spacing={2}>
             {/* Primera columna */}
             <Grid item xs={12} md={6}>
+              <TextField
+                name="sku"
+                label="SKU"
+                value={formData.sku}
+                onChange={handleChange}
+                fullWidth
+                required
+                margin="normal"
+              />
+              
               <TextField
                 name="nombre"
                 label="Nombre del producto"
@@ -102,10 +112,10 @@ function NuevoProductoForm({ open, onClose }) {
               />
               
               <TextField
-                name="precio"
-                label="Precio"
+                name="precioVenta"
+                label="Precio de venta"
                 type="number"
-                value={formData.precio}
+                value={formData.precioVenta}
                 onChange={handleChange}
                 fullWidth
                 required
@@ -114,107 +124,51 @@ function NuevoProductoForm({ open, onClose }) {
                   startAdornment: <InputAdornment position="start">$</InputAdornment>,
                 }}
               />
-              
-              <FormControl fullWidth margin="normal" required>
-                <InputLabel>Categoría</InputLabel>
-                <Select
-                  name="categoria"
-                  value={formData.categoria}
-                  onChange={handleChange}
-                  label="Categoría"
-                >
-                  {categorias.map(cat => (
-                    <MenuItem key={cat} value={cat}>{cat}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
             </Grid>
             
             {/* Segunda columna */}
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth margin="normal" required>
-                <InputLabel>Proveedor</InputLabel>
-                <Select
-                  name="proveedor"
-                  value={formData.proveedor}
-                  onChange={handleChange}
-                  label="Proveedor"
-                >
-                  {proveedores.map(prov => (
-                    <MenuItem key={prov} value={prov}>{prov}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              
-              <FormControl fullWidth margin="normal" required>
-                <InputLabel>País</InputLabel>
-                <Select
-                  name="pais"
-                  value={formData.pais}
-                  onChange={handleChange}
-                  label="País"
-                >
-                  {PAISES.map(pais => (
-                    <MenuItem key={pais.code} value={pais.code}>{pais.name}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              
               <TextField
-                name="stock"
-                label="Stock inicial"
-                type="number"
-                value={formData.stock}
-                onChange={handleChange}
+                name="medicamento.principioActivo"
+                label="Principio Activo"
+                value={formData.medicamento.principioActivo}
+                onChange={handleNestedChange}
                 fullWidth
                 required
                 margin="normal"
               />
               
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                <Grid item xs={4}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        name="cadenaFrio"
-                        checked={formData.cadenaFrio}
-                        onChange={handleCheckboxChange}
-                      />
-                    }
-                    label="Cadena de frío"
-                  />
-                </Grid>
-                <Grid item xs={4}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        name="normativa"
-                        checked={formData.normativa}
-                        onChange={handleCheckboxChange}
-                      />
-                    }
-                    label="Normativa"
-                  />
-                </Grid>
-                <Grid item xs={4}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        name="esInsumo"
-                        checked={formData.esInsumo}
-                        onChange={handleCheckboxChange}
-                      />
-                    }
-                    label="Es insumo"
-                  />
-                </Grid>
-              </Grid>
+              <TextField
+                name="medicamento.concentracion"
+                label="Concentración"
+                value={formData.medicamento.concentracion}
+                onChange={handleNestedChange}
+                fullWidth
+                required
+                margin="normal"
+              />
+              
+              <TextField
+                name="medicamento.formaFarmaceutica"
+                label="Forma Farmacéutica"
+                value={formData.medicamento.formaFarmaceutica}
+                onChange={handleNestedChange}
+                fullWidth
+                required
+                margin="normal"
+              />
             </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Cancelar</Button>
-          <Button type="submit" variant="contained">Guardar</Button>
+          <Button 
+            type="submit" 
+            variant="contained"
+            disabled={createStatus === 'loading'}
+          >
+            {createStatus === 'loading' ? 'Guardando...' : 'Guardar'}
+          </Button>
         </DialogActions>
       </form>
     </Dialog>
