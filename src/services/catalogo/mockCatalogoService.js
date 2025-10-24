@@ -27,17 +27,20 @@ const mockCatalogoService = {
 
   createProducto: async (productoData) => {
     await new Promise(resolve => setTimeout(resolve, 800));
-    return {
+    // Asegurarse de que el mock retorne la misma estructura que la API real
+    const mockResponse = {
       success: true,
       result: {
         sku: productoData.sku,
         nombre: productoData.nombre,
         descripcion: productoData.descripcion,
         tipo: productoData.tipo,
-        precio: productoData.precioVenta
+        precio: productoData.precioVenta,
+        proveedorId: productoData.proveedorId
       },
       timestamp: new Date().toISOString()
     };
+    return mockResponse;
   }
 };
 

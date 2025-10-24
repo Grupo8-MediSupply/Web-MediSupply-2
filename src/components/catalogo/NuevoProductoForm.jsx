@@ -14,14 +14,6 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { createProducto, selectCreateStatus } from '../../redux/features/catalogoSlice';
 
-const PAISES = [
-  { code: 'CO', name: 'Colombia' },
-  { code: 'MX', name: 'México' },
-  { code: 'PE', name: 'Perú' },
-  { code: 'CL', name: 'Chile' },
-  { code: 'AR', name: 'Argentina' }
-];
-
 function NuevoProductoForm({ open, onClose }) {
   const dispatch = useDispatch();
   const createStatus = useSelector(selectCreateStatus);
@@ -30,14 +22,14 @@ function NuevoProductoForm({ open, onClose }) {
     sku: '',
     nombre: '',
     descripcion: '',
-    tipo: 'MEDICAMENTO',
+    tipo: 'medicamento',
     precioVenta: '',
     medicamento: {
       principioActivo: '',
       concentracion: '',
       formaFarmaceutica: ''
     },
-    proveedorId: ''
+    proveedorId: '18c1a721-39f6-4f55-9b83-51cee9cfb96e' // Valor por defecto para pruebas
   });
 
   const handleChange = (e) => {
