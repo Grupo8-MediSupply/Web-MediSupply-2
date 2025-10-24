@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Container,
   Typography,
@@ -11,6 +11,11 @@ import {
   Chip,
   Divider,
   Alert,
+  Card,
+  CardContent,
+  IconButton,
+  Stack,
+  LinearProgress,
   Table,
   TableBody,
   TableCell,
@@ -20,6 +25,10 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import InventoryIcon from '@mui/icons-material/Inventory';
+import ShareIcon from '@mui/icons-material/Share';
+import DownloadIcon from '@mui/icons-material/Download';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import WallpaperIcon from '@mui/icons-material/Wallpaper';
 
 // Componentes personalizados
 import BreadcrumbsNav from '../components/ui/BreadcrumbsNav';
@@ -42,37 +51,47 @@ function ProductoDetalle() {
   const dispatch = useDispatch();
   
   const producto = useSelector(state => state.catalogo.productoSeleccionado);
+  const productos = useSelector(state => state.catalogo.productos);
   const catalogoStatus = useSelector(state => state.catalogo.status);
   
   // Si no hay producto seleccionado, buscar en el catálogo por ID
   useEffect(() => {
-    if (!producto && catalogoStatus !== 'loading') {
-      // Primero cargar el catálogo si no está cargado
+    if (!producto) {
       if (catalogoStatus === 'idle') {
-        dispatch(fetchCatalogo())
-          .then(action => {
-            // Una vez cargado el catálogo, buscar el producto por ID
-            const foundProduct = action.payload.find(p => p.id === id);
-            if (foundProduct) {
-              dispatch(selectProducto(foundProduct));
-            }
-          });
+        dispatch(fetchCatalogo());
       } else if (catalogoStatus === 'succeeded') {
-        // Si el catálogo ya está cargado, buscar el producto
-        const productos = useSelector(state => state.catalogo.productos);
         const foundProduct = productos.find(p => p.id === id);
         if (foundProduct) {
           dispatch(selectProducto(foundProduct));
         }
       }
     }
-  }, [producto, id, catalogoStatus, dispatch]);
+  }, [producto, productos, id, catalogoStatus, dispatch]);
 
   // Navegación para breadcrumbs
   const breadcrumbsItems = [
     { label: 'Inicio', path: '/' },
     { label: 'Catálogo', path: '/catalogo' }
   ];
+
+  // Función para formatear precios
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
+  };
+
+  // Estado de carga
+  if (catalogoStatus === 'loading') {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <LinearProgress />
+      </Container>
+    );
+  }
 
   // Si no hay producto, mostrar mensaje
   if (!producto) {
@@ -88,161 +107,264 @@ function ProductoDetalle() {
         </Button>
         
         <Alert severity="info">
-          Cargando producto... Si no se muestra en unos segundos, el producto podría no existir.
+          El producto no se encuentra disponible.
         </Alert>
       </Container>
     );
   }
 
-  // Función para formatear precios
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'decimal'
-    }).format(value);
-  };
-
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       {/* Navegación de migas de pan */}
-      <BreadcrumbsNav
-        items={breadcrumbsItems}
-        currentPage={producto.nombre}
-      />
-      
-      {/* Botón para volver */}
-      <Button
-        component={RouterLink}
-        to="/catalogo"
-        startIcon={<ArrowBackIcon />}
-        sx={{ mb: 3 }}
-      >
-        Volver al Catálogo
-      </Button>
+      <BreadcrumbsNav items={breadcrumbsItems} currentPage={producto.nombre} />
       
       <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
-          <Box>
-            <Typography variant="h4" component="h1" gutterBottom>
-              {producto.nombre}
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary">
-              {producto.id} - {producto.categoria}
-            </Typography>
-          </Box>
-          
-          <Box>
-            <Button
-              variant="outlined"
-              startIcon={<EditIcon />}
-              sx={{ mr: 1 }}
-            >
-              Editar
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<InventoryIcon />}
-            >
-              Ver en inventario
-            </Button>
-          </Box>
-        </Box>
-        
-        <Divider sx={{ mb: 3 }} />
-        
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6" gutterBottom>
-              Información del producto
-            </Typography>
-            
-            <TableContainer component={Paper} variant="outlined">
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell component="th" scope="row" width="40%">Descripción</TableCell>
-                    <TableCell>{producto.descripcion}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell component="th" scope="row">Precio</TableCell>
-                    <TableCell>{formatCurrency(producto.precio)}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell component="th" scope="row">Proveedor</TableCell>
-                    <TableCell>{producto.proveedor}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell component="th" scope="row">País</TableCell>
-                    <TableCell>{PAISES[producto.pais] || producto.pais}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell component="th" scope="row">Stock actual</TableCell>
-                    <TableCell>{producto.stock} unidades</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
+        {/* Sección de encabezado */}
+        <Box sx={{ mb: 4 }}>
+          <Grid container spacing={3}>
+            {/* Columna izquierda - Marcador de posición de imagen */}
+            <Grid item xs={12} md={4}>
+              <Box
+                sx={{
+                  height: 300,
+                  backgroundColor: 'grey.100',
+                  borderRadius: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: 'column',
+                  border: '1px dashed',
+                  borderColor: 'grey.300'
+                }}
+              >
+                <WallpaperIcon sx={{ fontSize: 60, color: 'grey.400' }} />
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  Imagen del producto
+                </Typography>
+              </Box>
+            </Grid>
+
+            {/* Columna derecha - Información básica */}
+            <Grid item xs={12} md={8}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                <Box>
+                  <Typography variant="h4" component="h1" gutterBottom>
+                    {producto.nombre}
+                  </Typography>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Chip 
+                      label={`SKU: ${producto.sku}`}
+                      variant="outlined"
+                      size="small"
+                    />
+                    <Typography variant="body2" color="text.secondary">
+                      {producto.categoria}
+                    </Typography>
+                  </Stack>
+                </Box>
+                
+                <Stack direction="row" spacing={1}>
+                  <IconButton color="primary" size="small" title="Compartir">
+                    <ShareIcon />
+                  </IconButton>
+                  <IconButton color="primary" size="small" title="Descargar ficha">
+                    <DownloadIcon />
+                  </IconButton>
+                  <Button
+                    variant="contained"
+                    startIcon={<EditIcon />}
+                  >
+                    Editar producto
+                  </Button>
+                </Stack>
+              </Box>
+
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="body1" paragraph>
+                  {producto.descripcion}
+                </Typography>
+              </Box>
+
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        Precio base
+                      </Typography>
+                      <Typography variant="h4" color="primary">
+                        {formatCurrency(producto.precio)}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Precio sin IVA
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <Card variant="outlined">
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        Stock actual
+                      </Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                        <Typography variant="h4">
+                          {producto.stock.disponible}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          de {producto.stock.total} unidades
+                        </Typography>
+                      </Box>
+                      <Typography variant="caption" color="warning.main">
+                        {producto.stock.reservado} unidades reservadas
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            </Grid>
           </Grid>
-          
-          <Grid item xs={12} md={6}>
+        </Box>
+
+        <Divider sx={{ my: 4 }} />
+
+        {/* Sección de información detallada */}
+        <Grid container spacing={4}>
+          {/* Columna izquierda - Especificaciones */}
+          <Grid item xs={12} md={8}>
             <Typography variant="h6" gutterBottom>
               Especificaciones
             </Typography>
             
-            <TableContainer component={Paper} variant="outlined">
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell component="th" scope="row" width="40%">Categoría</TableCell>
-                    <TableCell>{producto.categoria}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell component="th" scope="row">Cadena de frío</TableCell>
-                    <TableCell>
+            <Card variant="outlined" sx={{ mb: 3 }}>
+              <CardContent>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                        Condiciones de almacenamiento
+                      </Typography>
+                      <Stack spacing={1}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary">
+                            Temperatura
+                          </Typography>
+                          <Typography variant="body2">
+                            {producto.condicionesAlmacenamiento.temperatura}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary">
+                            Humedad relativa
+                          </Typography>
+                          <Typography variant="body2">
+                            {producto.condicionesAlmacenamiento.humedad}
+                          </Typography>
+                        </Box>
+                      </Stack>
+                    </Box>
+                    
+                    <Box>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                        Cadena de frío
+                      </Typography>
                       <Chip 
-                        label={producto.cadenaFrio ? "Cumple" : "No requiere"} 
+                        label={producto.cadenaFrio ? "Requiere refrigeración" : "No requiere"} 
                         color={producto.cadenaFrio ? "primary" : "default"}
                         size="small"
                       />
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell component="th" scope="row">Normativa</TableCell>
-                    <TableCell>
+                    </Box>
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                        Proveedor
+                      </Typography>
+                      <Typography variant="body2">
+                        {producto.proveedor}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {PAISES[producto.pais] || producto.pais}
+                      </Typography>
+                    </Box>
+                    
+                    <Box>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                        Estado del producto
+                      </Typography>
                       <Chip 
-                        label={producto.normativa ? "Con normativa" : "Sin normativa"} 
-                        color={producto.normativa ? "secondary" : "default"}
+                        label={producto.estado}
+                        color={producto.estado === 'Activo' ? 'success' : 'error'}
                         size="small"
                       />
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell component="th" scope="row">Tipo</TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={producto.esInsumo ? "Insumo" : "Producto"} 
-                        color={producto.esInsumo ? "info" : "success"}
-                        size="small"
-                      />
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell component="th" scope="row">Estado</TableCell>
-                    <TableCell>{producto.estado}</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
-            
-            {producto.normativa && (
-              <Box sx={{ mt: 3 }}>
-                <Button 
-                  variant="outlined" 
-                  color="secondary"
-                >
-                  Ver documentación normativa
-                </Button>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+
+            {/* Sección de documentación normativa */}
+            {producto.normativa.tiene && (
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  Documentación normativa
+                </Typography>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Stack spacing={2}>
+                      {producto.normativa.documentos.map(doc => (
+                        <Box key={doc.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography variant="body2">{doc.nombre}</Typography>
+                          <Button
+                            size="small"
+                            startIcon={<DownloadIcon />}
+                            onClick={() => console.log(`Downloading ${doc.archivo}`)}
+                          >
+                            Descargar
+                          </Button>
+                        </Box>
+                      ))}
+                    </Stack>
+                  </CardContent>
+                </Card>
               </Box>
             )}
+          </Grid>
+
+          {/* Columna derecha - Detalles de inventario */}
+          <Grid item xs={12} md={4}>
+            <Typography variant="h6" gutterBottom>
+              Ubicaciones
+            </Typography>
+            
+            <Card variant="outlined">
+              <CardContent>
+                <Stack spacing={2}>
+                  {producto.ubicaciones.map((ubicacion, index) => (
+                    <Box key={index}>
+                      <Typography variant="subtitle2" gutterBottom>
+                        {ubicacion.bodega}
+                      </Typography>
+                      <Typography variant="h6">
+                        {ubicacion.cantidad} unidades
+                      </Typography>
+                      <Divider sx={{ mt: 1 }} />
+                    </Box>
+                  ))}
+                </Stack>
+                
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<InventoryIcon />}
+                  sx={{ mt: 2 }}
+                >
+                  Ver detalle de inventario
+                </Button>
+              </CardContent>
+            </Card>
           </Grid>
         </Grid>
       </Paper>

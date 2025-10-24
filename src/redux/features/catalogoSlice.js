@@ -4,17 +4,37 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 const fakeCatalogoData = [
   { 
     id: 'MED-001', 
-    nombre: 'Amoxicilina 500mg', 
+    nombre: 'Amoxicilina 500mg',
+    sku: 'MED-001',  // Added SKU
     descripcion: 'Antibiótico de amplio espectro',
     precio: 12500,
     proveedor: 'FarmaLatam',
     pais: 'CO',
-    stock: 320,
+    stock: {
+      total: 320,
+      reservado: 40,
+      disponible: 280
+    },
+    condicionesAlmacenamiento: {
+      temperatura: '2-8°C',
+      humedad: '30-65%',
+      requiereRefrigeracion: true
+    },
     cadenaFrio: true,
     estado: 'Activo',
     categoria: 'Medicamentos',
-    normativa: true,
-    esInsumo: false
+    normativa: {
+      tiene: true,
+      documentos: [
+        { id: 1, nombre: 'Registro INVIMA', archivo: 'invima-med-001.pdf' },
+        { id: 2, nombre: 'Ficha técnica', archivo: 'ficha-med-001.pdf' }
+      ]
+    },
+    esInsumo: false,
+    ubicaciones: [
+      { bodega: 'Bodega Central', cantidad: 200 },
+      { bodega: 'Bodega Norte', cantidad: 120 }
+    ]
   },
   { 
     id: 'MED-014', 
@@ -23,12 +43,31 @@ const fakeCatalogoData = [
     precio: 58000,
     proveedor: 'SaludGlobal',
     pais: 'MX',
-    stock: 45,
+    stock: {
+      total: 45,
+      reservado: 5,
+      disponible: 40
+    },
+    condicionesAlmacenamiento: {
+      temperatura: '2-8°C',
+      humedad: '30-65%',
+      requiereRefrigeracion: true
+    },
     cadenaFrio: true,
     estado: 'Activo',
     categoria: 'Vacunas',
-    normativa: true,
-    esInsumo: false
+    normativa: {
+      tiene: true,
+      documentos: [
+        { id: 1, nombre: 'Registro VACUNAS', archivo: 'registro-vacuna-014.pdf' },
+        { id: 2, nombre: 'Instrucciones de uso', archivo: 'instrucciones-vacuna-014.pdf' }
+      ]
+    },
+    esInsumo: false,
+    ubicaciones: [
+      { bodega: 'Bodega Sur', cantidad: 25 },
+      { bodega: 'Bodega Este', cantidad: 20 }
+    ]
   },
   { 
     id: 'INS-220', 
@@ -37,12 +76,25 @@ const fakeCatalogoData = [
     precio: 1900,
     proveedor: 'MediSupply',
     pais: 'CO',
-    stock: 1200,
+    stock: {
+      total: 1200,
+      reservado: 300,
+      disponible: 900
+    },
+    condicionesAlmacenamiento: {
+      temperatura: '10-30°C',
+      humedad: '40-60%',
+      requiereRefrigeracion: false
+    },
     cadenaFrio: false,
     estado: 'Activo',
     categoria: 'Protección',
     normativa: false,
-    esInsumo: true
+    esInsumo: true,
+    ubicaciones: [
+      { bodega: 'Bodega Central', cantidad: 600 },
+      { bodega: 'Bodega Norte', cantidad: 600 }
+    ]
   },
   { 
     id: 'EQP-030', 
@@ -51,12 +103,25 @@ const fakeCatalogoData = [
     precio: 2450000,
     proveedor: 'CareTech',
     pais: 'PE',
-    stock: 12,
+    stock: {
+      total: 12,
+      reservado: 2,
+      disponible: 10
+    },
+    condicionesAlmacenamiento: {
+      temperatura: '15-25°C',
+      humedad: '30-50%',
+      requiereRefrigeracion: false
+    },
     cadenaFrio: false,
     estado: 'Activo',
     categoria: 'Equipamiento',
     normativa: true,
-    esInsumo: false
+    esInsumo: false,
+    ubicaciones: [
+      { bodega: 'Bodega Equipos', cantidad: 5 },
+      { bodega: 'Bodega Sur', cantidad: 7 }
+    ]
   },
   { 
     id: 'MED-099', 
@@ -65,12 +130,25 @@ const fakeCatalogoData = [
     precio: 9800,
     proveedor: 'MediSupply',
     pais: 'CO',
-    stock: 640,
+    stock: {
+      total: 640,
+      reservado: 80,
+      disponible: 560
+    },
+    condicionesAlmacenamiento: {
+      temperatura: '10-30°C',
+      humedad: '40-60%',
+      requiereRefrigeracion: false
+    },
     cadenaFrio: false,
     estado: 'Activo',
     categoria: 'Medicamentos',
     normativa: true,
-    esInsumo: false
+    esInsumo: false,
+    ubicaciones: [
+      { bodega: 'Bodega Central', cantidad: 320 },
+      { bodega: 'Bodega Norte', cantidad: 320 }
+    ]
   },
   { 
     id: 'INS-045', 
@@ -79,12 +157,25 @@ const fakeCatalogoData = [
     precio: 750,
     proveedor: 'FarmaLatam',
     pais: 'CL',
-    stock: 4600,
+    stock: {
+      total: 4600,
+      reservado: 600,
+      disponible: 4000
+    },
+    condicionesAlmacenamiento: {
+      temperatura: '10-30°C',
+      humedad: '40-60%',
+      requiereRefrigeracion: false
+    },
     cadenaFrio: false,
     estado: 'Activo',
     categoria: 'Insumos',
     normativa: false,
-    esInsumo: true
+    esInsumo: true,
+    ubicaciones: [
+      { bodega: 'Bodega Insumos', cantidad: 2300 },
+      { bodega: 'Bodega Sur', cantidad: 2300 }
+    ]
   },
 ];
 

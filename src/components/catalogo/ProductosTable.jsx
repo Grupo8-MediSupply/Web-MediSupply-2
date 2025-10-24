@@ -62,7 +62,7 @@ function ProductosTable({ productos }) {
             <TableCell>Producto</TableCell>
             <TableCell>Proveedor</TableCell>
             <TableCell>País</TableCell>
-            <TableCell align="right">Stock</TableCell>
+            <TableCell align="right">Stock disponible</TableCell>
             <TableCell>Cadena de frío</TableCell>
             <TableCell align="right">Precio</TableCell>
             <TableCell align="center">Acciones</TableCell>
@@ -80,7 +80,9 @@ function ProductosTable({ productos }) {
               <TableCell>{producto.nombre}</TableCell>
               <TableCell>{producto.proveedor}</TableCell>
               <TableCell>{PAISES[producto.pais] || producto.pais}</TableCell>
-              <TableCell align="right">{producto.stock}</TableCell>
+              <TableCell align="right">
+                {producto.stock?.disponible || producto.stock}
+              </TableCell>
               <TableCell>
                 {producto.cadenaFrio ? 'Cumple' : 'No requiere'}
               </TableCell>
