@@ -1,37 +1,30 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
 import { jwtDecode } from 'jwt-decode';
+import { fetchConfiguracion } from './configuracionSlice';
 
 // Acción asíncrona para el login
 export const login = createAsyncThunk(
   'auth/login',
-  async (credentials, { rejectWithValue }) => {
+  async (credentials, { rejectWithValue, dispatch }) => {
     try {
-      // Usar el servicio de autenticación del dominio auth
       const response = await api.auth.login({
         email: credentials.username,
         password: credentials.password
       });
       
-      if (!response || !response.success || !response.result?.access_token) {
-        return rejectWithValue(response?.message || 'Error en la autenticación');
+      if (!response.success) {
+        return rejectWithValue(response.message || 'Error en el inicio de sesión');
       }
-      
-      // Guardar token en localStorage
+
+      // Store token in localStorage
       localStorage.setItem('access_token', response.result.access_token);
+
+      // Decode token and extract user info
+      const userData = jwtDecode(response.result.access_token);
       
-      // Decodificar el token para obtener información del usuario
-      let userData = {};
-      try {
-        userData = jwtDecode(response.result.access_token);
-        
-        // Verificar que el token tenga la estructura esperada
-        if (!userData.sub) {
-          console.error('Token JWT no contiene ID de usuario (sub)');
-        }
-      } catch (error) {
-        console.error('Error al decodificar el token:', error);
-      }
+      // After successful login, fetch configuration
+      await dispatch(fetchConfiguracion()).unwrap();
       
       return {
         token: response.result.access_token,
@@ -39,11 +32,16 @@ export const login = createAsyncThunk(
           id: userData.sub || '',
           email: userData.email || '',
           role: userData.role || '',
-          pais: userData.pais || '',
+          pais: userData.pais || ''
         }
       };
     } catch (error) {
-      return rejectWithValue(error.message || 'Error en la autenticación');
+      console.error('Login error:', error);
+      return rejectWithValue(
+        error.message || 
+        (error.response?.message) || 
+        'Error en el inicio de sesión'
+      );
     }
   }
 );
@@ -100,7 +98,8 @@ const initialState = {
   token: localStorage.getItem('access_token') || null,
   isAuthenticated: false,
   loading: false,
-  error: null
+  error: null,
+  lastLoginAttempt: null // Add this to track login attempts
 };
 
 // Slice de autenticación
@@ -116,6 +115,7 @@ const authSlice = createSlice({
     },
     clearError: (state) => {
       state.error = null;
+      state.lastLoginAttempt = null;
     }
   },
   extraReducers: (builder) => {
@@ -123,16 +123,21 @@ const authSlice = createSlice({
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
+        state.lastLoginAttempt = Date.now();
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
         state.isAuthenticated = true;
         state.user = action.payload.user;
         state.token = action.payload.token;
+        state.error = null;
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload || 'Error desconocido en el inicio de sesión';
+        state.isAuthenticated = false;
+        state.user = null;
+        state.token = null;
       })
       // Manejar verificación de autenticación
       .addCase(checkAuth.pending, (state) => {

@@ -44,6 +44,11 @@ function Login() {
     dispatch(clearError());
   }, [isAuthenticated, navigate, dispatch, from]);
 
+  useEffect(() => {
+    // Clear any existing errors when component mounts
+    dispatch(clearError());
+  }, [dispatch]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCredentials({
@@ -75,14 +80,35 @@ function Login() {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) {
+    // Clear previous errors
+    setFormErrors({});
+    dispatch(clearError());
+
+    // Validate form
+    const errors = {};
+    if (!credentials.username.trim()) {
+      errors.username = 'El nombre de usuario es obligatorio';
+    }
+    if (!credentials.password.trim()) {
+      errors.password = 'La contraseña es obligatoria';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
       return;
     }
-    
-    dispatch(login(credentials));
+
+    try {
+      const resultAction = await dispatch(login(credentials));
+      if (login.fulfilled.match(resultAction)) {
+        // Successful login - navigation is handled by the protected route
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+    }
   };
 
   const handleClickShowPassword = () => {
