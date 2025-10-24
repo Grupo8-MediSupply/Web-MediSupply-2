@@ -91,26 +91,44 @@ const mockProveedoresService = {
   createProveedor: async (proveedorData) => {
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    // Validate required fields
-    if (!proveedorData.nombre || !proveedorData.email || !proveedorData.pais || 
-        !proveedorData.numeroIdentificacion || !proveedorData.tipoIdentificacion) {
+    // Validar que todos los campos requeridos estén presentes y no vacíos
+    const requiredFields = [
+      'nombreProveedor',
+      'numeroIdentificacion',
+      'pais',
+      'email',
+      'contactoPrincipal',
+      'telefonoContacto',
+      'tipoIdentificacion'
+    ];
+
+    const missingFields = requiredFields.filter(field => {
+      const value = proveedorData[field];
+      return value === undefined || value === null || value === '';
+    });
+
+    if (missingFields.length > 0) {
+      console.log('Campos faltantes:', missingFields);
+      console.log('Datos recibidos:', proveedorData);
       return {
         success: false,
-        message: 'Todos los campos son requeridos'
+        message: `Campos requeridos faltantes: ${missingFields.join(', ')}`,
+        status: 400
       };
     }
 
+    // Si la validación pasa, retornar respuesta exitosa
     return {
       success: true,
       result: {
         id: Date.now().toString(),
-        nombreProveedor: proveedorData.nombre,
+        nombreProveedor: proveedorData.nombreProveedor,
         email: proveedorData.email,
         pais: proveedorData.pais
       },
       timestamp: new Date().toISOString()
     };
-  }
+  },
 };
 
 export default mockProveedoresService;

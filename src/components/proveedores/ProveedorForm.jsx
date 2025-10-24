@@ -19,18 +19,7 @@ import {
   Typography
 } from '@mui/material';
 import { addProveedor, selectAddProveedorStatus, selectAddProveedorError, resetAddStatus } from '../../redux/features/proveedoresSlice';
-import { selectTiposIdentificacion, selectConfigStatus, fetchConfiguracion } from '../../redux/features/configuracionSlice';
-
-// Lista de países disponibles
-const PAISES = [
-  { value: 'CO', label: 'Colombia' },
-  { value: 'MX', label: 'México' },
-  { value: 'PE', label: 'Perú' },
-  { value: 'CL', label: 'Chile' },
-  { value: 'AR', label: 'Argentina' },
-  { value: 'EC', label: 'Ecuador' },
-  { value: 'BR', label: 'Brasil' }
-];
+import { selectTiposIdentificacion, selectConfigStatus, fetchConfiguracion, selectPaisConfig } from '../../redux/features/configuracionSlice';
 
 const ProveedorForm = ({ open, onClose }) => {
   const dispatch = useDispatch();
@@ -38,13 +27,13 @@ const ProveedorForm = ({ open, onClose }) => {
   const configStatus = useSelector(selectConfigStatus);
   const tiposIdentificacion = useSelector(selectTiposIdentificacion);
   const addError = useSelector(selectAddProveedorError);
+  const paisConfig = useSelector(selectPaisConfig);
   
   // Estado del formulario
   const [formData, setFormData] = useState({
     nombreProveedor: '',
     numeroIdentificacion: '',
     tipoIdentificacion: '',
-    pais: '',
     email: '',
     contactoPrincipal: '',
     telefonoContacto: ''
@@ -60,7 +49,6 @@ const ProveedorForm = ({ open, onClose }) => {
         nombreProveedor: '',
         numeroIdentificacion: '',
         tipoIdentificacion: '',
-        pais: '',
         email: '',
         contactoPrincipal: '',
         telefonoContacto: ''
@@ -117,10 +105,6 @@ const ProveedorForm = ({ open, onClose }) => {
       newErrors.nombreProveedor = 'El nombre del proveedor es obligatorio';
     }
     
-    if (!formData.pais) {
-      newErrors.pais = 'El país es obligatorio';
-    }
-    
     if (!formData.numeroIdentificacion.trim()) {
       newErrors.numeroIdentificacion = 'El número de identificación es obligatorio';
     }
@@ -152,8 +136,24 @@ const ProveedorForm = ({ open, onClose }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    if (!paisConfig?.id) {
+      console.error('No hay país configurado');
+      return;
+    }
+
     if (validateForm()) {
-      dispatch(addProveedor(formData)); // Ya no necesita transformación
+      const proveedorData = {
+        nombreProveedor: formData.nombreProveedor,
+        numeroIdentificacion: formData.numeroIdentificacion,
+        pais: paisConfig.id, // Asegurarse que esto no sea undefined
+        email: formData.email,
+        contactoPrincipal: formData.contactoPrincipal,
+        telefonoContacto: formData.telefonoContacto,
+        tipoIdentificacion: Number(formData.tipoIdentificacion)
+      };
+
+      console.log('Enviando datos:', proveedorData); // Para debugging
+      dispatch(addProveedor(proveedorData));
     }
   };
   
@@ -241,30 +241,6 @@ const ProveedorForm = ({ open, onClose }) => {
                   disabled={addStatus === 'loading'}
                   margin="normal"
                 />
-                
-                <FormControl 
-                  fullWidth 
-                  margin="normal" 
-                  error={!!errors.pais}
-                  disabled={addStatus === 'loading'}
-                >
-                  <InputLabel id="pais-label">País</InputLabel>
-                  <Select
-                    labelId="pais-label"
-                    name="pais"
-                    value={formData.pais}
-                    onChange={handleChange}
-                    label="País"
-                  >
-                    <MenuItem value=""><em>Seleccionar país</em></MenuItem>
-                    {PAISES.map(pais => (
-                      <MenuItem key={pais.value} value={pais.value}>
-                        {pais.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {errors.pais && <FormHelperText>{errors.pais}</FormHelperText>}
-                </FormControl>
               </Box>
             </Grid>
             
