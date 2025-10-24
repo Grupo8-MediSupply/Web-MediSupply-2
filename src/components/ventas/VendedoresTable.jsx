@@ -22,29 +22,25 @@ import DataTable from '../ui/DataTable';
 const VendedoresTable = ({ vendedores }) => {
   // Definir las columnas de la tabla
   const columns = [
-    { id: 'id', label: 'ID', width: '20%' },
     { id: 'nombre', label: 'Nombre', width: '25%' },
+    { id: 'email', label: 'Email', width: '25%' },
     { id: 'territorio', label: 'Territorio', width: '20%' },
-    { id: 'acciones', label: 'Acciones', width: '20%', align: 'center' }
+    { id: 'acciones', label: 'Acciones', width: '30%', align: 'center' }
   ];
 
   // Renderizar cada fila de la tabla
   const renderRow = (vendedor) => {
-    // Calcular el progreso de visitas
-    const porcentajeVisitas = Math.round((vendedor.visitasCompletadas / vendedor.visitasProgramadas) * 100);
-    const colorVisitas = porcentajeVisitas < 50 ? 'error' : (porcentajeVisitas < 80 ? 'warning' : 'success');
-
     return (
-      <TableRow key={vendedor.id}>
-        <TableCell>{vendedor.id}</TableCell>
+      <TableRow key={vendedor.email}>
         <TableCell>{vendedor.nombre}</TableCell>
+        <TableCell>{vendedor.email}</TableCell>
         <TableCell>{vendedor.territorio}</TableCell>
         <TableCell align="center">
           <Stack direction="row" spacing={1} justifyContent="center">
             <Tooltip title="Ver detalles">
               <IconButton 
                 component={RouterLink} 
-                to={`/ventas/vendedores/${vendedor.id}`} 
+                to={`/ventas/vendedores/${vendedor.email}`} 
                 size="small" 
                 color="primary"
               >
@@ -54,7 +50,7 @@ const VendedoresTable = ({ vendedores }) => {
             <Tooltip title="Ver visitas">
               <IconButton 
                 component={RouterLink} 
-                to={`/ventas/vendedores/${vendedor.id}/visitas`} 
+                to={`/ventas/vendedores/${vendedor.email}/visitas`} 
                 size="small" 
                 color="info"
               >
