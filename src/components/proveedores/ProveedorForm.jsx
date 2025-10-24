@@ -19,6 +19,7 @@ import {
   Typography
 } from '@mui/material';
 import { addProveedor, selectAddProveedorStatus, selectAddProveedorError, resetAddStatus } from '../../redux/features/proveedoresSlice';
+import { selectTiposIdentificacion, selectConfigStatus, fetchConfiguracion } from '../../redux/features/configuracionSlice';
 
 // Lista de países disponibles
 const PAISES = [
@@ -34,18 +35,19 @@ const PAISES = [
 const ProveedorForm = ({ open, onClose }) => {
   const dispatch = useDispatch();
   const addStatus = useSelector(selectAddProveedorStatus);
+  const configStatus = useSelector(selectConfigStatus);
+  const tiposIdentificacion = useSelector(selectTiposIdentificacion);
   const addError = useSelector(selectAddProveedorError);
   
   // Estado del formulario
   const [formData, setFormData] = useState({
-    nombre: '',
-    pais: '',
+    nombreProveedor: '',
     numeroIdentificacion: '',
+    tipoIdentificacion: '',
+    pais: '',
     email: '',
-    contactoPrincipal: {
-      nombre: '',
-      telefono: ''
-    }
+    contactoPrincipal: '',
+    telefonoContacto: ''
   });
   
   // Estado de errores de validación
@@ -55,14 +57,13 @@ const ProveedorForm = ({ open, onClose }) => {
   useEffect(() => {
     if (open) {
       setFormData({
-        nombre: '',
-        pais: '',
+        nombreProveedor: '',
         numeroIdentificacion: '',
+        tipoIdentificacion: '',
+        pais: '',
         email: '',
-        contactoPrincipal: {
-          nombre: '',
-          telefono: ''
-        }
+        contactoPrincipal: '',
+        telefonoContacto: ''
       });
       setErrors({});
     }
@@ -84,6 +85,13 @@ const ProveedorForm = ({ open, onClose }) => {
     }
   }, [addStatus, onClose]);
   
+  // Fetch configuracion on open
+  useEffect(() => {
+    if (open && configStatus === 'idle') {
+      dispatch(fetchConfiguracion());
+    }
+  }, [open, configStatus, dispatch]);
+  
   // Manejar cambios en los campos principales
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -101,32 +109,12 @@ const ProveedorForm = ({ open, onClose }) => {
     }
   };
   
-  // Manejar cambios en los campos de contacto
-  const handleContactoChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      contactoPrincipal: {
-        ...formData.contactoPrincipal,
-        [name]: value
-      }
-    });
-    
-    // Limpiar error al editar el campo
-    if (errors[`contacto_${name}`]) {
-      setErrors({
-        ...errors,
-        [`contacto_${name}`]: null
-      });
-    }
-  };
-  
   // Validar formulario
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.nombre.trim()) {
-      newErrors.nombre = 'El nombre del proveedor es obligatorio';
+    if (!formData.nombreProveedor.trim()) {
+      newErrors.nombreProveedor = 'El nombre del proveedor es obligatorio';
     }
     
     if (!formData.pais) {
@@ -144,12 +132,16 @@ const ProveedorForm = ({ open, onClose }) => {
     }
     
     // Validar campos de contacto principal
-    if (!formData.contactoPrincipal.nombre.trim()) {
-      newErrors.contacto_nombre = 'El nombre del contacto es obligatorio';
+    if (!formData.contactoPrincipal.trim()) {
+      newErrors.contactoPrincipal = 'El nombre del contacto es obligatorio';
     }
     
-    if (!formData.contactoPrincipal.telefono.trim()) {
-      newErrors.contacto_telefono = 'El teléfono del contacto es obligatorio';
+    if (!formData.telefonoContacto.trim()) {
+      newErrors.telefonoContacto = 'El teléfono del contacto es obligatorio';
+    }
+    
+    if (!formData.tipoIdentificacion) {
+      newErrors.tipoIdentificacion = 'El tipo de identificación es obligatorio';
     }
     
     setErrors(newErrors);
@@ -161,7 +153,7 @@ const ProveedorForm = ({ open, onClose }) => {
     e.preventDefault();
     
     if (validateForm()) {
-      dispatch(addProveedor(formData));
+      dispatch(addProveedor(formData)); // Ya no necesita transformación
     }
   };
   
@@ -187,13 +179,65 @@ const ProveedorForm = ({ open, onClose }) => {
             <Grid item xs={12} md={7}>
               <Box sx={{ mb: 3 }}>
                 <TextField
-                  name="nombre"
+                  name="nombreProveedor"
                   label="Nombre del proveedor"
                   fullWidth
-                  value={formData.nombre}
+                  value={formData.nombreProveedor}
                   onChange={handleChange}
-                  error={!!errors.nombre}
-                  helperText={errors.nombre}
+                  error={!!errors.nombreProveedor}
+                  helperText={errors.nombreProveedor}
+                  disabled={addStatus === 'loading'}
+                  margin="normal"
+                />
+                
+                <FormControl
+                  fullWidth
+                  margin="normal"
+                  error={!!errors.tipoIdentificacion}
+                  disabled={addStatus === 'loading' || configStatus !== 'succeeded'}
+                >
+                  <InputLabel>Tipo de Identificación</InputLabel>
+                  <Select
+                    name="tipoIdentificacion"
+                    value={formData.tipoIdentificacion}
+                    onChange={handleChange}
+                    label="Tipo de Identificación"
+                  >
+                    <MenuItem value="">
+                      <em>Seleccione un tipo</em>
+                    </MenuItem>
+                    {tiposIdentificacion.map((tipo) => (
+                      <MenuItem key={tipo.id} value={tipo.id}>
+                        {tipo.nombre}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {errors.tipoIdentificacion && (
+                    <FormHelperText>{errors.tipoIdentificacion}</FormHelperText>
+                  )}
+                </FormControl>
+                
+                <TextField
+                  name="numeroIdentificacion"
+                  label="Numero de identificación"
+                  fullWidth
+                  value={formData.numeroIdentificacion}
+                  onChange={handleChange}
+                  error={!!errors.numeroIdentificacion}
+                  helperText={errors.numeroIdentificacion}
+                  disabled={addStatus === 'loading'}
+                  margin="normal"
+                />
+                
+                <TextField
+                  name="email"
+                  label="Email"
+                  fullWidth
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  error={!!errors.email}
+                  helperText={errors.email}
                   disabled={addStatus === 'loading'}
                   margin="normal"
                 />
@@ -221,31 +265,6 @@ const ProveedorForm = ({ open, onClose }) => {
                   </Select>
                   {errors.pais && <FormHelperText>{errors.pais}</FormHelperText>}
                 </FormControl>
-                
-                <TextField
-                  name="numeroIdentificacion"
-                  label="Numero de identificación"
-                  fullWidth
-                  value={formData.numeroIdentificacion}
-                  onChange={handleChange}
-                  error={!!errors.numeroIdentificacion}
-                  helperText={errors.numeroIdentificacion}
-                  disabled={addStatus === 'loading'}
-                  margin="normal"
-                />
-                
-                <TextField
-                  name="email"
-                  label="Email"
-                  fullWidth
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  error={!!errors.email}
-                  helperText={errors.email}
-                  disabled={addStatus === 'loading'}
-                  margin="normal"
-                />
               </Box>
             </Grid>
             
@@ -257,25 +276,25 @@ const ProveedorForm = ({ open, onClose }) => {
                 </Typography>
                 
                 <TextField
-                  name="nombre"
-                  label="Nombre"
+                  name="contactoPrincipal"
+                  label="Nombre del contacto"
                   fullWidth
-                  value={formData.contactoPrincipal.nombre}
-                  onChange={handleContactoChange}
-                  error={!!errors.contacto_nombre}
-                  helperText={errors.contacto_nombre}
+                  value={formData.contactoPrincipal}
+                  onChange={handleChange}
+                  error={!!errors.contactoPrincipal}
+                  helperText={errors.contactoPrincipal}
                   disabled={addStatus === 'loading'}
                   margin="normal"
                 />
                 
                 <TextField
-                  name="telefono"
-                  label="Teléfono"
+                  name="telefonoContacto"
+                  label="Teléfono de contacto"
                   fullWidth
-                  value={formData.contactoPrincipal.telefono}
-                  onChange={handleContactoChange}
-                  error={!!errors.contacto_telefono}
-                  helperText={errors.contacto_telefono}
+                  value={formData.telefonoContacto}
+                  onChange={handleChange}
+                  error={!!errors.telefonoContacto}
+                  helperText={errors.telefonoContacto}
                   disabled={addStatus === 'loading'}
                   margin="normal"
                 />

@@ -89,28 +89,27 @@ const mockProveedoresService = {
   
   // Crear un nuevo proveedor
   createProveedor: async (proveedorData) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Crear un ID para el nuevo proveedor
-        const id = Date.now().toString().slice(-8);
-        
-        const nuevoProveedor = {
-          id,
-          ...proveedorData,
-          // Agregar campos que normalmente serían generados por el servidor
-          fechaCreacion: new Date().toISOString()
-        };
-        
-        // En un servicio real, aquí se añadiría a la base de datos
-        mockProveedores.push(nuevoProveedor);
-        
-        resolve({
-          success: true,
-          result: nuevoProveedor,
-          message: 'Proveedor creado correctamente'
-        });
-      }, 800);
-    });
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    // Validate required fields
+    if (!proveedorData.nombre || !proveedorData.email || !proveedorData.pais || 
+        !proveedorData.numeroIdentificacion || !proveedorData.tipoIdentificacion) {
+      return {
+        success: false,
+        message: 'Todos los campos son requeridos'
+      };
+    }
+
+    return {
+      success: true,
+      result: {
+        id: Date.now().toString(),
+        nombreProveedor: proveedorData.nombre,
+        email: proveedorData.email,
+        pais: proveedorData.pais
+      },
+      timestamp: new Date().toISOString()
+    };
   }
 };
 
