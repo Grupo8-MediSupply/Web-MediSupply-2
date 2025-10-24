@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -33,7 +33,9 @@ import {
   selectBodegaDetailsError,
   selectCurrentProductos,
   selectProductosStatus,
-  selectProductosError
+  selectProductosError,
+  setCurrentBodega,
+  fetchBodegas,
 } from '../redux/features/bodegasSlice';
 
 // Función de filtrado para los productos (local)
@@ -77,7 +79,14 @@ function BodegaDetalle() {
 
   // Cargar detalles de la bodega y productos al montar el componente
   useEffect(() => {
-    dispatch(fetchBodegaDetails(id));
+    // First try to set current bodega from existing data
+    dispatch(setCurrentBodega(id)).unwrap()
+      .catch(() => {
+        // If bodega not found in store, fetch all bodegas again
+        dispatch(fetchBodegas());
+      });
+      
+    // Always fetch productos
     dispatch(fetchProductosInBodega(id));
   }, [dispatch, id]);
 
@@ -87,12 +96,23 @@ function BodegaDetalle() {
   }, [productos, searchTerm, localFilters]);
 
   // Extraer lotes y fechas de vencimiento para filtros (si hay productos)
-  const lotes = productos.length > 0 ? 
-    [...new Set(productos.map(item => item.lote))] : [];
-  
-  const vencimientos = productos.length > 0 ? 
-    [...new Set(productos.map(item => item.vencimiento.split('/')[2]))] : []; // Años de vencimiento
-  
+  const lotes = useMemo(() => {
+    if (!productos?.length) return [];
+    return [...new Set(productos.map(item => item.numeroLote))];
+  }, [productos]);
+
+  const vencimientos = useMemo(() => {
+    if (!productos?.length) return [];
+    return [...new Set(productos.map(item => {
+      try {
+        const fecha = new Date(item.FechaVencimiento);
+        return fecha.getFullYear().toString();
+      } catch (e) {
+        return null;
+      }
+    }).filter(Boolean))];
+  }, [productos]);
+
   // Configuración de filtros
   const filterConfig = [
     {
@@ -105,13 +125,46 @@ function BodegaDetalle() {
     },
     {
       name: 'vencimiento',
-      label: 'Vencimiento',
+      label: 'Año de Vencimiento',
       value: localFilters.vencimiento || '',
       options: vencimientos,
       emptyOptionText: 'Todos',
       width: '250px'
     }
   ];
+
+  // Función de filtrado actualizada
+  const filterProductos = useCallback((data, search, filters) => {
+    if (!data) return [];
+    
+    let filtered = [...data];
+
+    if (search) {
+      const lowercaseSearch = search.toLowerCase();
+      filtered = filtered.filter(item => 
+        item.nombreProducto?.toLowerCase().includes(lowercaseSearch) ||
+        item.sku?.toLowerCase().includes(lowercaseSearch) ||
+        item.numeroLote?.toLowerCase().includes(lowercaseSearch)
+      );
+    }
+
+    if (filters.lote) {
+      filtered = filtered.filter(item => item.numeroLote === filters.lote);
+    }
+
+    if (filters.vencimiento) {
+      filtered = filtered.filter(item => {
+        try {
+          const fecha = new Date(item.FechaVencimiento);
+          return fecha.getFullYear().toString() === filters.vencimiento;
+        } catch {
+          return false;
+        }
+      });
+    }
+
+    return filtered;
+  }, []);
 
   // Navegación para breadcrumbs
   const breadcrumbsItems = [

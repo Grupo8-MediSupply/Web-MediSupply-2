@@ -1,13 +1,24 @@
 import React from 'react';
-import { TableRow, TableCell, Chip } from '@mui/material';
+import { TableRow, TableCell } from '@mui/material';
 import DataTable from '../ui/DataTable';
+
+// Formato de fecha para mostrar en la tabla
+const formatDate = (dateString) => {
+  if (!dateString) return 'No especificado';
+  try {
+    return new Date(dateString).toLocaleDateString('es-CO');
+  } catch (e) {
+    return 'Fecha inválida';
+  }
+};
 
 // Definición de columnas para la tabla de productos
 const productosColumns = [
-  { id: 'producto', label: 'Producto' },
-  { id: 'lote', label: 'Lote' },
-  { id: 'cantidad', label: 'Cantidad disponible' },
-  { id: 'vencimiento', label: 'Fecha de vencimiento' }
+  { id: 'nombreProducto', label: 'Producto' },
+  { id: 'numeroLote', label: 'Lote' },
+  { id: 'cantidad', label: 'Cantidad' },
+  { id: 'FechaVencimiento', label: 'Vencimiento' },
+  { id: 'sku', label: 'SKU' }
 ];
 
 /**
@@ -15,32 +26,14 @@ const productosColumns = [
  * @param {Array} productos - Lista de productos a mostrar
  */
 function ProductosTable({ productos }) {
-  // Función para calcular si un producto está próximo a vencer (menos de 30 días)
-  const isCloseToExpire = (fechaVencimiento) => {
-    const hoy = new Date();
-    const vencimiento = new Date(fechaVencimiento.split('/').reverse().join('-'));
-    const diasRestantes = Math.floor((vencimiento - hoy) / (1000 * 60 * 60 * 24));
-    return diasRestantes > 0 && diasRestantes < 30;
-  };
-
   // Función para renderizar cada fila de la tabla
   const renderProductoRow = (producto) => (
-    <TableRow key={`${producto.lote}-${producto.producto}`}>
-      <TableCell>{producto.producto}</TableCell>
-      <TableCell>{producto.lote}</TableCell>
-      <TableCell>{producto.cantidad}</TableCell>
-      <TableCell>
-        {isCloseToExpire(producto.vencimiento) ? (
-          <Chip 
-            label={producto.vencimiento} 
-            color="warning"
-            size="small"
-            variant="outlined"
-          />
-        ) : (
-          producto.vencimiento
-        )}
-      </TableCell>
+    <TableRow key={producto.loteId}>
+      <TableCell>{producto.nombreProducto}</TableCell>
+      <TableCell>{producto.numeroLote}</TableCell>
+      <TableCell>{producto.cantidad?.toLocaleString() ?? 0}</TableCell>
+      <TableCell>{formatDate(producto.FechaVencimiento)}</TableCell>
+      <TableCell>{producto.sku}</TableCell>
     </TableRow>
   );
 
@@ -49,7 +42,7 @@ function ProductosTable({ productos }) {
       columns={productosColumns}
       data={productos}
       renderRow={renderProductoRow}
-      emptyMessage="No se encontraron productos en esta bodega"
+      emptyMessage="No hay productos disponibles"
     />
   );
 }

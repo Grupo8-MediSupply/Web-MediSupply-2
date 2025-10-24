@@ -47,6 +47,18 @@ export const fetchProductosInBodega = createAsyncThunk(
   }
 );
 
+export const setCurrentBodega = createAsyncThunk(
+  'bodegas/setCurrentBodega',
+  async (id, { getState }) => {
+    const state = getState();
+    const bodega = state.bodegas.bodegas.find(b => b.id === id);
+    if (!bodega) {
+      throw new Error('Bodega no encontrada');
+    }
+    return bodega;
+  }
+);
+
 // Initial state
 const initialState = {
   bodegas: [],
@@ -119,6 +131,16 @@ const bodegasSlice = createSlice({
       .addCase(fetchProductosInBodega.rejected, (state, action) => {
         state.status.productos = 'failed';
         state.error.productos = action.error.message;
+      })
+      
+      // Handle setCurrentBodega
+      .addCase(setCurrentBodega.fulfilled, (state, action) => {
+        state.currentBodega = action.payload;
+        state.status.bodegaDetails = 'succeeded';
+      })
+      .addCase(setCurrentBodega.rejected, (state, action) => {
+        state.status.bodegaDetails = 'failed';
+        state.error.bodegaDetails = action.error.message;
       });
   }
 });
