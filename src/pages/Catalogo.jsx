@@ -165,67 +165,27 @@ function Catalogo() {
     dispatch(clearNotificacion());
   };
 
-  // Configuración de filtros
+  // Configuración de filtros actualizada
   const filterConfig = [
     {
-      name: 'categoria',
-      label: 'Categoría',
-      value: useSelector(state => state.catalogo.filtros.categoria),
-      options: categorias,
-      emptyOptionText: 'Todas',
-      width: '200px'
-    },
-    {
-      name: 'proveedor',
-      label: 'Proveedor',
-      value: useSelector(state => state.catalogo.filtros.proveedor),
-      options: proveedores,
+      name: 'tipo',
+      label: 'Tipo',
+      value: useSelector(state => state.catalogo.filtros.tipo),
+      options: ['MEDICAMENTO', 'INSUMO', 'DISPOSITIVO'], // Tipos disponibles en la API
       emptyOptionText: 'Todos',
       width: '200px'
     },
     {
-      name: 'pais',
-      label: 'País',
-      value: useSelector(state => state.catalogo.filtros.pais),
-      options: paises.map(p => PAISES[p] || p),
-      values: paises,
-      emptyOptionText: 'Todos',
-      width: '180px'
-    },
-    {
-      name: 'estado',
-      label: 'Estado',
-      value: useSelector(state => state.catalogo.filtros.estado),
-      options: estados,
-      emptyOptionText: 'Todos',
-      width: '180px'
-    },
-    {
-      name: 'cadenaFrio',
-      label: 'Cadena de frío',
-      value: useSelector(state => state.catalogo.filtros.cadenaFrio),
-      options: ['Cumple', 'No cumple'],
-      values: ['true', 'false'],
-      emptyOptionText: 'Todos',
-      width: '180px'
-    },
-    {
-      name: 'normativa',
-      label: 'Normativa',
-      value: useSelector(state => state.catalogo.filtros.normativa),
-      options: ['Con normativa', 'Sin normativa'],
-      values: ['true', 'false'],
-      emptyOptionText: 'Todos',
-      width: '180px'
-    },
-    {
-      name: 'esInsumo',
-      label: 'Insumos',
-      value: useSelector(state => state.catalogo.filtros.esInsumo),
-      options: ['Activo', 'Inactivo'],
-      values: ['true', 'false'],
-      emptyOptionText: 'Todos',
-      width: '180px'
+      name: 'precio',
+      label: 'Rango de precio',
+      value: useSelector(state => state.catalogo.filtros.precio),
+      options: [
+        'Menos de 50.000',
+        '50.000 - 100.000',
+        'Más de 100.000'
+      ],
+      emptyOptionText: 'Todos los precios',
+      width: '200px'
     }
   ];
 

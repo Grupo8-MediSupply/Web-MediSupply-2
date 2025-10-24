@@ -115,8 +115,6 @@ function Login() {
     setShowPassword(!showPassword);
   };
 
-  // Mostrar estado de error para depuración
-  console.log('Login component rendering with error:', error);
 
   return (
     <Box 
