@@ -83,19 +83,26 @@ function Catalogo() {
 
   // Filtrar productos por término de búsqueda
   useEffect(() => {
-    if (!productos) return;
-    
-    if (searchTerm.trim() === '') {
-      setFilteredProductos(productos);
-    } else {
-      const lowercaseSearch = searchTerm.toLowerCase();
-      const filtered = productos.filter(producto => 
-        producto.nombre.toLowerCase().includes(lowercaseSearch) ||
-        producto.id.toLowerCase().includes(lowercaseSearch) ||
-        producto.proveedor.toLowerCase().includes(lowercaseSearch)
-      );
-      setFilteredProductos(filtered);
+    if (!productos) {
+      setFilteredProductos([]);
+      return;
     }
+    
+    if (!searchTerm || searchTerm.trim() === '') {
+      setFilteredProductos(productos);
+      return;
+    }
+
+    const lowercaseSearch = searchTerm.toLowerCase();
+    const filtered = productos.filter(producto => {
+      const nombreMatch = producto.nombre?.toLowerCase().includes(lowercaseSearch) || false;
+      const skuMatch = producto.sku?.toLowerCase().includes(lowercaseSearch) || false;
+      const descripcionMatch = producto.descripcion?.toLowerCase().includes(lowercaseSearch) || false;
+      
+      return nombreMatch || skuMatch || descripcionMatch;
+    });
+    
+    setFilteredProductos(filtered);
   }, [productos, searchTerm]);
 
   // Manejadores de eventos
