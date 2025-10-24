@@ -1,107 +1,19 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-
-// Mock data for warehouses
-const mockBodegas = [
-  { id: 1, nombre: 'Centro Norte', ciudad: 'Bogotá', capacidad: '5.000', estado: 'Activo' },
-  { id: 2, nombre: 'Centro Urbano', ciudad: 'Medellín', capacidad: '5.500', estado: 'Activo' },
-  { id: 3, nombre: 'Centro Industrial', ciudad: 'Cúcuta', capacidad: '4.000', estado: 'Inactivo' },
-  { id: 4, nombre: 'Centro Oriente', ciudad: 'Cali', capacidad: '6.000', estado: 'Activo' },
-];
-
-// Mock data for warehouse details
-const mockBodegaDetails = {
-  1: { 
-    id: 1, 
-    nombre: 'Centro Norte', 
-    ciudad: 'Bogotá', 
-    capacidad: '5.000',
-    estado: 'Activo'
-  },
-  2: { 
-    id: 2, 
-    nombre: 'Centro Urbano', 
-    ciudad: 'Medellín',
-    capacidad: '5.500',
-    estado: 'Activo'
-  },
-  3: { 
-    id: 3, 
-    nombre: 'Centro Industrial', 
-    ciudad: 'Cúcuta',
-    capacidad: '4.000',
-    estado: 'Inactivo'
-  },
-  4: { 
-    id: 4, 
-    nombre: 'Centro Oriente', 
-    ciudad: 'Cali',
-    capacidad: '6.000',
-    estado: 'Activo'
-  }
-};
-
-// Mock data for products in warehouses
-const mockProductos = {
-  1: [
-    { producto: 'Vacuna influenza', lote: 'MED-014-1', cantidad: 400, vencimiento: '31/08/2024' },
-    { producto: 'Guantes Nitrilo M', lote: 'INS-220-2', cantidad: 300, vencimiento: '15/07/2025' },
-    { producto: 'Amoxicilina 500mg', lote: 'MED-001-5', cantidad: 250, vencimiento: '10/02/2026' },
-    { producto: 'Vacuna influenza', lote: 'MED-014-3', cantidad: 180, vencimiento: '24/11/2026' }
-  ],
-  2: [
-    { producto: 'Jeringa 5ml', lote: 'INS-101-2', cantidad: 500, vencimiento: '05/05/2025' },
-    { producto: 'Paracetamol 500mg', lote: 'MED-002-1', cantidad: 350, vencimiento: '22/09/2024' }
-  ],
-  3: [
-    { producto: 'Vendas elásticas', lote: 'INS-303-4', cantidad: 120, vencimiento: '18/03/2025' }
-  ],
-  4: [
-    { producto: 'Alcohol 70%', lote: 'INS-405-2', cantidad: 200, vencimiento: '30/06/2026' },
-    { producto: 'Mascarillas N95', lote: 'INS-410-1', cantidad: 150, vencimiento: '12/12/2024' }
-  ]
-};
-
-// Mock API calls
-const fetchBodegasAPI = () => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(mockBodegas);
-    }, 500);
-  });
-};
-
-const fetchBodegaDetailsAPI = (id) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      const bodega = mockBodegaDetails[id];
-      if (bodega) {
-        resolve(bodega);
-      } else {
-        reject(new Error('Bodega no encontrada'));
-      }
-    }, 300);
-  });
-};
-
-const fetchProductosInBodegaAPI = (id) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      const productos = mockProductos[id];
-      if (productos) {
-        resolve(productos);
-      } else {
-        resolve([]);
-      }
-    }, 400);
-  });
-};
+import inventariosService from '../../services/inventarios';
 
 // Async thunks for data fetching
 export const fetchBodegas = createAsyncThunk(
   'bodegas/fetchBodegas',
-  async () => {
-    const response = await fetchBodegasAPI();
-    return response;
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await inventariosService.getBodegas();
+      if (!response.success) {
+        return rejectWithValue(response.message || 'Error al obtener bodegas');
+      }
+      return response.result;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
   }
 );
 
@@ -109,8 +21,11 @@ export const fetchBodegaDetails = createAsyncThunk(
   'bodegas/fetchBodegaDetails',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await fetchBodegaDetailsAPI(id);
-      return response;
+      const response = await inventariosService.getBodegaDetails(id);
+      if (!response.success) {
+        return rejectWithValue(response.message || 'Error al obtener detalle de bodega');
+      }
+      return response.result;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -119,9 +34,16 @@ export const fetchBodegaDetails = createAsyncThunk(
 
 export const fetchProductosInBodega = createAsyncThunk(
   'bodegas/fetchProductosInBodega',
-  async (id) => {
-    const response = await fetchProductosInBodegaAPI(id);
-    return response;
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await inventariosService.getProductosInBodega(id);
+      if (!response.success) {
+        return rejectWithValue(response.message || 'Error al obtener productos');
+      }
+      return response.result;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
   }
 );
 

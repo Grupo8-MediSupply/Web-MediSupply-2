@@ -6,9 +6,9 @@ import DataTable from '../ui/DataTable';
 // Definición de columnas para la tabla de bodegas
 const bodegasColumns = [
   { id: 'nombre', label: 'Bodega' },
-  { id: 'ciudad', label: 'Ciudad' },
+  { id: 'ubicacion', label: 'Ciudad' },
   { id: 'capacidad', label: 'Capacidad total' },
-  { id: 'estado', label: 'Estado' },
+  { id: 'responsable', label: 'Responsable' },
   { id: 'acciones', label: 'Acciones', align: 'center' }
 ];
 
@@ -21,15 +21,9 @@ function BodegasTable({ bodegas }) {
   const renderBodegaRow = (bodega) => (
     <TableRow key={bodega.id}>
       <TableCell>{bodega.nombre}</TableCell>
-      <TableCell>{bodega.ciudad}</TableCell>
-      <TableCell>{bodega.capacidad}</TableCell>
-      <TableCell>
-        <Chip 
-          label={bodega.estado} 
-          color={bodega.estado === 'Activo' ? 'success' : 'error'}
-          size="small"
-        />
-      </TableCell>
+      <TableCell>{bodega.ubicacion}</TableCell>
+      <TableCell>{bodega.capacidad.toLocaleString()}</TableCell>
+      <TableCell>{bodega.responsable}</TableCell>
       <TableCell align="center">
         <Button 
           component={RouterLink} 
