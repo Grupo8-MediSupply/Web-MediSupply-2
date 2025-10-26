@@ -43,9 +43,9 @@ describe('BodegasTable', () => {
     const columnsProps = JSON.parse(screen.getByTestId('columns').textContent);
     expect(columnsProps).toHaveLength(5); // Nombre, Ciudad, Capacidad, Estado, Acciones
     expect(columnsProps[0].id).toBe('nombre');
-    expect(columnsProps[1].id).toBe('ciudad');
+    expect(columnsProps[1].id).toBe('ubicacion'); // Cambiado de 'ciudad' a 'ubicacion'
     expect(columnsProps[2].id).toBe('capacidad');
-    expect(columnsProps[3].id).toBe('estado');
+    expect(columnsProps[3].id).toBe('responsable');
     expect(columnsProps[4].id).toBe('acciones');
   });
 

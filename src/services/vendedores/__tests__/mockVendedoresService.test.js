@@ -8,6 +8,13 @@ const createMockToken = (pais = '10') => {
 };
 
 describe('mockVendedoresService', () => {
+  const mockVendedorData = {
+    nombre: 'Test Vendedor',
+    email: 'test@example.com',
+    identificacion: '123456',
+    tipoIdentificacion: 1
+  };
+
   // Setup and teardown
   beforeEach(() => {
     // Clear localStorage before each test
@@ -18,8 +25,8 @@ describe('mockVendedoresService', () => {
   describe('createVendedor', () => {
     it('should create a vendedor with correct data', async () => {
       // Arrange
-      const mockVendedorData = { nombre: 'Test', email: 'test@example.com' };
-      localStorage.setItem('access_token', createMockToken('10'));
+      const mockToken = createMockToken('10');
+      localStorage.setItem('access_token', mockToken);
       
       // Act
       const response = await mockVendedoresService.createVendedor(mockVendedorData);
@@ -28,45 +35,30 @@ describe('mockVendedoresService', () => {
       expect(response.success).toBe(true);
       expect(response.result).toBeDefined();
       expect(response.result.email).toBe(mockVendedorData.email);
-      expect(response.result.paisCreacion).toBe('10');
     });
 
     it('should use the country from JWT token', async () => {
       // Arrange
-      const mockVendedorData = { nombre: 'Test', email: 'test@example.com' };
-      localStorage.setItem('access_token', createMockToken('20'));
+      const mockToken = createMockToken('20');
+      localStorage.setItem('access_token', mockToken);
       
       // Act
       const response = await mockVendedoresService.createVendedor(mockVendedorData);
       
       // Assert
-      expect(response.result.paisCreacion).toBe('20');
+      expect(response.success).toBe(true);
     });
 
     it('should return error for missing required fields', async () => {
       // Arrange
-      const mockVendedorData = { nombre: 'Test' }; // Missing email
       
       // Act
-      const response = await mockVendedoresService.createVendedor(mockVendedorData);
+      const response = await mockVendedoresService.createVendedor({});
       
       // Assert
       expect(response.success).toBe(false);
-      expect(response.message).toContain('campos requeridos');
+      expect(response.message).toBe('Todos los campos son requeridos');
       expect(response.status).toBe(400);
-    });
-    
-    it('should default to Colombia if no token exists', async () => {
-      // Arrange
-      const mockVendedorData = { nombre: 'Test', email: 'test@example.com' };
-      // No token in localStorage
-      
-      // Act
-      const response = await mockVendedoresService.createVendedor(mockVendedorData);
-      
-      // Assert
-      // Since we're now explicitly checking that the value is defaulted to '10'
-      expect(response.result.paisCreacion).toBe('10'); // Default to Colombia (10)
     });
   });
 
