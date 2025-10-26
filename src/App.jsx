@@ -33,6 +33,9 @@ import Vendedores from "./pages/ventas/Vendedores";
 // Importar página de detalle de bodega
 import BodegaDetalle from "./pages/BodegaDetalle";
 
+// Importar el componente MainAppBar
+import MainAppBar from './components/layout/MainAppBar';
+
 // Contexto para gestionar el modo oscuro/claro
 export const ColorModeContext = createContext({ 
   toggleColorMode: () => {},
@@ -87,6 +90,7 @@ function App() {
             // Layout para usuarios autenticados con Navbar
             <Box sx={{ display: 'flex' }}>
               <Navbar />
+              <MainAppBar />
               <Box
                 component="main"
                 sx={{ 
@@ -95,12 +99,13 @@ function App() {
                   py: { xs: 2, sm: 3 },
                   width: { sm: `calc(100% - ${drawerWidth}px)` }, 
                   ml: { sm: `${drawerWidth}px` },
+                  mt: '64px', // Añadir margen superior para el AppBar
                   transition: theme => theme.transitions.create('margin', {
                     easing: theme.transitions.easing.easeOut,
                     duration: theme.transitions.duration.enteringScreen,
                   }),
                   overflowX: 'hidden',
-                  minHeight: '100vh',
+                  minHeight: 'calc(100vh - 64px)', // Ajustar para el AppBar
                   boxSizing: 'border-box'
                 }}
               >

@@ -61,10 +61,6 @@ function Navbar() {
     setMobileOpen(!mobileOpen);
   };
 
-  const handleLogout = () => {
-    dispatch(logout());
-  };
-
   const drawer = (
     <>
       <Box 
@@ -121,23 +117,11 @@ function Navbar() {
       </List>
       <Box sx={{ flexGrow: 1 }} />
       
-      {/* Añadir el botón de cerrar sesión */}
-      <Box sx={{ p: 2 }}>
-        <Button
-          variant="outlined"
-          color="primary"
-          fullWidth
-          startIcon={<LogoutIcon />}
-          onClick={handleLogout}
-          sx={{ mb: 2 }}
-        >
-          Cerrar Sesión
-        </Button>
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <IconButton onClick={colorMode.toggleColorMode} color="inherit">
-            {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-          </IconButton>
-        </Box>
+      {/* Solo mantener el botón de tema */}
+      <Box sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
+        <IconButton onClick={colorMode.toggleColorMode} color="inherit">
+          {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+        </IconButton>
       </Box>
     </>
   );
