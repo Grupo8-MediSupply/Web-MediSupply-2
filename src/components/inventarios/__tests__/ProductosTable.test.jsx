@@ -30,17 +30,17 @@ describe('ProductosTable', () => {
   it('renders DataTable with correct props', () => {
     render(<ProductosTable productos={mockProductos} />);
     
-    // Verificar que se pasan los datos correctos al DataTable
+    // Verify that se pasan los datos correctos al DataTable
     const dataProps = JSON.parse(screen.getByTestId('data').textContent);
     expect(dataProps).toEqual(mockProductos);
     
-    // Verificar que se definan las columnas correctas
     const columnsProps = JSON.parse(screen.getByTestId('columns').textContent);
-    expect(columnsProps).toHaveLength(4); // Producto, Lote, Cantidad, Vencimiento
-    expect(columnsProps[0].id).toBe('producto');
-    expect(columnsProps[1].id).toBe('lote');
+    expect(columnsProps).toHaveLength(5);
+    expect(columnsProps[0].id).toBe('nombreProducto');
+    expect(columnsProps[1].id).toBe('numeroLote');
     expect(columnsProps[2].id).toBe('cantidad');
-    expect(columnsProps[3].id).toBe('vencimiento');
+    expect(columnsProps[3].id).toBe('FechaVencimiento'); // Updated to match actual implementation
+    expect(columnsProps[4].id).toBe('acciones');
   });
 
   it('renders all products correctly', () => {

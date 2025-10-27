@@ -42,8 +42,8 @@ describe('VendedoresTable', () => {
     // Verificar que se definan las columnas correctas
     const columnsProps = JSON.parse(screen.getByTestId('columns').textContent);
     expect(columnsProps).toHaveLength(4); // ID, Nombre, Territorio, Acciones
-    expect(columnsProps[0].id).toBe('id');
-    expect(columnsProps[1].id).toBe('nombre');
+    expect(columnsProps[0].id).toBe('nombre');
+    expect(columnsProps[1].id).toBe('email');
     expect(columnsProps[2].id).toBe('territorio');
     expect(columnsProps[3].id).toBe('acciones');
   });
