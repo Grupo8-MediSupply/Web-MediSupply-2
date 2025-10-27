@@ -43,15 +43,6 @@ import {
   clearProductoDetalle 
 } from '../redux/features/catalogoSlice';
 
-// Mapeo de códigos de países
-const PAISES = {
-  'CO': 'Colombia',
-  'MX': 'México',
-  'PE': 'Perú',
-  'CL': 'Chile',
-  'AR': 'Argentina'
-};
-
 function ProductoDetalle() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -119,6 +110,15 @@ function ProductoDetalle() {
   }
 
   const handleOpenEditForm = () => {
+    // Add debugging log to see producto structure
+    console.log('Datos del producto a editar:', {
+      ...producto,
+      medicamento: {
+        principioActivo: producto.principioActivo,
+        concentracion: producto.concentracion,
+        formaFarmaceutica: producto.formaFarmaceutica
+      }
+    });
     setIsEditFormOpen(true);
   };
 
@@ -386,7 +386,15 @@ function ProductoDetalle() {
       <NuevoProductoForm
         open={isEditFormOpen}
         onClose={handleCloseEditForm}
-        producto={producto}
+        producto={{
+          ...producto,
+          // Asegurar que los datos médicos estén en la estructura correcta
+          medicamento: {
+            principioActivo: producto.principioActivo,
+            concentracion: producto.concentracion,
+            formaFarmaceutica: producto.formaFarmaceutica
+          }
+        }}
       />
     </Container>
   );

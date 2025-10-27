@@ -10,7 +10,12 @@ const mockCatalogoService = {
           nombre: "Paracetamol 800mg",
           descripcion: "Analgésico y antipirético",
           tipo: "MEDICAMENTO",
-          precio: 80000
+          precio: 80000,
+          medicamento: {
+            principioActivo: "Paracetamol",
+            concentracion: "800mg",
+            formaFarmaceutica: "Tableta"
+          }
         },
         {
           productoRegionalId: "315b0fef-cbf0-4631-8665-aeeb18501863",
@@ -18,7 +23,12 @@ const mockCatalogoService = {
           nombre: "Loratadina 200mg",
           descripcion: "Analgésico y antipirético",
           tipo: "MEDICAMENTO",
-          precio: 20000
+          precio: 20000,
+          medicamento: {
+            principioActivo: "Loratadina",
+            concentracion: "200mg",
+            formaFarmaceutica: "Tableta"
+          }
         }
       ],
       timestamp: new Date().toISOString()
@@ -54,6 +64,12 @@ const mockCatalogoService = {
         descripcion: "Analgésico y antipirético",
         tipo: "MEDICAMENTO",
         precio: 80000,
+        // Agregar los campos faltantes de medicamento
+        medicamento: {
+          principioActivo: "Paracetamol",
+          concentracion: "800mg",
+          formaFarmaceutica: "Tableta"
+        },
         proveedor: {
           id: "18c1a721-39f6-4f55-9b83-51cee9cfb96e",
           nombre: "Prueba gcp2",

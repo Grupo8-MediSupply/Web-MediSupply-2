@@ -44,21 +44,38 @@ function NuevoProductoForm({ open, onClose, producto }) {
   // Cargar datos del producto cuando es modo edición
   useEffect(() => {
     if (producto) {
-      setFormData({
+      console.log('Datos recibidos en el formulario:', producto);
+      
+      const newFormData = {
         sku: producto.sku || '',
         nombre: producto.nombre || '',
         descripcion: producto.descripcion || '',
         tipo: producto.tipo || 'medicamento',
-        precioVenta: producto.precio || '',
+        precioVenta: producto.precioVenta || producto.precio || '',
         medicamento: {
-          principioActivo: producto.medicamento?.principioActivo || '',
-          concentracion: producto.medicamento?.concentracion || '',
-          formaFarmaceutica: producto.medicamento?.formaFarmaceutica || ''
+          principioActivo: producto.principioActivo || '',
+          concentracion: producto.concentracion || '',
+          formaFarmaceutica: producto.formaFarmaceutica || ''
         },
-        proveedorId: producto.proveedorId || '18c1a721-39f6-4f55-9b83-51cee9cfb96e'
-      });
+        proveedorId: producto.proveedorId || producto.proveedor?.id || 
+                    '18c1a721-39f6-4f55-9b83-51cee9cfb96e'
+      };
+
+      console.log('Nuevo estado del formulario:', newFormData);
+      setFormData(newFormData);
     }
-  }, [producto]);
+  }, [producto]); // Remover formData.nombre de las dependencias
+
+  // Agregar validación de campos
+  const validateForm = () => {
+    const errors = {};
+    if (!formData.nombre) errors.nombre = 'El nombre es requerido';
+    if (!formData.sku) errors.sku = 'El SKU es requerido';
+    if (!formData.precioVenta) errors.precioVenta = 'El precio es requerido';
+    // ... más validaciones según necesites
+    
+    return errors;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -85,9 +102,26 @@ function NuevoProductoForm({ open, onClose, producto }) {
     let response;
     
     if (isEditing) {
+      // Asegurar que los datos médicos se incluyan correctamente
+      const productoData = {
+        ...formData,
+        precio: formData.precioVenta,
+        medicamento: {
+          principioActivo: formData.medicamento.principioActivo,
+          concentracion: formData.medicamento.concentracion,
+          formaFarmaceutica: formData.medicamento.formaFarmaceutica
+        },
+        // También incluir los campos individuales para compatibilidad
+        principioActivo: formData.medicamento.principioActivo,
+        concentracion: formData.medicamento.concentracion,
+        formaFarmaceutica: formData.medicamento.formaFarmaceutica
+      };
+
+      console.log('Datos a enviar en actualización:', productoData); // Para debugging
+      
       response = await dispatch(updateProducto({ 
         id: producto.productoRegionalId, 
-        productoData: formData 
+        productoData
       }));
     } else {
       response = await dispatch(createProducto(formData));

@@ -77,7 +77,18 @@ export const updateProducto = createAsyncThunk(
   'catalogo/updateProducto',
   async ({ id, productoData }, { rejectWithValue }) => {
     try {
-      const response = await catalogoService.updateProducto(id, productoData);
+      // Asegurarse de que los campos estén en el formato correcto para la API
+      const dataToSend = {
+        ...productoData,
+        precio: productoData.precio || productoData.precioVenta, // usar precio o precioVenta
+        medicamento: {
+          principioActivo: productoData.principioActivo || productoData.medicamento?.principioActivo,
+          concentracion: productoData.concentracion || productoData.medicamento?.concentracion,
+          formaFarmaceutica: productoData.formaFarmaceutica || productoData.medicamento?.formaFarmaceutica
+        }
+      };
+
+      const response = await catalogoService.updateProducto(id, dataToSend);
       if (!response.success) {
         return rejectWithValue(response.message || 'Error al actualizar producto');
       }
@@ -214,9 +225,23 @@ const catalogoSlice = createSlice({
       })
       .addCase(fetchProductoById.fulfilled, (state, action) => {
         state.productoDetalleStatus = 'succeeded';
+        
+        // Asegurarse que los datos médicos estén disponibles en el formato correcto
+        const productoData = action.payload;
+        
         state.productoDetalle = {
-          ...action.payload,
-          // Add placeholder values for UI fields not in API response
+          ...productoData,
+          // Extraer datos médicos si están en la estructura anidada o usar los campos planos
+          principioActivo: productoData.medicamento?.principioActivo || productoData.principioActivo || '',
+          concentracion: productoData.medicamento?.concentracion || productoData.concentracion || '',
+          formaFarmaceutica: productoData.medicamento?.formaFarmaceutica || productoData.formaFarmaceutica || '',
+          // Mantener la estructura existente para compatibilidad
+          medicamento: {
+            principioActivo: productoData.medicamento?.principioActivo || productoData.principioActivo || '',
+            concentracion: productoData.medicamento?.concentracion || productoData.concentracion || '',
+            formaFarmaceutica: productoData.medicamento?.formaFarmaceutica || productoData.formaFarmaceutica || ''
+          },
+          // Resto de datos placeholder
           stock: {
             disponible: 0,
             total: 0,
