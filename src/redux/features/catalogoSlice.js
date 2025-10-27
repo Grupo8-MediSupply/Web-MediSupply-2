@@ -72,6 +72,22 @@ export const fetchProductoById = createAsyncThunk(
   }
 );
 
+// Add updateProducto thunk
+export const updateProducto = createAsyncThunk(
+  'catalogo/updateProducto',
+  async ({ id, productoData }, { rejectWithValue }) => {
+    try {
+      const response = await catalogoService.updateProducto(id, productoData);
+      if (!response.success) {
+        return rejectWithValue(response.message || 'Error al actualizar producto');
+      }
+      return response.result;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const initialState = {
   productos: [],
   status: 'idle',
@@ -90,7 +106,9 @@ const initialState = {
   createError: null,
   productoDetalle: null,
   productoDetalleStatus: 'idle',
-  productoDetalleError: null
+  productoDetalleError: null,
+  updateStatus: 'idle',
+  updateError: null
 };
 
 const catalogoSlice = createSlice({
@@ -122,6 +140,10 @@ const catalogoSlice = createSlice({
       state.productoDetalle = null;
       state.productoDetalleStatus = 'idle';
       state.productoDetalleError = null;
+    },
+    resetUpdateStatus: (state) => {
+      state.updateStatus = 'idle';
+      state.updateError = null;
     }
   },
   extraReducers: (builder) => {
@@ -216,6 +238,22 @@ const catalogoSlice = createSlice({
       .addCase(fetchProductoById.rejected, (state, action) => {
         state.productoDetalleStatus = 'failed';
         state.productoDetalleError = action.payload;
+      })
+      // Add updateProducto cases
+      .addCase(updateProducto.pending, (state) => {
+        state.updateStatus = 'loading';
+      })
+      .addCase(updateProducto.fulfilled, (state, action) => {
+        state.updateStatus = 'succeeded';
+        const index = state.productos.findIndex(p => p.productoRegionalId === action.payload.productoRegionalId);
+        if (index !== -1) {
+          state.productos[index] = action.payload;
+        }
+        state.productoDetalle = action.payload;
+      })
+      .addCase(updateProducto.rejected, (state, action) => {
+        state.updateStatus = 'failed';
+        state.updateError = action.payload;
       });
   }
 });
@@ -264,5 +302,8 @@ export const selectCreateError = state => state.catalogo.createError;
 export const selectProductoDetalle = (state) => state.catalogo.productoDetalle;
 export const selectProductoDetalleStatus = (state) => state.catalogo.productoDetalleStatus;
 export const selectProductoDetalleError = (state) => state.catalogo.productoDetalleError;
+// Add update status selector
+export const selectUpdateStatus = state => state.catalogo.updateStatus;
+export const selectUpdateError = state => state.catalogo.updateError;
 
 export default catalogoSlice.reducer;

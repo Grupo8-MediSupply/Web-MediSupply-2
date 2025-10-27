@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -32,6 +32,7 @@ import WallpaperIcon from '@mui/icons-material/Wallpaper';
 
 // Componentes personalizados
 import BreadcrumbsNav from '../components/ui/BreadcrumbsNav';
+import NuevoProductoForm from '../components/catalogo/NuevoProductoForm';
 
 // Redux actions y selectors
 import { 
@@ -59,6 +60,7 @@ function ProductoDetalle() {
   const producto = useSelector(selectProductoDetalle);
   const status = useSelector(selectProductoDetalleStatus);
   const error = useSelector(selectProductoDetalleError);
+  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   
   // Si no hay producto seleccionado, buscar en el catálogo por ID
   useEffect(() => {
@@ -115,6 +117,14 @@ function ProductoDetalle() {
       </Container>
     );
   }
+
+  const handleOpenEditForm = () => {
+    setIsEditFormOpen(true);
+  };
+
+  const handleCloseEditForm = () => {
+    setIsEditFormOpen(false);
+  };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -176,6 +186,7 @@ function ProductoDetalle() {
                   <Button
                     variant="contained"
                     startIcon={<EditIcon />}
+                    onClick={handleOpenEditForm}
                   >
                     Editar producto
                   </Button>
@@ -371,6 +382,12 @@ function ProductoDetalle() {
           </Grid>
         </Grid>
       </Paper>
+
+      <NuevoProductoForm
+        open={isEditFormOpen}
+        onClose={handleCloseEditForm}
+        producto={producto}
+      />
     </Container>
   );
 }
