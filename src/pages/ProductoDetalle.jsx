@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -32,6 +32,7 @@ import WallpaperIcon from '@mui/icons-material/Wallpaper';
 
 // Componentes personalizados
 import BreadcrumbsNav from '../components/ui/BreadcrumbsNav';
+import NuevoProductoForm from '../components/catalogo/NuevoProductoForm';
 
 // Redux actions y selectors
 import { 
@@ -42,15 +43,6 @@ import {
   clearProductoDetalle 
 } from '../redux/features/catalogoSlice';
 
-// Mapeo de códigos de países
-const PAISES = {
-  'CO': 'Colombia',
-  'MX': 'México',
-  'PE': 'Perú',
-  'CL': 'Chile',
-  'AR': 'Argentina'
-};
-
 function ProductoDetalle() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -59,6 +51,7 @@ function ProductoDetalle() {
   const producto = useSelector(selectProductoDetalle);
   const status = useSelector(selectProductoDetalleStatus);
   const error = useSelector(selectProductoDetalleError);
+  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
   
   // Si no hay producto seleccionado, buscar en el catálogo por ID
   useEffect(() => {
@@ -115,6 +108,23 @@ function ProductoDetalle() {
       </Container>
     );
   }
+
+  const handleOpenEditForm = () => {
+    // Add debugging log to see producto structure
+    console.log('Datos del producto a editar:', {
+      ...producto,
+      medicamento: {
+        principioActivo: producto.principioActivo,
+        concentracion: producto.concentracion,
+        formaFarmaceutica: producto.formaFarmaceutica
+      }
+    });
+    setIsEditFormOpen(true);
+  };
+
+  const handleCloseEditForm = () => {
+    setIsEditFormOpen(false);
+  };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -176,6 +186,7 @@ function ProductoDetalle() {
                   <Button
                     variant="contained"
                     startIcon={<EditIcon />}
+                    onClick={handleOpenEditForm}
                   >
                     Editar producto
                   </Button>
@@ -371,6 +382,20 @@ function ProductoDetalle() {
           </Grid>
         </Grid>
       </Paper>
+
+      <NuevoProductoForm
+        open={isEditFormOpen}
+        onClose={handleCloseEditForm}
+        producto={{
+          ...producto,
+          // Asegurar que los datos médicos estén en la estructura correcta
+          medicamento: {
+            principioActivo: producto.principioActivo,
+            concentracion: producto.concentracion,
+            formaFarmaceutica: producto.formaFarmaceutica
+          }
+        }}
+      />
     </Container>
   );
 }

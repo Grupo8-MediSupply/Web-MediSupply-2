@@ -72,6 +72,33 @@ export const fetchProductoById = createAsyncThunk(
   }
 );
 
+// Add updateProducto thunk
+export const updateProducto = createAsyncThunk(
+  'catalogo/updateProducto',
+  async ({ id, productoData }, { rejectWithValue }) => {
+    try {
+      // Asegurarse de que los campos estén en el formato correcto para la API
+      const dataToSend = {
+        ...productoData,
+        precio: productoData.precio || productoData.precioVenta, // usar precio o precioVenta
+        medicamento: {
+          principioActivo: productoData.principioActivo || productoData.medicamento?.principioActivo,
+          concentracion: productoData.concentracion || productoData.medicamento?.concentracion,
+          formaFarmaceutica: productoData.formaFarmaceutica || productoData.medicamento?.formaFarmaceutica
+        }
+      };
+
+      const response = await catalogoService.updateProducto(id, dataToSend);
+      if (!response.success) {
+        return rejectWithValue(response.message || 'Error al actualizar producto');
+      }
+      return response.result;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const initialState = {
   productos: [],
   status: 'idle',
@@ -90,7 +117,9 @@ const initialState = {
   createError: null,
   productoDetalle: null,
   productoDetalleStatus: 'idle',
-  productoDetalleError: null
+  productoDetalleError: null,
+  updateStatus: 'idle',
+  updateError: null
 };
 
 const catalogoSlice = createSlice({
@@ -122,6 +151,10 @@ const catalogoSlice = createSlice({
       state.productoDetalle = null;
       state.productoDetalleStatus = 'idle';
       state.productoDetalleError = null;
+    },
+    resetUpdateStatus: (state) => {
+      state.updateStatus = 'idle';
+      state.updateError = null;
     }
   },
   extraReducers: (builder) => {
@@ -192,9 +225,23 @@ const catalogoSlice = createSlice({
       })
       .addCase(fetchProductoById.fulfilled, (state, action) => {
         state.productoDetalleStatus = 'succeeded';
+        
+        // Asegurarse que los datos médicos estén disponibles en el formato correcto
+        const productoData = action.payload;
+        
         state.productoDetalle = {
-          ...action.payload,
-          // Add placeholder values for UI fields not in API response
+          ...productoData,
+          // Extraer datos médicos si están en la estructura anidada o usar los campos planos
+          principioActivo: productoData.medicamento?.principioActivo || productoData.principioActivo || '',
+          concentracion: productoData.medicamento?.concentracion || productoData.concentracion || '',
+          formaFarmaceutica: productoData.medicamento?.formaFarmaceutica || productoData.formaFarmaceutica || '',
+          // Mantener la estructura existente para compatibilidad
+          medicamento: {
+            principioActivo: productoData.medicamento?.principioActivo || productoData.principioActivo || '',
+            concentracion: productoData.medicamento?.concentracion || productoData.concentracion || '',
+            formaFarmaceutica: productoData.medicamento?.formaFarmaceutica || productoData.formaFarmaceutica || ''
+          },
+          // Resto de datos placeholder
           stock: {
             disponible: 0,
             total: 0,
@@ -216,6 +263,22 @@ const catalogoSlice = createSlice({
       .addCase(fetchProductoById.rejected, (state, action) => {
         state.productoDetalleStatus = 'failed';
         state.productoDetalleError = action.payload;
+      })
+      // Add updateProducto cases
+      .addCase(updateProducto.pending, (state) => {
+        state.updateStatus = 'loading';
+      })
+      .addCase(updateProducto.fulfilled, (state, action) => {
+        state.updateStatus = 'succeeded';
+        const index = state.productos.findIndex(p => p.productoRegionalId === action.payload.productoRegionalId);
+        if (index !== -1) {
+          state.productos[index] = action.payload;
+        }
+        state.productoDetalle = action.payload;
+      })
+      .addCase(updateProducto.rejected, (state, action) => {
+        state.updateStatus = 'failed';
+        state.updateError = action.payload;
       });
   }
 });
@@ -264,5 +327,8 @@ export const selectCreateError = state => state.catalogo.createError;
 export const selectProductoDetalle = (state) => state.catalogo.productoDetalle;
 export const selectProductoDetalleStatus = (state) => state.catalogo.productoDetalleStatus;
 export const selectProductoDetalleError = (state) => state.catalogo.productoDetalleError;
+// Add update status selector
+export const selectUpdateStatus = state => state.catalogo.updateStatus;
+export const selectUpdateError = state => state.catalogo.updateError;
 
 export default catalogoSlice.reducer;

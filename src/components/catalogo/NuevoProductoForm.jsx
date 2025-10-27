@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
   Dialog,
@@ -12,11 +12,20 @@ import {
   InputAdornment
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
-import { createProducto, selectCreateStatus } from '../../redux/features/catalogoSlice';
+import { 
+  createProducto, 
+  updateProducto, 
+  selectCreateStatus, 
+  selectUpdateStatus,
+  selectUpdateError 
+} from '../../redux/features/catalogoSlice';
 
-function NuevoProductoForm({ open, onClose }) {
+function NuevoProductoForm({ open, onClose, producto }) {
   const dispatch = useDispatch();
   const createStatus = useSelector(selectCreateStatus);
+  const updateStatus = useSelector(selectUpdateStatus);
+  const updateError = useSelector(selectUpdateError);
+  const isEditing = !!producto;
   
   const [formData, setFormData] = useState({
     sku: '',
@@ -29,8 +38,44 @@ function NuevoProductoForm({ open, onClose }) {
       concentracion: '',
       formaFarmaceutica: ''
     },
-    proveedorId: '18c1a721-39f6-4f55-9b83-51cee9cfb96e' // Valor por defecto para pruebas
+    proveedorId: '18c1a721-39f6-4f55-9b83-51cee9cfb96e'
   });
+
+  // Cargar datos del producto cuando es modo edición
+  useEffect(() => {
+    if (producto) {
+      console.log('Datos recibidos en el formulario:', producto);
+      
+      const newFormData = {
+        sku: producto.sku || '',
+        nombre: producto.nombre || '',
+        descripcion: producto.descripcion || '',
+        tipo: producto.tipo || 'medicamento',
+        precioVenta: producto.precioVenta || producto.precio || '',
+        medicamento: {
+          principioActivo: producto.principioActivo || '',
+          concentracion: producto.concentracion || '',
+          formaFarmaceutica: producto.formaFarmaceutica || ''
+        },
+        proveedorId: producto.proveedorId || producto.proveedor?.id || 
+                    '18c1a721-39f6-4f55-9b83-51cee9cfb96e'
+      };
+
+      console.log('Nuevo estado del formulario:', newFormData);
+      setFormData(newFormData);
+    }
+  }, [producto]); // Remover formData.nombre de las dependencias
+
+  // Agregar validación de campos
+  const validateForm = () => {
+    const errors = {};
+    if (!formData.nombre) errors.nombre = 'El nombre es requerido';
+    if (!formData.sku) errors.sku = 'El SKU es requerido';
+    if (!formData.precioVenta) errors.precioVenta = 'El precio es requerido';
+    // ... más validaciones según necesites
+    
+    return errors;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -54,19 +99,49 @@ function NuevoProductoForm({ open, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await dispatch(createProducto(formData));
+    let response;
+    
+    if (isEditing) {
+      // Asegurar que los datos médicos se incluyan correctamente
+      const productoData = {
+        ...formData,
+        precio: formData.precioVenta,
+        medicamento: {
+          principioActivo: formData.medicamento.principioActivo,
+          concentracion: formData.medicamento.concentracion,
+          formaFarmaceutica: formData.medicamento.formaFarmaceutica
+        },
+        // También incluir los campos individuales para compatibilidad
+        principioActivo: formData.medicamento.principioActivo,
+        concentracion: formData.medicamento.concentracion,
+        formaFarmaceutica: formData.medicamento.formaFarmaceutica
+      };
+
+      console.log('Datos a enviar en actualización:', productoData); // Para debugging
+      
+      response = await dispatch(updateProducto({ 
+        id: producto.productoRegionalId, 
+        productoData
+      }));
+    } else {
+      response = await dispatch(createProducto(formData));
+    }
+    
     if (response.meta.requestStatus === 'fulfilled') {
       onClose();
     }
   };
 
+  const status = isEditing ? updateStatus : createStatus;
+  const isLoading = status === 'loading';
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Nuevo Producto</DialogTitle>
+      <DialogTitle>{isEditing ? 'Editar Producto' : 'Nuevo Producto'}</DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent>
           <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-            Complete la información del producto
+            {isEditing ? 'Edite la información del producto' : 'Complete la información del producto'}
           </Typography>
           
           <Grid container spacing={2}>
@@ -157,9 +232,9 @@ function NuevoProductoForm({ open, onClose }) {
           <Button 
             type="submit" 
             variant="contained"
-            disabled={createStatus === 'loading'}
+            disabled={isLoading}
           >
-            {createStatus === 'loading' ? 'Guardando...' : 'Guardar'}
+            {isLoading ? 'Guardando...' : 'Guardar'}
           </Button>
         </DialogActions>
       </form>
@@ -169,7 +244,8 @@ function NuevoProductoForm({ open, onClose }) {
 
 NuevoProductoForm.propTypes = {
   open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired
+  onClose: PropTypes.func.isRequired,
+  producto: PropTypes.object
 };
 
 export default NuevoProductoForm;
