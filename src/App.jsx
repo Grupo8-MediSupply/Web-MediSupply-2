@@ -31,6 +31,7 @@ import ApiModeIndicator from "./components/ApiModeIndicator";
 
 // Importar página de vendedores
 import Vendedores from "./pages/ventas/Vendedores";
+import ReportesVentas from "./pages/ventas/ReportesVentas";
 
 // Importar página de detalle de bodega
 import BodegaDetalle from "./pages/BodegaDetalle";
@@ -146,9 +147,18 @@ function App() {
                       </ProtectedRoute>
                     } 
                   />
+                  <Route 
+                    path="/ventas/reportes" 
+                    element={
+                      <ProtectedRoute>
+                        <RoleBasedRoute allowedRoles={[Roles.ADMIN]}>
+                          <ReportesVentas />
+                        </RoleBasedRoute>
+                      </ProtectedRoute>
+                    } 
+                  />
                   
                   <Route path="/clientes" element={<ProtectedRoute><Clientes /></ProtectedRoute>} />
-                  <Route path="/reportes" element={<ProtectedRoute><Reportes /></ProtectedRoute>} />
                   <Route path="/configuracion" element={<ProtectedRoute><Configuracion /></ProtectedRoute>} />
                   
                   {/* Redirigir la ruta /login a / si ya está autenticado */}

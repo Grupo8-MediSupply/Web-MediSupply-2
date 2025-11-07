@@ -6,6 +6,7 @@ import bodegasReducer from './features/bodegasSlice';
 import vendedoresReducer from './features/vendedoresSlice';
 import proveedoresReducer from './features/proveedoresSlice';
 import configuracionReducer from './features/configuracionSlice';
+import reportesReducer from './features/reportesSlice';
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
     vendedores: vendedoresReducer,
     proveedores: proveedoresReducer,
     configuracion: configuracionReducer,
+    reportes: reportesReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
