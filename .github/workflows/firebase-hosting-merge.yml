@@ -14,12 +14,29 @@ jobs:
       - run: npm ci
 
       # 🧠 Crear .env.production a partir del .env.example
-      - name: Create .env.production file
+      - name: Create .env.production file dynamically (only replace existing secrets)
         run: |
           cp .env.example .env.production
-          sed -i 's|VITE_API_BASE_URL=.*|VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}|' .env.production
-          sed -i 's|VITE_NODE_ENV=.*|VITE_NODE_ENV=production|' .env.production
-          sed -i 's|VITE_USE_MOCK_API=.*|VITE_USE_MOCK_API=false|' .env.production
+
+          echo "🔍 Checking which variables have secrets to replace..."
+          while IFS='=' read -r key value; do
+            # Saltar líneas vacías o comentarios
+            [[ -z "$key" || "$key" =~ ^# ]] && continue
+
+            # Solo procesar claves que empiecen por VITE_
+            if [[ "$key" == VITE_* ]]; then
+              # Verificar si hay un secret con ese nombre
+              secret_value="${{ secrets[key] }}"
+              if [ -n "$secret_value" ]; then
+                echo "✅ Replacing $key from secrets"
+                sed -i "s|^${key}=.*|${key}=${secret_value}|" .env.production
+              else
+                echo "ℹ️ Keeping default for $key"
+              fi
+            fi
+          done < .env.example
+
+          echo "✅ .env.production created successfully"
 
       # 🏗️ Construir la app
       - name: Build app
