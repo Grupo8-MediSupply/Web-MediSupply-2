@@ -226,27 +226,56 @@ const catalogoSlice = createSlice({
       .addCase(fetchProductoById.fulfilled, (state, action) => {
         state.productoDetalleStatus = 'succeeded';
         
-        // Asegurarse que los datos médicos estén disponibles en el formato correcto
         const productoData = action.payload;
+        const productoInfo = productoData.producto_info;
+        
+        // Calcular stock total desde las bodegas
+        const stockTotal = productoData.bodegas?.reduce((total, bodega) => {
+          const bodegaTotal = bodega.lotes.reduce((sum, lote) => sum + lote.cantidad, 0);
+          return total + bodegaTotal;
+        }, 0) || 0;
+        
+        // Crear array de ubicaciones desde las bodegas
+        const ubicaciones = productoData.bodegas?.map(bodega => ({
+          bodega: bodega.bodegaNombre,
+          cantidad: bodega.lotes.reduce((sum, lote) => sum + lote.cantidad, 0)
+        })) || [];
         
         state.productoDetalle = {
-          ...productoData,
-          // Extraer datos médicos si están en la estructura anidada o usar los campos planos
-          principioActivo: productoData.medicamento?.principioActivo || productoData.principioActivo || '',
-          concentracion: productoData.medicamento?.concentracion || productoData.concentracion || '',
-          formaFarmaceutica: productoData.medicamento?.formaFarmaceutica || productoData.formaFarmaceutica || '',
-          // Mantener la estructura existente para compatibilidad
+          // Información básica del producto
+          id: productoInfo.id,
+          productoRegionalId: productoInfo.id,
+          sku: productoInfo.sku,
+          nombre: productoInfo.nombre,
+          descripcion: productoInfo.descripcion,
+          tipo: productoData.tipo,
+          precio: productoData.precio,
+          
+          // Información del medicamento
+          principioActivo: productoInfo.nombre || '',
+          concentracion: productoInfo.concentracion || '',
+          formaFarmaceutica: 'Tableta', // Valor por defecto, actualizar si viene en la API
           medicamento: {
-            principioActivo: productoData.medicamento?.principioActivo || productoData.principioActivo || '',
-            concentracion: productoData.medicamento?.concentracion || productoData.concentracion || '',
-            formaFarmaceutica: productoData.medicamento?.formaFarmaceutica || productoData.formaFarmaceutica || ''
+            principioActivo: productoInfo.nombre || '',
+            concentracion: productoInfo.concentracion || '',
+            formaFarmaceutica: 'Tableta'
           },
-          // Resto de datos placeholder
+          
+          // Información del proveedor
+          proveedor: productoData.proveedor || null,
+          
+          // Información de stock
           stock: {
-            disponible: 0,
-            total: 0,
-            reservado: 0
+            disponible: stockTotal,
+            total: stockTotal,
+            reservado: 0 // No viene en la API, valor por defecto
           },
+          
+          // Ubicaciones desde las bodegas
+          ubicaciones: ubicaciones,
+          bodegas: productoData.bodegas || [],
+          
+          // Datos placeholder para condiciones de almacenamiento
           condicionesAlmacenamiento: {
             temperatura: 'No especificado',
             humedad: 'No especificado'
@@ -257,7 +286,11 @@ const catalogoSlice = createSlice({
             tiene: false,
             documentos: []
           },
-          ubicaciones: []
+          
+          // Información adicional
+          productoPaisId: productoData.productoPaisId,
+          createdAt: productoInfo.createdAt,
+          updatedAt: productoInfo.updatedAt
         };
       })
       .addCase(fetchProductoById.rejected, (state, action) => {
