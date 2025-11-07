@@ -241,6 +241,36 @@ const catalogoSlice = createSlice({
           cantidad: bodega.lotes.reduce((sum, lote) => sum + lote.cantidad, 0)
         })) || [];
         
+        // Construir objeto específico según el tipo de producto
+        let tipoEspecifico = {};
+        
+        if (productoData.tipo === 'MEDICAMENTO') {
+          tipoEspecifico = {
+            medicamento: {
+              principioActivo: productoData.medicamento?.principioActivo || productoInfo.nombre || '',
+              concentracion: productoData.medicamento?.concentracion || productoInfo.concentracion || '',
+              formaFarmaceutica: productoData.medicamento?.formaFarmaceutica || 'Tableta'
+            }
+          };
+        } else if (productoData.tipo === 'INSUMO') {
+          tipoEspecifico = {
+            insumoMedico: productoData.insumoMedico || {
+              material: 'No especificado',
+              esteril: false,
+              usoUnico: false
+            }
+          };
+        } else if (productoData.tipo === 'EQUIPO') {
+          tipoEspecifico = {
+            equipoMedico: productoData.equipoMedico || {
+              marca: 'No especificado',
+              modelo: 'No especificado',
+              vidaUtil: 0,
+              requiereMantenimiento: false
+            }
+          };
+        }
+        
         state.productoDetalle = {
           // Información básica del producto
           id: productoInfo.id,
@@ -250,25 +280,20 @@ const catalogoSlice = createSlice({
           descripcion: productoInfo.descripcion,
           tipo: productoData.tipo,
           precio: productoData.precio,
+          precioVenta: productoData.precio, // Alias para formulario
           
-          // Información del medicamento
-          principioActivo: productoInfo.nombre || '',
-          concentracion: productoInfo.concentracion || '',
-          formaFarmaceutica: 'Tableta', // Valor por defecto, actualizar si viene en la API
-          medicamento: {
-            principioActivo: productoInfo.nombre || '',
-            concentracion: productoInfo.concentracion || '',
-            formaFarmaceutica: 'Tableta'
-          },
+          // Incluir datos específicos del tipo
+          ...tipoEspecifico,
           
           // Información del proveedor
           proveedor: productoData.proveedor || null,
+          proveedorId: productoData.proveedor?.id || null,
           
           // Información de stock
           stock: {
             disponible: stockTotal,
             total: stockTotal,
-            reservado: 0 // No viene en la API, valor por defecto
+            reservado: 0
           },
           
           // Ubicaciones desde las bodegas

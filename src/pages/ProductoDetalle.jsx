@@ -110,17 +110,7 @@ function ProductoDetalle() {
   }
 
   const handleOpenEditForm = () => {
-    // Extraer datos del medicamento de manera segura
-    const medicamentoData = {
-      principioActivo: producto.principioActivo || producto.medicamento?.principioActivo || '',
-      concentracion: producto.concentracion || producto.medicamento?.concentracion || '',
-      formaFarmaceutica: producto.formaFarmaceutica || producto.medicamento?.formaFarmaceutica || ''
-    };
-    
-    console.log('Datos del producto a editar:', {
-      ...producto,
-      medicamento: medicamentoData
-    });
+    console.log('Datos del producto a editar:', producto);
     setIsEditFormOpen(true);
   };
 
@@ -388,18 +378,7 @@ function ProductoDetalle() {
       <NuevoProductoForm
         open={isEditFormOpen}
         onClose={handleCloseEditForm}
-        producto={{
-          ...producto,
-          // Asegurar que los datos médicos estén en la estructura correcta
-          principioActivo: producto.principioActivo || producto.medicamento?.principioActivo || '',
-          concentracion: producto.concentracion || producto.medicamento?.concentracion || '',
-          formaFarmaceutica: producto.formaFarmaceutica || producto.medicamento?.formaFarmaceutica || '',
-          medicamento: {
-            principioActivo: producto.principioActivo || producto.medicamento?.principioActivo || '',
-            concentracion: producto.concentracion || producto.medicamento?.concentracion || '',
-            formaFarmaceutica: producto.formaFarmaceutica || producto.medicamento?.formaFarmaceutica || ''
-          }
-        }}
+        producto={producto}
       />
     </Container>
   );

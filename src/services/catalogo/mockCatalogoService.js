@@ -55,9 +55,10 @@ const mockCatalogoService = {
 
   getProductoById: async (id) => {
     await new Promise(resolve => setTimeout(resolve, 800));
-    return {
-      success: true,
-      result: {
+    
+    // Simular diferentes tipos de productos según el ID
+    const productos = {
+      "03700796-ef17-4923-8368-22d718c5a5cd": {
         producto_info: {
           id: "03700796-ef17-4923-8368-22d718c5a5cd",
           createdAt: "2025-11-07T04:44:19.397Z",
@@ -69,6 +70,11 @@ const mockCatalogoService = {
         },
         tipo: "MEDICAMENTO",
         precio: 80000,
+        medicamento: {
+          principioActivo: "Paracetamol",
+          concentracion: "800mg",
+          formaFarmaceutica: "Tableta"
+        },
         proveedor: {
           id: "18c1a721-39f6-4f55-9b83-51cee9cfb96e",
           nombre: "Prueba gcp2",
@@ -79,25 +85,64 @@ const mockCatalogoService = {
           {
             bodegaId: "d4c30897-e898-42d4-b890-96ff8af955d0",
             bodegaNombre: "Central",
-            lotes: [
-              {
-                loteId: "ce471079-7433-4e11-b238-750c006aaff3",
-                cantidad: 3000
-              }
-            ]
-          },
-          {
-            bodegaId: "f084da73-6d8f-4cd0-be3e-71c6f0aadce6",
-            bodegaNombre: "Occidente",
-            lotes: [
-              {
-                loteId: "ee2ab508-97b5-4397-b686-68922c3e451a",
-                cantidad: 2000
-              }
-            ]
+            lotes: [{ loteId: "ce471079-7433-4e11-b238-750c006aaff3", cantidad: 3000 }]
           }
         ]
       },
+      "insumo-001": {
+        producto_info: {
+          id: "insumo-001",
+          createdAt: "2025-11-07T04:44:19.397Z",
+          updatedAt: "2025-11-07T04:44:19.397Z",
+          sku: "INS-001",
+          nombre: "Guantes de látex",
+          descripcion: "Guantes desechables de látex"
+        },
+        tipo: "INSUMO",
+        precio: 15000,
+        insumoMedico: {
+          material: "Látex",
+          esteril: true,
+          usoUnico: true
+        },
+        proveedor: {
+          id: "18c1a721-39f6-4f55-9b83-51cee9cfb96e",
+          nombre: "Prueba gcp2",
+          pais: "México"
+        },
+        productoPaisId: "10",
+        bodegas: []
+      },
+      "equipo-001": {
+        producto_info: {
+          id: "equipo-001",
+          createdAt: "2025-11-07T04:44:19.397Z",
+          updatedAt: "2025-11-07T04:44:19.397Z",
+          sku: "EQP-003",
+          nombre: "Nebulizador ultrasónico",
+          descripcion: "Equipo para administrar medicamentos en aerosol mediante ultrasonido."
+        },
+        tipo: "EQUIPO",
+        precio: 390000,
+        equipoMedico: {
+          marca: "Philips",
+          modelo: "InnoSpire Go",
+          vidaUtil: 10,
+          requiereMantenimiento: true
+        },
+        proveedor: {
+          id: "18c1a721-39f6-4f55-9b83-51cee9cfb96e",
+          nombre: "Prueba gcp2",
+          pais: "México"
+        },
+        productoPaisId: "10",
+        bodegas: []
+      }
+    };
+    
+    return {
+      success: true,
+      result: productos[id] || productos["03700796-ef17-4923-8368-22d718c5a5cd"],
       timestamp: new Date().toISOString()
     };
   }
