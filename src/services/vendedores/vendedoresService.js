@@ -9,7 +9,7 @@ import { apiRequest, withAuth } from '../apiClient';
 const vendedoresService = {
   /**
    * Crear un nuevo vendedor
-   * @param {Object} vendedorData - Datos del vendedor (nombre, email)
+   * @param {Object} vendedorData - Datos del vendedor (nombre, email, identificacion, tipoIdentificacion)
    * @returns {Promise} - Promesa con la respuesta de la API
    */
   createVendedor: (vendedorData) => apiRequest('/vendedores', {
@@ -19,10 +19,11 @@ const vendedoresService = {
   }),
 
   /**
-   * Obtener lista de vendedores
+   * Obtener lista de vendedores por país
+   * @param {string} paisId - ID del país (10 para Colombia, 20 para México, etc.)
    * @returns {Promise} - Promesa con la respuesta de la API
    */
-  getVendedores: () => apiRequest('/vendedores', {
+  getVendedoresByPais: (paisId) => apiRequest(`/vendedores/pais/${paisId}`, {
     method: 'GET',
     ...withAuth()
   }),

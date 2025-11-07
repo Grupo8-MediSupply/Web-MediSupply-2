@@ -8,6 +8,7 @@ import authService from './auth';
 import vendedoresService from './vendedores';
 import proveedoresService from './proveedores';
 import catalogoService from './catalogo/index';
+import reportesService from './reportes';
 
 // Exportar todos los servicios agrupados por dominio
 export const api = {
@@ -15,6 +16,7 @@ export const api = {
   vendedores: vendedoresService,
   proveedores: proveedoresService,
   catalogo: catalogoService,
+  reportes: reportesService,
   // En el futuro, otros dominios se añadirán aquí:
   // inventory: inventoryService,
   // catalog: catalogService,

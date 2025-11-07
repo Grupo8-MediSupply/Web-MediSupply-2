@@ -53,7 +53,6 @@ function Navbar() {
     { text: 'Logisticas', path: '/logisticas' },
     { text: 'Ventas', path: '/ventas' },
     { text: 'Clientes', path: '/clientes' },
-    { text: 'Reportes', path: '/reportes' },
     { text: 'Configuración', path: '/configuracion' },
   ];
 

@@ -1,13 +1,20 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
-import { Countries } from '../../constants/auth';
 
-// Acción asíncrona para obtener vendedores
+// Acción asíncrona para obtener vendedores por país
 export const fetchVendedores = createAsyncThunk(
   'vendedores/fetchVendedores',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
-      const response = await api.vendedores.getVendedores();
+      // Obtener el paisId desde la configuración del estado
+      const state = getState();
+      const paisId = state.configuracion?.pais?.id;
+      
+      if (!paisId) {
+        return rejectWithValue('No se pudo obtener el ID del país desde la configuración');
+      }
+      
+      const response = await api.vendedores.getVendedoresByPais(paisId);
       
       if (!response.success) {
         return rejectWithValue(response.message || 'Error al obtener vendedores');
@@ -23,7 +30,7 @@ export const fetchVendedores = createAsyncThunk(
 // Acción asíncrona para añadir un nuevo vendedor
 export const addVendedor = createAsyncThunk(
   'vendedores/addVendedor',
-  async (vendedorData, { rejectWithValue }) => {
+  async (vendedorData, { rejectWithValue, getState }) => {
     try {
       const response = await api.vendedores.createVendedor(vendedorData);
       
@@ -31,16 +38,16 @@ export const addVendedor = createAsyncThunk(
         return rejectWithValue(response.message || 'Error al crear vendedor');
       }
       
+      // Obtener paisId de la configuración
+      const state = getState();
+      const paisId = state.configuracion?.pais?.id || response.result.paisCreacion;
+      
       // Crear un objeto vendedor completo para el estado local
-      // usando los datos enviados y la respuesta de la API
       const newVendedor = {
-        id: Math.random().toString(36).substr(2, 6), // ID temporal para UI
+        id: response.result.id || `temp-${Date.now()}`,
         nombre: vendedorData.nombre,
         email: response.result.email,
-        pais: response.result.paisCreacion,
-        territorio: response.result.paisCreacion === '10' ? 'Colombia' : 'México',
-        visitasCompletadas: 0,
-        visitasProgramadas: 0,
+        paisId: paisId
       };
       
       return newVendedor;
@@ -52,13 +59,12 @@ export const addVendedor = createAsyncThunk(
 
 const initialState = {
   vendedores: [],
-  status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+  status: 'idle',
   error: null,
   filtros: {
-    territorio: '',
-    equipo: ''
+    nombre: ''
   },
-  addStatus: 'idle' // 'idle' | 'loading' | 'succeeded' | 'failed'
+  addStatus: 'idle'
 };
 
 const vendedoresSlice = createSlice({
@@ -69,7 +75,7 @@ const vendedoresSlice = createSlice({
       state.filtros = { ...state.filtros, ...action.payload };
     },
     clearFiltros: (state) => {
-      state.filtros = { territorio: '', equipo: '' };
+      state.filtros = { nombre: '' };
     },
     resetAddStatus: (state) => {
       state.addStatus = 'idle';
@@ -80,14 +86,16 @@ const vendedoresSlice = createSlice({
       // Manejar fetchVendedores
       .addCase(fetchVendedores.pending, (state) => {
         state.status = 'loading';
+        state.error = null;
       })
       .addCase(fetchVendedores.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.vendedores = action.payload;
+        state.error = null;
       })
       .addCase(fetchVendedores.rejected, (state, action) => {
         state.status = 'failed';
-        state.error = action.error.message;
+        state.error = action.payload || action.error.message;
       })
       // Manejar addVendedor
       .addCase(addVendedor.pending, (state) => {
@@ -99,46 +107,36 @@ const vendedoresSlice = createSlice({
       })
       .addCase(addVendedor.rejected, (state, action) => {
         state.addStatus = 'failed';
-        state.error = action.error.message;
+        state.error = action.payload || action.error.message;
       });
   }
 });
 
 export const { setFiltros, clearFiltros, resetAddStatus } = vendedoresSlice.actions;
 
-// Selector para obtener todos los vendedores
+// Selectores
 export const selectAllVendedores = (state) => state.vendedores.vendedores;
-
-// Selector para el estado de carga
 export const selectVendedoresStatus = (state) => state.vendedores.status;
-
-// Selector para mensajes de error
 export const selectVendedoresError = (state) => state.vendedores.error;
-
-// Selector para filtros activos
 export const selectFiltros = (state) => state.vendedores.filtros;
 
 // Selector para vendedores filtrados
 export const selectFilteredVendedores = (state) => {
-  // Add fallbacks for potentially undefined values in state
   const vendedores = state.vendedores?.vendedores || [];
-  const filtros = state.vendedores?.filtros || { territorio: '', equipo: '' };
-  const { territorio, equipo } = filtros;
+  const filtros = state.vendedores?.filtros || { nombre: '' };
+  const { nombre } = filtros;
   
-  return vendedores.filter(item => {
-    const territorioMatch = !territorio || item.territorio === territorio;
-    const equipoMatch = !equipo || item.equipo === equipo; // Asumiendo que se añadirá un campo 'equipo' en el futuro
-    return territorioMatch && equipoMatch;
-  });
+  if (!nombre || nombre.trim() === '') {
+    return vendedores;
+  }
+  
+  const lowercaseNombre = nombre.toLowerCase();
+  return vendedores.filter(vendedor => 
+    vendedor.nombre?.toLowerCase().includes(lowercaseNombre) ||
+    vendedor.email?.toLowerCase().includes(lowercaseNombre)
+  );
 };
 
-// Obtener territorios únicos para los filtros
-export const selectTerritorios = (state) => {
-  const territorios = [...new Set(state.vendedores.vendedores.map(v => v.territorio))];
-  return territorios;
-};
-
-// Selector para el estado de añadir vendedor
 export const selectAddVendedorStatus = (state) => state.vendedores.addStatus;
 
 export default vendedoresSlice.reducer;

@@ -2,34 +2,66 @@
  * Servicio de vendedores simulado para desarrollo
  */
 
-// Mock data para vendedores
-const mockVendedores = [
-  { id: '123456', nombre: 'Edwin', territorio: 'Colombia', visitasCompletadas: 15, visitasProgramadas: 20, pais: '10', email: 'edwin@example.com' },
-  { id: '123457', nombre: 'Maria', territorio: 'Colombia', visitasCompletadas: 18, visitasProgramadas: 20, pais: '10', email: 'maria@example.com' },
-  { id: '123458', nombre: 'Martin', territorio: 'Colombia', visitasCompletadas: 10, visitasProgramadas: 15, pais: '10', email: 'martin@example.com' },
-  { id: '123459', nombre: 'Dolores', territorio: 'Colombia', visitasCompletadas: 12, visitasProgramadas: 15, pais: '10', email: 'dolores@example.com' },
-  { id: '123460', nombre: 'Ana', territorio: 'Colombia', visitasCompletadas: 20, visitasProgramadas: 20, pais: '10', email: 'ana@example.com' },
-  { id: '234567', nombre: 'Juan', territorio: 'México', visitasCompletadas: 8, visitasProgramadas: 15, pais: '20', email: 'juan@example.com' },
-  { id: '345678', nombre: 'Carlos', territorio: 'Argentina', visitasCompletadas: 12, visitasProgramadas: 18, pais: '10', email: 'carlos@example.com' },
-  { id: '456789', nombre: 'Sofía', territorio: 'Perú', visitasCompletadas: 7, visitasProgramadas: 10, pais: '10', email: 'sofia@example.com' },
-  { id: '567890', nombre: 'Valentina', territorio: 'Chile', visitasCompletadas: 14, visitasProgramadas: 15, pais: '10', email: 'valentina@example.com' },
-  { id: '678901', nombre: 'Ricardo', territorio: 'México', visitasCompletadas: 6, visitasProgramadas: 12, pais: '20', email: 'ricardo@example.com' },
-];
-
-// Obtener el token JWT del localStorage
-const getTokenPais = () => {
-  try {
-    const token = localStorage.getItem('access_token');
-    if (!token) return '10'; // Default to Colombia (10) if no token exists
-
-    // Extraer la parte de datos del token
-    const payload = token.split('.')[1];
-    const decodedPayload = JSON.parse(atob(payload));
-    return decodedPayload.pais || '10'; // Default a Colombia si no existe
-  } catch (error) {
-    console.error('Error al decodificar token:', error);
-    return '10'; // Default a Colombia en caso de error
-  }
+// Mock data para vendedores por país
+const mockVendedoresPorPais = {
+  '10': [ // Colombia
+    { 
+      id: '123456', 
+      nombre: 'Edwin Gutiérrez', 
+      email: 'edwin@example.com',
+      paisId: '10'
+    },
+    { 
+      id: '123457', 
+      nombre: 'Maria Rodriguez', 
+      email: 'maria@example.com',
+      paisId: '10'
+    },
+    { 
+      id: '123458', 
+      nombre: 'Martin Lopez', 
+      email: 'martin@example.com',
+      paisId: '10'
+    },
+    { 
+      id: '123459', 
+      nombre: 'Dolores Hernandez', 
+      email: 'dolores@example.com',
+      paisId: '10'
+    },
+    { 
+      id: '123460', 
+      nombre: 'Ana Martinez', 
+      email: 'ana@example.com',
+      paisId: '10'
+    }
+  ],
+  '20': [ // México
+    { 
+      id: '485aea2c-f7a9-4be8-ac50-995be21b3e1b', 
+      nombre: 'Juan Mexico', 
+      email: 'vendedormexico@correo.com.co',
+      paisId: '20'
+    },
+    { 
+      id: '7984f866-1b6d-4bba-99ae-2ad727df6db0', 
+      nombre: 'Test', 
+      email: 'testemexico1@correo.com.co',
+      paisId: '20'
+    },
+    { 
+      id: '8586d56a-b307-4266-9157-4f5c1cda1506', 
+      nombre: 'Test', 
+      email: 'testemexico@correo.com.co',
+      paisId: '20'
+    },
+    { 
+      id: '7748bb9d-8eab-47c1-ada8-522dd7765478', 
+      nombre: 'Vendedor Mexico', 
+      email: 'vendedorm@gmail.com.co',
+      paisId: '20'
+    }
+  ]
 };
 
 /**
@@ -38,11 +70,11 @@ const getTokenPais = () => {
 const mockVendedoresService = {
   /**
    * Simulación de crear un nuevo vendedor
-   * @param {Object} vendedorData - Datos del vendedor (nombre, email)
+   * @param {Object} vendedorData - Datos del vendedor
    * @returns {Promise} - Promesa con la respuesta simulada
    */
   createVendedor: async (vendedorData) => {
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simular latencia
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     // Validar datos requeridos
     if (!vendedorData.nombre || !vendedorData.email || !vendedorData.identificacion || !vendedorData.tipoIdentificacion) {
@@ -53,13 +85,26 @@ const mockVendedoresService = {
       };
     }
 
-    const paisCreacion = getTokenPais();
+    // Obtener país del token
+    const token = localStorage.getItem('access_token');
+    let paisCreacion = '10'; // Default Colombia
+    
+    if (token) {
+      try {
+        const payload = token.split('.')[1];
+        const decodedPayload = JSON.parse(atob(payload));
+        paisCreacion = decodedPayload.pais || '10';
+      } catch (error) {
+        console.error('Error al decodificar token:', error);
+      }
+    }
 
-    // Simulación de respuesta exitosa
     return {
       success: true,
       result: {
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         email: vendedorData.email,
+        nombre: vendedorData.nombre,
         paisCreacion: paisCreacion
       },
       timestamp: new Date().toISOString()
@@ -67,31 +112,19 @@ const mockVendedoresService = {
   },
 
   /**
-   * Simulación de obtener lista de vendedores
+   * Simulación de obtener vendedores por país
+   * @param {string} paisId - ID del país
    * @returns {Promise} - Promesa con la respuesta simulada
    */
-  getVendedores: async () => {
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simular latencia
+  getVendedoresByPais: async (paisId) => {
+    await new Promise(resolve => setTimeout(resolve, 500));
     
-    const userPais = getTokenPais();
-    
-    // Si es admin o no tiene país definido, devolver todos los vendedores
-    if (!userPais) {
-      return {
-        success: true,
-        result: mockVendedores,
-        timestamp: new Date().toISOString()
-      };
-    }
-    
-    // Filtrar vendedores por país del usuario
-    const filteredVendedores = mockVendedores.filter(
-      vendedor => vendedor.pais === userPais
-    );
+    // Obtener vendedores del país especificado
+    const vendedores = mockVendedoresPorPais[paisId] || [];
     
     return {
       success: true,
-      result: filteredVendedores,
+      result: vendedores,
       timestamp: new Date().toISOString()
     };
   }
