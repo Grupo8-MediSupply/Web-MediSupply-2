@@ -1,0 +1,242 @@
+{
+  "ui_spec": {
+    "componentes": {
+      "Logisticas": {
+        "descripcion": "Componente principal que orquesta toda la funcionalidad",
+        "estado": ["pedidosEntregar", "pedidosSeleccionados", "rutas", "loading", "error"],
+        "props": "ninguno",
+        "flujos": [
+          "Usuario selecciona rango de fechas",
+          "Sistema carga pedidos pendientes",
+          "Usuario selecciona pedidos de la lista",
+          "Usuario genera rutas",
+          "Sistema muestra resultados optimizados"
+        ]
+      },
+      "FiltroFechas": {
+        "descripcion": "Filtro por rango de fechas con validación",
+        "props": {
+          "onBuscar": "function(fechaInicio: string, fechaFin: string)",
+          "disabled": "boolean"
+        },
+        "validaciones": ["fechaInicio requerido", "fechaFin requerido", "fechaFin >= fechaInicio"]
+      },
+      "ListaPedidos": {
+        "descripcion": "Tabla con selección múltiple de pedidos",
+        "props": {
+          "pedidos": "array",
+          "pedidosSeleccionados": "array",
+          "onTogglePedido": "function(pedido: object)"
+        },
+        "caracteristicas": ["Selección con checkbox", "Vista de datos clave", "Estado hover"]
+      },
+      "ResultadosRutas": {
+        "descripcion": "Acordeón expandible con detalles de rutas",
+        "props": {
+          "rutas": "array"
+        },
+        "visualizacion": [
+          "Resumen: vehículo, distancia, duración",
+          "Detalle: órdenes asignadas, indicaciones paso a paso",
+          "Conversión a unidades legibles (km, min)"
+        ]
+      }
+    },
+    "estados_loading": {
+      "IDLE": "Sin petición activa",
+      "LOADING": "CircularProgress centrado",
+      "SUCCESS": "Renderizar resultados",
+      "ERROR": "Snackbar con mensaje de error"
+    },
+    "accesibilidad": [
+      "aria-label en inputs y botones",
+      "role='checkbox' en filas seleccionables",
+      "aria-live='assertive' en alertas de error",
+      "Navegación por teclado habilitada"
+    ]
+  },
+  "integration_spec": {
+    "endpoints": {
+      "GET_pedidos_entregar": {
+        "url": "/pedidos/entregar",
+        "metodo": "GET",
+        "params": {
+          "fechaInicio": "string (YYYY/MM/DD)",
+          "fechaFin": "string (YYYY/MM/DD)"
+        },
+        "response_success": {
+          "success": true,
+          "result": "[{orden, vehiculoAsignado}]",
+          "timestamp": "ISO string"
+        },
+        "response_error": {
+          "success": false,
+          "message": "string"
+        },
+        "validaciones": ["Validar formato fechas", "Verificar success flag", "Manejar result vacío"]
+      },
+      "POST_pedidos_rutas": {
+        "url": "/pedidos/rutas",
+        "metodo": "POST",
+        "body": "[{orden, vehiculoAsignado}]",
+        "response_success": {
+          "success": true,
+          "result": "[{vehiculoId, ordenesIds, distancia, duracion, polilinea, legs}]",
+          "timestamp": "ISO string"
+        },
+        "validaciones": ["Mínimo 1 pedido en body", "Verificar estructura de legs/steps"]
+      }
+    },
+    "manejo_errores": {
+      "network_error": "Mostrar Snackbar 'Error de conexión, intente nuevamente'",
+      "validation_error": "Mostrar mensaje específico del servidor",
+      "empty_result": "Mostrar mensaje 'No hay pedidos en este rango'",
+      "timeout": "Reintentar hasta 2 veces con backoff exponencial"
+    },
+    "transformaciones": {
+      "fechas": "Convertir de YYYY-MM-DD (input) a YYYY/MM/DD (API)",
+      "distancia": "Convertir de metros a km (/ 1000)",
+      "duracion": "Convertir 'XXXs' a minutos (parseInt / 60)",
+      "polilinea": "Decodificar con librería @mapbox/polyline para renderizado"
+    }
+  },
+  "pseudocode": "// FLUJO PRINCIPAL\n\n1. Usuario abre módulo Logisticas\n   - Renderizar FiltroFechas, estado IDLE\n\n2. Usuario selecciona fechaInicio y fechaFin\n   - Validar fechaFin >= fechaInicio\n   - Habilitar botón 'Buscar Pedidos'\n\n3. Usuario hace clic en 'Buscar Pedidos'\n   - dispatch(fetchPedidosEntregar({fechaInicio, fechaFin}))\n   - Estado -> LOADING\n   - Mostrar CircularProgress\n\n4. Servicio logisticaService.getPedidosEntregar()\n   - Si USE_MOCKS: devolver mockGetPedidosEntregar()\n   - Si no: axiosInstance.get('/pedidos/entregar', {params})\n\n5. Respuesta exitosa:\n   - extraReducer fetchPedidosEntregar.fulfilled\n   - Almacenar pedidosEntregar en state\n   - Estado -> SUCCESS\n   - Renderizar ListaPedidos\n\n6. Usuario selecciona uno o más pedidos:\n   - Click en fila o checkbox\n   - dispatch(togglePedidoSeleccionado(pedido))\n   - Actualizar pedidosSeleccionados en state\n   - Actualizar contador en botón 'Generar Rutas (N)'\n\n7. Usuario hace clic en 'Generar Rutas'\n   - Validar pedidosSeleccionados.length > 0\n   - dispatch(generateRutas(pedidosSeleccionados))\n   - Estado -> LOADING\n\n8. Servicio logisticaService.generateRutas(pedidos)\n   - Si USE_MOCKS: devolver mockGenerateRutas(pedidos)\n   - Si no: axiosInstance.post('/pedidos/rutas', pedidos)\n\n9. Respuesta exitosa:\n   - extraReducer generateRutas.fulfilled\n   - Almacenar rutas en state\n   - rutasGeneradas = true\n   - Estado -> SUCCESS\n   - Renderizar ResultadosRutas\n\n10. ResultadosRutas procesa cada ruta:\n    - Convertir distancia (m -> km)\n    - Convertir duración (s -> min)\n    - Renderizar Accordion con:\n      * Header: vehículoId, distancia, duración\n      * Body: ordenesIds, legs[].steps[] con indicaciones\n\n11. Manejo de errores en cualquier paso:\n    - extraReducer .rejected\n    - Almacenar error en state\n    - Mostrar Snackbar con mensaje\n    - Estado -> ERROR\n    - Usuario puede cerrar Snackbar o reintentar",
+  "tests": [
+    {
+      "caso": "TC-01: Buscar pedidos exitoso",
+      "pasos": [
+        "Seleccionar fechaInicio='2024/01/01', fechaFin='2024/01/31'",
+        "Click en 'Buscar Pedidos'",
+        "Verificar loading = true",
+        "Mock devuelve 2 pedidos",
+        "Verificar pedidosEntregar.length = 2",
+        "Verificar loading = false"
+      ],
+      "resultado_esperado": "ListaPedidos renderiza 2 filas"
+    },
+    {
+      "caso": "TC-02: Buscar pedidos sin resultados",
+      "pasos": [
+        "Seleccionar rango de fechas futuro",
+        "Mock devuelve result = []",
+        "Verificar mensaje 'No hay pedidos pendientes'"
+      ],
+      "resultado_esperado": "Mostrar empty state"
+    },
+    {
+      "caso": "TC-03: Seleccionar múltiples pedidos",
+      "pasos": [
+        "Cargar 3 pedidos",
+        "Click en pedido 1 y 3",
+        "Verificar pedidosSeleccionados.length = 2",
+        "Verificar botón muestra 'Generar Rutas (2)'"
+      ],
+      "resultado_esperado": "Contador actualizado correctamente"
+    },
+    {
+      "caso": "TC-04: Generar rutas exitoso",
+      "pasos": [
+        "Seleccionar 2 pedidos",
+        "Click en 'Generar Rutas'",
+        "Mock devuelve 2 rutas",
+        "Verificar rutas.length = 2",
+        "Verificar ResultadosRutas visible"
+      ],
+      "resultado_esperado": "Rutas renderizadas con distancia/duración formateadas"
+    },
+    {
+      "caso": "TC-05: Error de red en fetchPedidos",
+      "pasos": [
+        "Simular error de red",
+        "Verificar error = 'Error al obtener pedidos'",
+        "Verificar Snackbar visible con severity='error'"
+      ],
+      "resultado_esperado": "Mensaje de error mostrado"
+    },
+    {
+      "caso": "TC-06: Generar rutas sin selección",
+      "pasos": [
+        "Cargar pedidos",
+        "No seleccionar ninguno",
+        "Verificar botón 'Generar Rutas' disabled"
+      ],
+      "resultado_esperado": "Botón deshabilitado"
+    },
+    {
+      "caso": "TC-07: Limpiar selección",
+      "pasos": [
+        "Seleccionar 2 pedidos",
+        "Click en 'Limpiar Selección'",
+        "Verificar pedidosSeleccionados.length = 0"
+      ],
+      "resultado_esperado": "Selección vacía"
+    },
+    {
+      "caso": "TC-08: Conversión de unidades",
+      "pasos": [
+        "Ruta con distancia=5000m",
+        "Verificar muestra '5.00 km'",
+        "Ruta con duración='1200s'",
+        "Verificar muestra '20 min'"
+      ],
+      "resultado_esperado": "Unidades legibles"
+    }
+  ],
+  "acceptance_criteria": [
+    "AC-01: Usuario puede filtrar pedidos por rango de fechas válido (fechaFin >= fechaInicio)",
+    "AC-02: Lista de pedidos muestra: orden, cliente, dirección, vehículo, conductor, total",
+    "AC-03: Usuario puede seleccionar/deseleccionar pedidos mediante checkbox o click en fila",
+    "AC-04: Botón 'Generar Rutas' muestra contador de pedidos seleccionados",
+    "AC-05: Botón 'Generar Rutas' está deshabilitado si no hay selección",
+    "AC-06: Rutas generadas muestran: vehículoId, distancia (km), duración (min), órdenes asignadas",
+    "AC-07: Cada ruta es expandible y muestra indicaciones de navegación paso a paso",
+    "AC-08: Loading spinner visible durante peticiones asíncronas",
+    "AC-09: Mensajes de error se muestran en Snackbar con opción de cerrar",
+    "AC-10: Empty state claro cuando no hay pedidos en el rango",
+    "AC-11: Toda la UI es accesible por teclado con roles ARIA apropiados",
+    "AC-12: Fechas en formato YYYY/MM/DD para API, conversión automática desde input type=date",
+    "AC-13: Mocks disponibles para desarrollo local (REACT_APP_USE_MOCKS=true)"
+  ],
+  "edge_cases": [
+    {
+      "caso": "Rango de fechas inválido (inicio > fin)",
+      "mitigacion": "Validar en componente antes de permitir búsqueda"
+    },
+    {
+      "caso": "Respuesta del servidor sin campo 'result'",
+      "mitigacion": "Usar result || [] para evitar undefined"
+    },
+    {
+      "caso": "Pedido sin bodegasOrigen o ubicación cliente",
+      "mitigacion": "Validar estructura antes de enviar a POST /rutas"
+    },
+    {
+      "caso": "Duración en formato inesperado (sin 's')",
+      "mitigacion": "Usar parseInt con fallback a 0, mostrar '-- min'"
+    },
+    {
+      "caso": "Polilínea vacía o malformada",
+      "mitigacion": "Capturar error de decodificación, no mostrar mapa de ruta"
+    },
+    {
+      "caso": "Timeout en generación de rutas (cálculo complejo)",
+      "mitigacion": "Implementar timeout de 30s, mostrar mensaje de reintento"
+    },
+    {
+      "caso": "Usuario selecciona 50+ pedidos",
+      "mitigacion": "Advertir performance, sugerir lotes más pequeños"
+    },
+    {
+      "caso": "Error de permisos (401/403)",
+      "mitigacion": "Redirigir a login, almacenar intent para post-auth"
+    },
+    {
+      "caso": "Datos inconsistentes entre pedidosEntregar y rutas generadas",
+      "mitigacion": "Limpiar rutas al cargar nuevos pedidos"
+    },
+    {
+      "caso": "Componente desmontado durante petición asíncrona",
+      "mitigacion": "Redux-toolkit maneja cancelación automáticamente"
+    }
+  ]
+}
