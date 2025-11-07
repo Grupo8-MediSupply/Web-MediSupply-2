@@ -14,8 +14,20 @@ function FiltroFechas({ onBuscar, disabled }) {
 
   const handleBuscar = () => {
     if (fechaInicio && fechaFin) {
+      // Convertir de YYYY-MM-DD (input date) a YYYY/MM/DD (formato API)
       const inicio = fechaInicio.replace(/-/g, '/');
       const fin = fechaFin.replace(/-/g, '/');
+      
+      console.log('📅 Fechas formateadas para API:', {
+        original: { fechaInicio, fechaFin },
+        formateado: { inicio, fin },
+        formatoEsperado: 'YYYY/MM/DD'
+      });
+      
+      console.log('🔗 URL que se generará:', 
+        `/pedidos/entregar?fechaInicio=${inicio}&fechaFin=${fin}`
+      );
+      
       onBuscar(inicio, fin);
     }
   };

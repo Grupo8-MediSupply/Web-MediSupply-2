@@ -83,21 +83,94 @@ const mockLogisticaService = {
   getPedidosEntregar: async (fechaInicio, fechaFin) => {
     await new Promise(resolve => setTimeout(resolve, 800));
     
-    // Filtrar pedidos por rango de fechas
-    const inicio = new Date(fechaInicio.replace(/\//g, '-'));
-    const fin = new Date(fechaFin.replace(/\//g, '-'));
+    console.log('🧪 Mock - Fechas recibidas:', { fechaInicio, fechaFin });
+    console.log('🔍 Mock - Formato esperado: YYYY/MM/DD');
     
-    // Para los mocks, simplemente devolver todos si el rango incluye fechas recientes
-    const hoy = new Date();
-    const esRangoValido = inicio <= hoy && fin >= inicio;
-    
-    const pedidosFiltrados = esRangoValido ? mockPedidos : [];
-    
-    return {
-      success: true,
-      result: pedidosFiltrados,
-      timestamp: new Date().toISOString()
-    };
+    try {
+      // Validar que las fechas estén en formato YYYY/MM/DD
+      const formatoValido = /^\d{4}\/\d{2}\/\d{2}$/;
+      
+      if (!formatoValido.test(fechaInicio)) {
+        console.error('❌ Mock - Formato de fechaInicio inválido:', fechaInicio);
+        return {
+          success: false,
+          result: [],
+          message: `Formato de fecha inicio inválido: ${fechaInicio}. Use YYYY/MM/DD`,
+          timestamp: new Date().toISOString()
+        };
+      }
+      
+      if (!formatoValido.test(fechaFin)) {
+        console.error('❌ Mock - Formato de fechaFin inválido:', fechaFin);
+        return {
+          success: false,
+          result: [],
+          message: `Formato de fecha fin inválido: ${fechaFin}. Use YYYY/MM/DD`,
+          timestamp: new Date().toISOString()
+        };
+      }
+
+      // Parsear fechas en formato YYYY/MM/DD
+      const parseFecha = (fechaStr) => {
+        const [year, month, day] = fechaStr.split('/').map(Number);
+        return new Date(year, month - 1, day);
+      };
+
+      const inicio = parseFecha(fechaInicio);
+      const fin = parseFecha(fechaFin);
+      
+      // Validar que las fechas sean válidas
+      if (isNaN(inicio.getTime()) || isNaN(fin.getTime())) {
+        console.error('❌ Mock - Fechas inválidas:', { fechaInicio, fechaFin });
+        return {
+          success: false,
+          result: [],
+          message: 'Fechas inválidas',
+          timestamp: new Date().toISOString()
+        };
+      }
+
+      // Validar que fecha inicio sea menor o igual a fecha fin
+      if (inicio > fin) {
+        console.warn('⚠️ Mock - Fecha inicio es mayor que fecha fin');
+        return {
+          success: false,
+          result: [],
+          message: 'La fecha de inicio debe ser anterior o igual a la fecha fin',
+          timestamp: new Date().toISOString()
+        };
+      }
+      
+      const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      
+      const esRangoValido = inicio <= hoy && fin >= inicio;
+      
+      console.log('✅ Mock - Validación completada:', {
+        inicio: inicio.toISOString(),
+        fin: fin.toISOString(),
+        hoy: hoy.toISOString(),
+        esRangoValido
+      });
+      
+      const pedidosFiltrados = esRangoValido ? mockPedidos : [];
+      
+      console.log(`📦 Mock - Retornando ${pedidosFiltrados.length} pedido(s)`);
+      
+      return {
+        success: true,
+        result: pedidosFiltrados,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('❌ Mock - Error procesando fechas:', error);
+      return {
+        success: false,
+        result: [],
+        message: 'Error procesando las fechas. Verifique el formato YYYY/MM/DD',
+        timestamp: new Date().toISOString()
+      };
+    }
   },
 
   generateRutas: async (pedidos) => {

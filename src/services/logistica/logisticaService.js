@@ -114,11 +114,32 @@ const validarEstructuraPedido = (pedido) => {
 const logisticaService = {
   /**
    * Obtener pedidos pendientes de entrega por rango de fechas
-   * @param {string} fechaInicio - Fecha inicio (YYYY/MM/DD)
-   * @param {string} fechaFin - Fecha fin (YYYY/MM/DD)
+   * @param {string} fechaInicio - Fecha inicio en formato YYYY/MM/DD
+   * @param {string} fechaFin - Fecha fin en formato YYYY/MM/DD
    * @returns {Promise<{success: boolean, result: Array, timestamp: string}>}
    */
   getPedidosEntregar: async (fechaInicio, fechaFin) => {
+    // Validar formato de fechas antes de enviar
+    const validarFormatoFecha = (fecha) => {
+      const regex = /^\d{4}\/\d{2}\/\d{2}$/;
+      return regex.test(fecha);
+    };
+
+    if (!validarFormatoFecha(fechaInicio)) {
+      console.error('❌ Formato de fechaInicio inválido');
+      console.error('Esperado: YYYY/MM/DD, Recibido:', fechaInicio);
+      throw new Error('Formato de fecha inicio inválido. Debe ser YYYY/MM/DD con barras (/)');
+    }
+
+    if (!validarFormatoFecha(fechaFin)) {
+      console.error('❌ Formato de fechaFin inválido');
+      console.error('Esperado: YYYY/MM/DD, Recibido:', fechaFin);
+      throw new Error('Formato de fecha fin inválido. Debe ser YYYY/MM/DD con barras (/)');
+    }
+
+    console.log('✅ Fechas validadas correctamente');
+    console.log('📅 Llamando a /pedidos/entregar con:', { fechaInicio, fechaFin });
+
     const response = await apiRequest('/pedidos/entregar', {
       method: 'GET',
       params: { fechaInicio, fechaFin },
