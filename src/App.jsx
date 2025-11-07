@@ -11,6 +11,8 @@ import About from "./pages/About";
 import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
+import RoleBasedRoute from "./components/RoleBasedRoute";
+import { Roles } from "./constants/auth";
 import getTheme from "./theme/theme";
 import "./App.css";
 
@@ -122,8 +124,29 @@ function App() {
                   <Route path="/proveedores" element={<ProtectedRoute><Proveedores /></ProtectedRoute>} />
                   <Route path="/ordenes" element={<ProtectedRoute><Ordenes /></ProtectedRoute>} />
                   <Route path="/logisticas" element={<ProtectedRoute><Logisticas /></ProtectedRoute>} />
-                  <Route path="/ventas" element={<ProtectedRoute><Ventas /></ProtectedRoute>} />
-                  <Route path="/ventas/vendedores" element={<ProtectedRoute><Vendedores /></ProtectedRoute>} />
+                  
+                  {/* Rutas de Ventas - Solo para ADMIN */}
+                  <Route 
+                    path="/ventas" 
+                    element={
+                      <ProtectedRoute>
+                        <RoleBasedRoute allowedRoles={[Roles.ADMIN]}>
+                          <Ventas />
+                        </RoleBasedRoute>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/ventas/vendedores" 
+                    element={
+                      <ProtectedRoute>
+                        <RoleBasedRoute allowedRoles={[Roles.ADMIN]}>
+                          <Vendedores />
+                        </RoleBasedRoute>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
                   <Route path="/clientes" element={<ProtectedRoute><Clientes /></ProtectedRoute>} />
                   <Route path="/reportes" element={<ProtectedRoute><Reportes /></ProtectedRoute>} />
                   <Route path="/configuracion" element={<ProtectedRoute><Configuracion /></ProtectedRoute>} />

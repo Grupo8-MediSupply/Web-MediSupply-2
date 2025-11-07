@@ -29,8 +29,7 @@ import {
   selectVendedoresError,
   selectFiltros,
   setFiltros,
-  clearFiltros,
-  selectTerritorios
+  clearFiltros
 } from '../../redux/features/vendedoresSlice';
 import { fetchConfiguracion } from '../../redux/features/configuracionSlice';
 
@@ -46,113 +45,73 @@ function Vendedores() {
   const status = useSelector(selectVendedoresStatus);
   const error = useSelector(selectVendedoresError);
   const filtros = useSelector(selectFiltros);
-  const territorios = useSelector(selectTerritorios);
   const authState = useSelector(state => state.auth || {});
   const user = authState.user || null;
+  const configuracion = useSelector(state => state.configuracion);
   
   // Estado local para búsqueda
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredVendedores, setFilteredVendedores] = useState([]);
-  
-  // Estado para controlar el modal de nuevo vendedor
   const [isFormOpen, setIsFormOpen] = useState(false);
-  
-  // Configuración de filtros
-  const filterConfig = [
-    {
-      name: 'territorio',
-      label: 'Territorio',
-      value: filtros.territorio,
-      options: territorios,
-      emptyOptionText: 'Todos',
-      width: '250px'
-    },
-    {
-      name: 'equipo',
-      label: 'Equipo',
-      value: filtros.equipo,
-      options: ['Equipo A', 'Equipo B', 'Equipo C'], // Ejemplo, en producción vendría de la API
-      emptyOptionText: 'Todos',
-      width: '250px'
-    }
-  ];
 
-  // Cargar vendedores y configuración al montar el componente
+  // Cargar configuración y vendedores al montar el componente
   useEffect(() => {
-    if (status === 'idle') {
-      dispatch(fetchVendedores());
-      dispatch(fetchConfiguracion());
-    }
-  }, [status, dispatch]);
+    const loadData = async () => {
+      // Primero cargar la configuración para obtener el paisId
+      if (configuracion.status === 'idle') {
+        await dispatch(fetchConfiguracion());
+      }
+      
+      // Luego cargar los vendedores (usará el paisId de la configuración)
+      if (status === 'idle' && configuracion.status === 'succeeded') {
+        dispatch(fetchVendedores());
+      }
+    };
+    
+    loadData();
+  }, [status, configuracion.status, dispatch]);
 
-  // Mostrar información de filtrado basada en el rol y país del usuario
+  // Mostrar información de filtrado
   const getUserContextInfo = () => {
-    if (!user) return null;
+    if (!user || !configuracion.pais) return null;
     
     const roleName = RoleNames[user.role] || `Rol ${user.role}`;
-    const paisName = CountryNames[user.pais] || `País ${user.pais}`;
+    const paisName = configuracion.pais.nombre || CountryNames[user.pais] || `País ${user.pais}`;
     
     return (
       <Box sx={{ mb: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
-        <Typography variant="body2">Mostrando datos para:</Typography>
+        <Typography variant="body2">Mostrando vendedores para:</Typography>
         <Chip size="small" label={roleName} color="primary" />
         <Chip size="small" label={paisName} color="secondary" />
       </Box>
     );
   };
 
-  // Filtrar por búsqueda
-  useEffect(() => {
-    if (!vendedores) return;
-    
-    if (searchTerm.trim() === '') {
-      setFilteredVendedores(vendedores);
-    } else {
-      const lowercaseSearch = searchTerm.toLowerCase();
-      const filtered = vendedores.filter(vendedor => 
-        vendedor.nombre.toLowerCase().includes(lowercaseSearch) ||
-        vendedor.id.toLowerCase().includes(lowercaseSearch) ||
-        vendedor.territorio.toLowerCase().includes(lowercaseSearch)
-      );
-      setFilteredVendedores(filtered);
-    }
-  }, [vendedores, searchTerm]);
-
   // Manejar cambios en la búsqueda
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
-  };
-  
-  // Manejar cambios en los filtros
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    dispatch(setFiltros({ [name]: value }));
+    dispatch(setFiltros({ nombre: e.target.value }));
   };
 
-  // Ejecutar búsqueda
   const executeSearch = () => {
-    // La búsqueda ya se ejecuta automáticamente en el useEffect
+    // La búsqueda ya se ejecuta automáticamente
   };
 
-  // Limpiar todos los filtros y la búsqueda
   const clearFilters = () => {
     setSearchTerm('');
     dispatch(clearFiltros());
   };
 
-  // Abrir el formulario de nuevo vendedor
   const handleOpenForm = () => {
     setIsFormOpen(true);
   };
-  
-  // Cerrar el formulario de nuevo vendedor
+
   const handleCloseForm = () => {
     setIsFormOpen(false);
   };
 
   // Renderizado condicional según el estado
   let content;
-  if (status === 'loading') {
+  if (status === 'loading' || configuracion.status === 'loading') {
     content = (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
         <CircularProgress />
@@ -164,20 +123,24 @@ function Vendedores() {
         Error al cargar los vendedores: {error}
       </Alert>
     );
+  } else if (configuracion.status === 'failed') {
+    content = (
+      <Alert severity="error" sx={{ mt: 2 }}>
+        Error al cargar la configuración. No se pueden cargar los vendedores.
+      </Alert>
+    );
   } else {
-    content = <VendedoresTable vendedores={filteredVendedores} />;
+    content = <VendedoresTable vendedores={vendedores} />;
   }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      {/* Navegación de migas de pan */}
       <BreadcrumbsNav
         items={breadcrumbsItems}
         currentPage="Vendedores"
       />
       
       <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-        {/* Encabezado con título y botón de nuevo vendedor */}
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
@@ -188,7 +151,7 @@ function Vendedores() {
             Vendedores
           </Typography>
           
-          <RoleBasedComponent roles={[Roles.ADMIN, Roles.VENDEDOR]} fallback={null}>
+          <RoleBasedComponent roles={[Roles.ADMIN]} fallback={null}>
             <Button
               variant="contained"
               color="primary"
@@ -200,32 +163,21 @@ function Vendedores() {
           </RoleBasedComponent>
         </Box>
         
-        {/* Mostrar contexto del usuario actual */}
         {getUserContextInfo()}
         
-        {/* Barra de búsqueda y filtros */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
-          {/* Barra de búsqueda */}
           <SearchBar
             value={searchTerm}
             onChange={handleSearchChange}
             onSearch={executeSearch}
             onClear={clearFilters}
-            placeholder="Buscar por nombre, ID o territorio..."
-          />
-          
-          {/* Barra de filtros */}
-          <FilterBar
-            filters={filterConfig}
-            onChange={handleFilterChange}
+            placeholder="Buscar por nombre o email..."
           />
         </Box>
         
-        {/* Tabla de Vendedores */}
         {content}
       </Paper>
       
-      {/* Modal de Nuevo Vendedor */}
       <VendedorForm 
         open={isFormOpen}
         onClose={handleCloseForm}
