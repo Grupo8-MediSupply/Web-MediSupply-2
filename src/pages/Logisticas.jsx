@@ -99,7 +99,12 @@ function Logisticas() {
           </>
         )}
 
-        {rutasGeneradas && <ResultadosRutas rutas={rutas} />}
+        {rutasGeneradas && (
+          <ResultadosRutas 
+            rutas={rutas} 
+            pedidos={pedidosSeleccionados} 
+          />
+        )}
       </Paper>
 
       <Snackbar

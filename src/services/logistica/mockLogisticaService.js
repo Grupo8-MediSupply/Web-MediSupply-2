@@ -5,13 +5,13 @@ const mockPedidos = [
       estado: 'RECIBIDO',
       cliente: {
         id: '7a89b952-aa5b-4f16-95d5-30e845111c9f',
-        nombre: 'Hospital Central',
-        ubicacion: { lat: 4.6533, lng: -74.0836 }
+        nombre: 'Farmacia Generica',
+        ubicacion: { lat: 4.583109, lng: -74.083432 } // Bogotá Sur
       },
       bodegasOrigen: [
         {
           id: 'f084da73-6d8f-4cd0-be3e-71c6f0aadce6',
-          ubicacion: { lat: 4.6700, lng: -74.0900 }
+          ubicacion: { lat: 4.8844608394155316, lng: -75.62827179180347 } // Pereira
         }
       ]
     },
@@ -20,7 +20,7 @@ const mockPedidos = [
       placa: 'ABC-123',
       modelo: 'Furgón Mercedes',
       pais: 10,
-      ubicacionGeografica: { lat: 4.6650, lng: -74.0870 },
+      ubicacionGeografica: { lat: 4.81333, lng: -75.69719 }, // Armenia
       createdAt: '2025-11-06T02:59:45.656Z',
       updatedAt: '2025-11-06T02:59:45.656Z'
     }
@@ -32,12 +32,12 @@ const mockPedidos = [
       cliente: {
         id: '8b9c0d1e-2f3a-4b5c-6d7e-8f9a0b1c2d3e',
         nombre: 'Clínica del Norte',
-        ubicacion: { lat: 4.6900, lng: -74.0500 }
+        ubicacion: { lat: 4.7110, lng: -74.0721 } // Bogotá Norte
       },
       bodegasOrigen: [
         {
-          id: 'f084da73-6d8f-4cd0-be3e-71c6f0aadce6',
-          ubicacion: { lat: 4.6700, lng: -74.0900 }
+          id: 'd4c30897-e898-42d4-b890-96ff8af955d0',
+          ubicacion: { lat: 4.6533, lng: -74.0836 } // Bogotá Centro
         }
       ]
     },
@@ -46,7 +46,7 @@ const mockPedidos = [
       placa: 'XYZ-789',
       modelo: 'Camioneta Toyota',
       pais: 10,
-      ubicacionGeografica: { lat: 4.6750, lng: -74.0750 },
+      ubicacionGeografica: { lat: 4.6097, lng: -74.0817 }, // Bogotá Centro
       createdAt: '2025-11-06T03:15:22.123Z',
       updatedAt: '2025-11-06T03:15:22.123Z'
     }
@@ -57,13 +57,13 @@ const mockPedidos = [
       estado: 'EN_PROCESO',
       cliente: {
         id: 'e4f5a6b7-c8d9-e0f1-a2b3-c4d5e6f7a8b9',
-        nombre: 'Farmacia Generica',
-        ubicacion: { lat: 4.583109, lng: -74.083432 }
+        nombre: 'Hospital San Ignacio',
+        ubicacion: { lat: 4.6282, lng: -74.0653 } // Bogotá Chapinero
       },
       bodegasOrigen: [
         {
-          id: 'd4c30897-e898-42d4-b890-96ff8af955d0',
-          ubicacion: { lat: 4.6600, lng: -74.0950 }
+          id: 'f084da73-6d8f-4cd0-be3e-71c6f0aadce6',
+          ubicacion: { lat: 6.2518, lng: -75.5636 } // Medellín
         }
       ]
     },
@@ -72,7 +72,7 @@ const mockPedidos = [
       placa: 'DEF-456',
       modelo: 'Nissan NP300',
       pais: 10,
-      ubicacionGeografica: { lat: 4.6580, lng: -74.0920 },
+      ubicacionGeografica: { lat: 6.2442, lng: -75.5812 }, // Medellín
       createdAt: '2025-11-06T04:20:33.456Z',
       updatedAt: '2025-11-06T04:20:33.456Z'
     }
