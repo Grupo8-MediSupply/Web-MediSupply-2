@@ -38,9 +38,9 @@ function Inventarios() {
   const [filteredBodegas, setFilteredBodegas] = useState([]);
   
   // Extraer ciudades y nombres de bodegas únicos para filtros
-  const allBodegas = useSelector(state => state.bodegas.bodegas);
-  const ciudades = [...new Set(allBodegas.map(item => item.ciudad))];
-  const nombresBodegas = [...new Set(allBodegas.map(item => item.nombre))];
+  const allBodegas = useSelector(state => state.bodegas.bodegas || []);
+  const ciudades = [...new Set(allBodegas.filter(item => item?.ubicacion).map(item => item.ubicacion))];
+  const nombresBodegas = [...new Set(allBodegas.filter(item => item?.nombre).map(item => item.nombre))];
   
   // Configuración de filtros
   const filterConfig = [
@@ -71,16 +71,23 @@ function Inventarios() {
 
   // Actualizar bodegas filtradas cuando cambian las bodegas de Redux o el término de búsqueda
   useEffect(() => {
-    if (!bodegas) return;
+    if (!bodegas || !Array.isArray(bodegas)) {
+      setFilteredBodegas([]);
+      return;
+    }
     
     if (searchTerm.trim() === '') {
       setFilteredBodegas(bodegas);
     } else {
       const lowercaseSearch = searchTerm.toLowerCase();
-      const filtered = bodegas.filter(bodega => 
-        bodega.nombre.toLowerCase().includes(lowercaseSearch) ||
-        bodega.ciudad.toLowerCase().includes(lowercaseSearch)
-      );
+      const filtered = bodegas.filter(bodega => {
+        // Validar que bodega y sus propiedades existan antes de acceder a ellas
+        const nombre = bodega?.nombre || '';
+        const ubicacion = bodega?.ubicacion || bodega?.ciudad || '';
+        
+        return nombre.toLowerCase().includes(lowercaseSearch) ||
+               ubicacion.toLowerCase().includes(lowercaseSearch);
+      });
       setFilteredBodegas(filtered);
     }
   }, [bodegas, searchTerm]);
