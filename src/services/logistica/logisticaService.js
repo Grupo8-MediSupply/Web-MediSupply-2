@@ -1,6 +1,50 @@
 import { apiRequest, withAuth } from '../apiClient';
 
 /**
+ * @typedef {Object} Ubicacion
+ * @property {number} lat - Latitud
+ * @property {number} lng - Longitud
+ */
+
+/**
+ * @typedef {Object} NavigationInstruction
+ * @property {string} maneuver - Tipo de maniobra
+ * @property {string} instructions - Instrucciones de navegación
+ */
+
+/**
+ * @typedef {Object} Step
+ * @property {Object} polyline - Polilínea codificada
+ * @property {string} travelMode - Modo de viaje
+ * @property {Object} endLocation - Ubicación final
+ * @property {Object} startLocation - Ubicación inicial
+ * @property {number} distanceMeters - Distancia en metros
+ * @property {Object} staticDuration - Duración estática
+ * @property {Object} localizedValues - Valores localizados
+ * @property {NavigationInstruction} navigationInstruction - Instrucciones
+ */
+
+/**
+ * @typedef {Object} Leg
+ * @property {Step[]} steps - Pasos de la ruta
+ * @property {Object} duration - Duración total
+ * @property {Object} polyline - Polilínea del tramo
+ * @property {number} distanceMeters - Distancia en metros
+ * @property {Object} localizedValues - Valores localizados
+ */
+
+/**
+ * @typedef {Object} Ruta
+ * @property {string} vehiculoId - ID del vehículo
+ * @property {string[]} ordenesIds - IDs de las órdenes
+ * @property {number} distancia - Distancia total en metros
+ * @property {string} duracion - Duración en segundos
+ * @property {string} polilinea - Polilínea codificada
+ * @property {Leg[]} legs - Tramos de la ruta
+ * @property {string} rutaId - ID único de la ruta
+ */
+
+/**
  * Valida la estructura de un pedido para entregar
  * @param {Object} pedido - Pedido a validar
  * @returns {boolean} - true si es válido
@@ -72,7 +116,7 @@ const logisticaService = {
    * Obtener pedidos pendientes de entrega por rango de fechas
    * @param {string} fechaInicio - Fecha inicio (YYYY/MM/DD)
    * @param {string} fechaFin - Fecha fin (YYYY/MM/DD)
-   * @returns {Promise} - Promesa con la respuesta de la API
+   * @returns {Promise<{success: boolean, result: Array, timestamp: string}>}
    */
   getPedidosEntregar: async (fechaInicio, fechaFin) => {
     const response = await apiRequest('/pedidos/entregar', {
@@ -101,9 +145,9 @@ const logisticaService = {
   },
 
   /**
-   * Generar rutas optimizadas para pedidos seleccionados
+   * Generar rutas optimizadas usando Google Routes API
    * @param {Array} pedidos - Array de objetos {orden, vehiculoAsignado}
-   * @returns {Promise} - Promesa con la respuesta de la API
+   * @returns {Promise<{success: boolean, result: Ruta[], timestamp: string}>}
    */
   generateRutas: (pedidos) => apiRequest('/pedidos/rutas', {
     method: 'POST',

@@ -110,35 +110,135 @@ const mockLogisticaService = {
       };
     }
 
-    const rutasGeneradas = pedidos.map((pedido) => ({
-      vehiculoId: pedido.vehiculoAsignado.id,
-      ordenesIds: [pedido.orden.id],
-      distancia: 3000 + Math.random() * 5000,
-      duracion: `${600 + Math.floor(Math.random() * 1200)}s`,
-      polilinea: 'u{|~Fzs{kM?A?A?A?A?A?A?A?A',
-      legs: [
-        {
-          distanceMeters: 2000 + Math.random() * 3000,
-          duration: `${400 + Math.floor(Math.random() * 800)}s`,
-          steps: [
-            {
-              distanceMeters: 1000 + Math.random() * 1000,
-              duration: `${200 + Math.floor(Math.random() * 400)}s`,
-              startLocation: pedido.vehiculoAsignado.ubicacionGeografica,
-              endLocation: pedido.bodegasOrigen[0].ubicacion,
-              navigationInstruction: 'Diríjase hacia la bodega de origen'
+    // Generar rutas con estructura similar a Google Routes API
+    const rutasGeneradas = pedidos.map((pedido) => {
+      const distancia = 3000 + Math.random() * 5000;
+      const duracion = 600 + Math.floor(Math.random() * 1200);
+      
+      return {
+        vehiculoId: pedido.vehiculoAsignado.id,
+        ordenesIds: [pedido.orden.id],
+        distancia: Math.round(distancia),
+        duracion: duracion.toString(),
+        polilinea: 'u{|~Fzs{kM?A?A?A?A?A?A?A?A',
+        legs: [
+          {
+            steps: [
+              {
+                polyline: {
+                  polylineType: "encodedPolyline",
+                  encodedPolyline: "u{|~Fzs{kM?A?A"
+                },
+                travelMode: "DRIVE",
+                endLocation: {
+                  latLng: pedido.orden.bodegasOrigen[0].ubicacion,
+                  heading: null
+                },
+                startLocation: {
+                  latLng: pedido.vehiculoAsignado.ubicacionGeografica,
+                  heading: null
+                },
+                distanceMeters: Math.round(distancia * 0.5),
+                staticDuration: {
+                  nanos: 0,
+                  seconds: Math.round(duracion * 0.5).toString()
+                },
+                transitDetails: null,
+                travelAdvisory: null,
+                localizedValues: {
+                  distance: {
+                    text: `${(distancia * 0.5 / 1000).toFixed(1)} km`,
+                    languageCode: ""
+                  },
+                  staticDuration: {
+                    text: `${Math.round(duracion * 0.5 / 60)} min`,
+                    languageCode: ""
+                  }
+                },
+                navigationInstruction: {
+                  maneuver: "DEPART",
+                  instructions: "Diríjase hacia la bodega de origen"
+                }
+              },
+              {
+                polyline: {
+                  polylineType: "encodedPolyline",
+                  encodedPolyline: "a{|~Fts{kM?A?A"
+                },
+                travelMode: "DRIVE",
+                endLocation: {
+                  latLng: pedido.orden.cliente.ubicacion,
+                  heading: null
+                },
+                startLocation: {
+                  latLng: pedido.orden.bodegasOrigen[0].ubicacion,
+                  heading: null
+                },
+                distanceMeters: Math.round(distancia * 0.5),
+                staticDuration: {
+                  nanos: 0,
+                  seconds: Math.round(duracion * 0.5).toString()
+                },
+                transitDetails: null,
+                travelAdvisory: null,
+                localizedValues: {
+                  distance: {
+                    text: `${(distancia * 0.5 / 1000).toFixed(1)} km`,
+                    languageCode: ""
+                  },
+                  staticDuration: {
+                    text: `${Math.round(duracion * 0.5 / 60)} min`,
+                    languageCode: ""
+                  }
+                },
+                navigationInstruction: {
+                  maneuver: "STRAIGHT",
+                  instructions: "Continúe hacia el destino final"
+                }
+              }
+            ],
+            duration: {
+              nanos: 0,
+              seconds: duracion.toString()
             },
-            {
-              distanceMeters: 1000 + Math.random() * 1000,
-              duration: `${200 + Math.floor(Math.random() * 400)}s`,
-              startLocation: pedido.bodegasOrigen[0].ubicacion,
-              endLocation: pedido.orden.cliente.ubicacion,
-              navigationInstruction: 'Continúe hacia el destino final'
+            polyline: {
+              polylineType: "encodedPolyline",
+              encodedPolyline: "u{|~Fzs{kM?A?A?A?A?A?A?A?A"
+            },
+            endLocation: {
+              latLng: pedido.orden.cliente.ubicacion,
+              heading: null
+            },
+            startLocation: {
+              latLng: pedido.vehiculoAsignado.ubicacionGeografica,
+              heading: null
+            },
+            stepsOverview: null,
+            distanceMeters: Math.round(distancia),
+            staticDuration: {
+              nanos: 0,
+              seconds: duracion.toString()
+            },
+            travelAdvisory: null,
+            localizedValues: {
+              distance: {
+                text: `${(distancia / 1000).toFixed(1)} km`,
+                languageCode: ""
+              },
+              duration: {
+                text: `${Math.round(duracion / 60)} min`,
+                languageCode: ""
+              },
+              staticDuration: {
+                text: `${Math.round(duracion / 60)} min`,
+                languageCode: ""
+              }
             }
-          ]
-        }
-      ]
-    }));
+          }
+        ],
+        rutaId: `ruta-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      };
+    });
 
     return {
       success: true,

@@ -30,11 +30,37 @@ export const generateRutas = createAsyncThunk(
   async (pedidos, { rejectWithValue }) => {
     try {
       const response = await logisticaService.generateRutas(pedidos);
+      
       if (!response.success) {
         return rejectWithValue(response.message || 'Error al generar rutas');
       }
-      return response;
+
+      // Validar estructura de la respuesta
+      if (!response.result || !Array.isArray(response.result)) {
+        return rejectWithValue('Formato de respuesta inválido');
+      }
+
+      // Validar que cada ruta tenga la estructura esperada
+      const rutasValidas = response.result.filter(ruta => {
+        if (!ruta.vehiculoId || !ruta.ordenesIds || !Array.isArray(ruta.ordenesIds)) {
+          console.warn('Ruta con estructura incompleta:', ruta);
+          return false;
+        }
+        return true;
+      });
+
+      if (rutasValidas.length < response.result.length) {
+        console.warn(
+          `${response.result.length - rutasValidas.length} ruta(s) descartada(s) por estructura inválida`
+        );
+      }
+
+      return {
+        ...response,
+        result: rutasValidas
+      };
     } catch (error) {
+      console.error('Error en generateRutas:', error);
       return rejectWithValue(error.message || 'Error al generar rutas');
     }
   }
