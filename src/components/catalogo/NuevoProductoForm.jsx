@@ -25,6 +25,7 @@ import {
   selectUpdateStatus,
   selectUpdateError 
 } from '../../redux/features/catalogoSlice';
+import { MedicamentoFields, InsumoFields, EquipoFields } from './productTypes';
 
 function NuevoProductoForm({ open, onClose, producto }) {
   const dispatch = useDispatch();
@@ -193,127 +194,21 @@ function NuevoProductoForm({ open, onClose, producto }) {
 
   // Renderizar campos según el tipo seleccionado
   const renderTipoEspecificoFields = () => {
+    const commonProps = {
+      onChange: handleNestedChange,
+      readOnly: false,
+      required: true
+    };
+
     switch (formData.tipo) {
       case 'MEDICAMENTO':
-        return (
-          <>
-            <TextField
-              name="medicamento.principioActivo"
-              label="Principio Activo"
-              value={formData.medicamento.principioActivo}
-              onChange={handleNestedChange}
-              fullWidth
-              required
-              margin="normal"
-            />
-            
-            <TextField
-              name="medicamento.concentracion"
-              label="Concentración"
-              value={formData.medicamento.concentracion}
-              onChange={handleNestedChange}
-              fullWidth
-              required
-              margin="normal"
-            />
-            
-            <TextField
-              name="medicamento.formaFarmaceutica"
-              label="Forma Farmacéutica"
-              value={formData.medicamento.formaFarmaceutica}
-              onChange={handleNestedChange}
-              fullWidth
-              required
-              margin="normal"
-            />
-          </>
-        );
+        return <MedicamentoFields data={formData.medicamento} {...commonProps} />;
       
       case 'INSUMO':
-        return (
-          <>
-            <TextField
-              name="insumoMedico.material"
-              label="Material"
-              value={formData.insumoMedico.material}
-              onChange={handleNestedChange}
-              fullWidth
-              required
-              margin="normal"
-            />
-            
-            <FormControlLabel
-              control={
-                <Checkbox
-                  name="insumoMedico.esteril"
-                  checked={formData.insumoMedico.esteril}
-                  onChange={handleNestedChange}
-                />
-              }
-              label="Estéril"
-              sx={{ mt: 2 }}
-            />
-            
-            <FormControlLabel
-              control={
-                <Checkbox
-                  name="insumoMedico.usoUnico"
-                  checked={formData.insumoMedico.usoUnico}
-                  onChange={handleNestedChange}
-                />
-              }
-              label="Uso Único"
-            />
-          </>
-        );
+        return <InsumoFields data={formData.insumoMedico} {...commonProps} />;
       
       case 'EQUIPO':
-        return (
-          <>
-            <TextField
-              name="equipoMedico.marca"
-              label="Marca"
-              value={formData.equipoMedico.marca}
-              onChange={handleNestedChange}
-              fullWidth
-              required
-              margin="normal"
-            />
-            
-            <TextField
-              name="equipoMedico.modelo"
-              label="Modelo"
-              value={formData.equipoMedico.modelo}
-              onChange={handleNestedChange}
-              fullWidth
-              required
-              margin="normal"
-            />
-            
-            <TextField
-              name="equipoMedico.vidaUtil"
-              label="Vida Útil (años)"
-              type="number"
-              value={formData.equipoMedico.vidaUtil}
-              onChange={handleNestedChange}
-              fullWidth
-              required
-              margin="normal"
-            />
-            
-            <FormControlLabel
-              control={
-                <Checkbox
-                  name="equipoMedico.requiereMantenimiento"
-                  checked={formData.equipoMedico.requiereMantenimiento}
-                  onChange={handleNestedChange}
-                />
-              }
-              label="Requiere Mantenimiento"
-              sx={{ mt: 2 }}
-            />
-          </>
-        );
+        return <EquipoFields data={formData.equipoMedico} {...commonProps} />;
       
       default:
         return null;

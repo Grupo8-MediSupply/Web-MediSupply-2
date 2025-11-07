@@ -247,26 +247,26 @@ const catalogoSlice = createSlice({
         if (productoData.tipo === 'MEDICAMENTO') {
           tipoEspecifico = {
             medicamento: {
-              principioActivo: productoData.medicamento?.principioActivo || productoInfo.nombre || '',
-              concentracion: productoData.medicamento?.concentracion || productoInfo.concentracion || '',
-              formaFarmaceutica: productoData.medicamento?.formaFarmaceutica || 'Tableta'
+              principioActivo: productoInfo.principioActivo || productoData.medicamento?.principioActivo || '',
+              concentracion: productoInfo.concentracion || productoData.medicamento?.concentracion || '',
+              formaFarmaceutica: productoInfo.formaFarmaceutica || productoData.medicamento?.formaFarmaceutica || 'Tableta'
             }
           };
         } else if (productoData.tipo === 'INSUMO') {
           tipoEspecifico = {
-            insumoMedico: productoData.insumoMedico || {
-              material: 'No especificado',
-              esteril: false,
-              usoUnico: false
+            insumoMedico: {
+              material: productoInfo.material || productoData.insumoMedico?.material || 'No especificado',
+              esteril: productoInfo.esteril ?? productoData.insumoMedico?.esteril ?? false,
+              usoUnico: productoInfo.usoUnico ?? productoData.insumoMedico?.usoUnico ?? false
             }
           };
         } else if (productoData.tipo === 'EQUIPO') {
           tipoEspecifico = {
-            equipoMedico: productoData.equipoMedico || {
-              marca: 'No especificado',
-              modelo: 'No especificado',
-              vidaUtil: 0,
-              requiereMantenimiento: false
+            equipoMedico: {
+              marca: productoInfo.marca || productoData.equipoMedico?.marca || 'No especificado',
+              modelo: productoInfo.modelo || productoData.equipoMedico?.modelo || 'No especificado',
+              vidaUtil: productoInfo.vidaUtil || productoData.equipoMedico?.vidaUtil || 0,
+              requiereMantenimiento: productoInfo.requiereMantenimiento ?? productoData.equipoMedico?.requiereMantenimiento ?? false
             }
           };
         }
@@ -280,7 +280,7 @@ const catalogoSlice = createSlice({
           descripcion: productoInfo.descripcion,
           tipo: productoData.tipo,
           precio: productoData.precio,
-          precioVenta: productoData.precio, // Alias para formulario
+          precioVenta: productoData.precio,
           
           // Incluir datos específicos del tipo
           ...tipoEspecifico,

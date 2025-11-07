@@ -33,6 +33,7 @@ import WallpaperIcon from '@mui/icons-material/Wallpaper';
 // Componentes personalizados
 import BreadcrumbsNav from '../components/ui/BreadcrumbsNav';
 import NuevoProductoForm from '../components/catalogo/NuevoProductoForm';
+import { MedicamentoFields, InsumoFields, EquipoFields } from '../components/catalogo/productTypes';
 
 // Redux actions y selectors
 import { 
@@ -118,6 +119,42 @@ function ProductoDetalle() {
     setIsEditFormOpen(false);
   };
 
+  // Renderizar información específica según el tipo de producto
+  const renderTipoEspecifico = () => {
+    const commonProps = {
+      readOnly: true,
+      required: false
+    };
+
+    if (producto.tipo === 'MEDICAMENTO' && producto.medicamento) {
+      return <MedicamentoFields data={producto.medicamento} {...commonProps} />;
+    } else if (producto.tipo === 'EQUIPO' && producto.equipoMedico) {
+      return <EquipoFields data={producto.equipoMedico} {...commonProps} />;
+    } else if (producto.tipo === 'INSUMO' && producto.insumoMedico) {
+      return <InsumoFields data={producto.insumoMedico} {...commonProps} />;
+    }
+    
+    return (
+      <Typography variant="body2" color="text.secondary">
+        No hay información específica disponible para este tipo de producto.
+      </Typography>
+    );
+  };
+
+  // Obtener el título de la sección según el tipo
+  const getTipoLabel = () => {
+    switch (producto.tipo) {
+      case 'MEDICAMENTO':
+        return 'Información del Medicamento';
+      case 'EQUIPO':
+        return 'Información del Equipo';
+      case 'INSUMO':
+        return 'Información del Insumo';
+      default:
+        return 'Especificaciones';
+    }
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       {/* Navegación de migas de pan */}
@@ -162,9 +199,11 @@ function ProductoDetalle() {
                       variant="outlined"
                       size="small"
                     />
-                    <Typography variant="body2" color="text.secondary">
-                      {producto.categoria}
-                    </Typography>
+                    <Chip 
+                      label={producto.tipo}
+                      color="primary"
+                      size="small"
+                    />
                   </Stack>
                 </Box>
                 
@@ -239,52 +278,27 @@ function ProductoDetalle() {
         <Grid container spacing={4}>
           {/* Columna izquierda - Especificaciones */}
           <Grid item xs={12} md={8}>
+            {/* Información específica del tipo de producto */}
             <Typography variant="h6" gutterBottom>
-              Especificaciones
+              {getTipoLabel()}
+            </Typography>
+            
+            <Card variant="outlined" sx={{ mb: 3 }}>
+              <CardContent>
+                {renderTipoEspecifico()}
+              </CardContent>
+            </Card>
+
+            {/* Información adicional común a todos los tipos */}
+            <Typography variant="h6" gutterBottom>
+              Información del Proveedor
             </Typography>
             
             <Card variant="outlined" sx={{ mb: 3 }}>
               <CardContent>
                 <Grid container spacing={3}>
                   <Grid item xs={12} sm={6}>
-                    <Box sx={{ mb: 3 }}>
-                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                        Condiciones de almacenamiento
-                      </Typography>
-                      <Stack spacing={1}>
-                        <Box>
-                          <Typography variant="caption" color="text.secondary">
-                            Temperatura
-                          </Typography>
-                          <Typography variant="body2">
-                            {producto.condicionesAlmacenamiento.temperatura}
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <Typography variant="caption" color="text.secondary">
-                            Humedad relativa
-                          </Typography>
-                          <Typography variant="body2">
-                            {producto.condicionesAlmacenamiento.humedad}
-                          </Typography>
-                        </Box>
-                      </Stack>
-                    </Box>
-                    
                     <Box>
-                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                        Cadena de frío
-                      </Typography>
-                      <Chip 
-                        label={producto.cadenaFrio ? "Requiere refrigeración" : "No requiere"} 
-                        color={producto.cadenaFrio ? "primary" : "default"}
-                        size="small"
-                      />
-                    </Box>
-                  </Grid>
-                  
-                  <Grid item xs={12} sm={6}>
-                    <Box sx={{ mb: 3 }}>
                       <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                         Proveedor
                       </Typography>
@@ -295,14 +309,16 @@ function ProductoDetalle() {
                         {producto.proveedor?.pais || 'País no especificado'}
                       </Typography>
                     </Box>
-                    
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6}>
                     <Box>
                       <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                         Estado del producto
                       </Typography>
                       <Chip 
                         label={producto.estado}
-                        color={producto.estado === 'Activo' ? 'success' : 'error'}
+                        color={producto.estado === 'ACTIVO' ? 'success' : 'error'}
                         size="small"
                       />
                     </Box>
@@ -311,8 +327,47 @@ function ProductoDetalle() {
               </CardContent>
             </Card>
 
+            {/* Condiciones de almacenamiento - Solo para MEDICAMENTO e INSUMO */}
+            {(producto.tipo === 'MEDICAMENTO' || producto.tipo === 'INSUMO') && (
+              <>
+                <Typography variant="h6" gutterBottom>
+                  Almacenamiento
+                </Typography>
+                
+                <Card variant="outlined" sx={{ mb: 3 }}>
+                  <CardContent>
+                    <Grid container spacing={3}>
+                      <Grid item xs={12} sm={6}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary">
+                            Temperatura
+                          </Typography>
+                          <Typography variant="body2">
+                            {producto.condicionesAlmacenamiento?.temperatura || 'No especificado'}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary">
+                            Cadena de frío
+                          </Typography>
+                          <br />
+                          <Chip 
+                            label={producto.cadenaFrio ? "Requiere refrigeración" : "No requiere"} 
+                            color={producto.cadenaFrio ? "primary" : "default"}
+                            size="small"
+                          />
+                        </Box>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+
             {/* Sección de documentación normativa */}
-            {producto.normativa.tiene && (
+            {producto.normativa?.tiene && (
               <Box>
                 <Typography variant="h6" gutterBottom>
                   Documentación normativa
@@ -347,25 +402,32 @@ function ProductoDetalle() {
             
             <Card variant="outlined">
               <CardContent>
-                <Stack spacing={2}>
-                  {producto.ubicaciones.map((ubicacion, index) => (
-                    <Box key={index}>
-                      <Typography variant="subtitle2" gutterBottom>
-                        {ubicacion.bodega}
-                      </Typography>
-                      <Typography variant="h6">
-                        {ubicacion.cantidad} unidades
-                      </Typography>
-                      <Divider sx={{ mt: 1 }} />
-                    </Box>
-                  ))}
-                </Stack>
+                {producto.ubicaciones && producto.ubicaciones.length > 0 ? (
+                  <Stack spacing={2}>
+                    {producto.ubicaciones.map((ubicacion, index) => (
+                      <Box key={index}>
+                        <Typography variant="subtitle2" gutterBottom>
+                          {ubicacion.bodega}
+                        </Typography>
+                        <Typography variant="h6">
+                          {ubicacion.cantidad} unidades
+                        </Typography>
+                        <Divider sx={{ mt: 1 }} />
+                      </Box>
+                    ))}
+                  </Stack>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    No hay stock disponible en bodegas
+                  </Typography>
+                )}
                 
                 <Button
                   fullWidth
                   variant="outlined"
                   startIcon={<InventoryIcon />}
                   sx={{ mt: 2 }}
+                  disabled={!producto.ubicaciones || producto.ubicaciones.length === 0}
                 >
                   Ver detalle de inventario
                 </Button>
