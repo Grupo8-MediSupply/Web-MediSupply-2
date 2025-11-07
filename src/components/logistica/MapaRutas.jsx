@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, Polyline, InfoWindow } from '@react-google-maps/api';
 import { 
   Box, 
@@ -29,35 +29,51 @@ const defaultCenter = {
 };
 
 const decodePolyline = (encoded) => {
-  if (!encoded) return [];
-  
-  const poly = [];
-  let index = 0, len = encoded.length;
-  let lat = 0, lng = 0;
-
-  while (index < len) {
-    let b, shift = 0, result = 0;
-    do {
-      b = encoded.charCodeAt(index++) - 63;
-      result |= (b & 0x1f) << shift;
-      shift += 5;
-    } while (b >= 0x20);
-    const dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
-    lat += dlat;
-
-    shift = 0;
-    result = 0;
-    do {
-      b = encoded.charCodeAt(index++) - 63;
-      result |= (b & 0x1f) << shift;
-      shift += 5;
-    } while (b >= 0x20);
-    const dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
-    lng += dlng;
-
-    poly.push({ lat: lat / 1e5, lng: lng / 1e5 });
+  if (!encoded) {
+    console.warn('Polyline vacía o undefined');
+    return [];
   }
-  return poly;
+  
+  try {
+    const poly = [];
+    let index = 0, len = encoded.length;
+    let lat = 0, lng = 0;
+
+    while (index < len) {
+      let b, shift = 0, result = 0;
+      do {
+        b = encoded.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      const dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+      lat += dlat;
+
+      shift = 0;
+      result = 0;
+      do {
+        b = encoded.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      const dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+      lng += dlng;
+
+      poly.push({ lat: lat / 1e5, lng: lng / 1e5 });
+    }
+    
+    console.log('Polyline decodificada:', { 
+      encoded: encoded.substring(0, 50) + '...', 
+      pointsCount: poly.length,
+      firstPoint: poly[0],
+      lastPoint: poly[poly.length - 1]
+    });
+    
+    return poly;
+  } catch (error) {
+    console.error('Error decodificando polyline:', error);
+    return [];
+  }
 };
 
 function MapaRutas({ rutas, pedidos }) {
@@ -65,6 +81,16 @@ function MapaRutas({ rutas, pedidos }) {
   const [map, setMap] = useState(null);
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
+  // Log para debugging
+  useEffect(() => {
+    console.log('MapaRutas - Props recibidas:', {
+      rutasCount: rutas?.length,
+      pedidosCount: pedidos?.length,
+      rutas: rutas,
+      pedidos: pedidos
+    });
+  }, [rutas, pedidos]);
 
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
@@ -141,50 +167,138 @@ function MapaRutas({ rutas, pedidos }) {
     setMap(null);
   }, []);
 
-  // Procesar polylines de las rutas
+  // Procesar polylines de las rutas - VERSIÓN MEJORADA
   const polylines = useMemo(() => {
+    console.log('Procesando polylines...');
     const lines = [];
     const colors = ['#1976d2', '#dc004e', '#388e3c', '#f57c00', '#7b1fa2'];
     
+    if (!rutas || rutas.length === 0) {
+      console.warn('No hay rutas para procesar');
+      return lines;
+    }
+    
     rutas.forEach((ruta, index) => {
       const color = colors[index % colors.length];
+      console.log(`Procesando ruta ${index}:`, {
+        rutaId: ruta.rutaId,
+        vehiculoId: ruta.vehiculoId,
+        tienePolilinea: !!ruta.polilinea,
+        polilineaLength: ruta.polilinea?.length,
+        tieneLegs: !!ruta.legs,
+        legsCount: ruta.legs?.length
+      });
       
-      // Intentar decodificar la polyline principal
-      if (ruta.polilinea) {
-        const path = decodePolyline(ruta.polilinea);
-        if (path.length > 0) {
-          lines.push({
-            rutaId: ruta.rutaId,
-            vehiculoId: ruta.vehiculoId,
-            path,
-            color,
-            weight: 4
-          });
-        }
-      }
-      
-      // También procesar polylines de los legs si existen
+      // PRIORIDAD 1: Intentar usar polylines de los legs (más detalladas)
       if (ruta.legs && ruta.legs.length > 0) {
+        console.log(`Ruta ${index} tiene ${ruta.legs.length} leg(s)`);
+        
         ruta.legs.forEach((leg, legIdx) => {
+          console.log(`  Leg ${legIdx}:`, {
+            tienePolyline: !!leg.polyline,
+            encodedPolyline: leg.polyline?.encodedPolyline?.substring(0, 50)
+          });
+          
           if (leg.polyline?.encodedPolyline) {
             const path = decodePolyline(leg.polyline.encodedPolyline);
-            if (path.length > 0) {
+            
+            if (path.length > 1) {
+              console.log(`    ✓ Leg ${legIdx} decodificado: ${path.length} puntos`);
               lines.push({
                 rutaId: `${ruta.rutaId}-leg-${legIdx}`,
                 vehiculoId: ruta.vehiculoId,
                 path,
                 color,
-                weight: 3,
-                opacity: 0.7
+                weight: 4,
+                opacity: 0.8
               });
+            } else {
+              console.warn(`    ✗ Leg ${legIdx} no tiene suficientes puntos`);
             }
+          }
+          
+          // También intentar con steps
+          if (leg.steps && leg.steps.length > 0) {
+            leg.steps.forEach((step, stepIdx) => {
+              if (step.polyline?.encodedPolyline) {
+                const path = decodePolyline(step.polyline.encodedPolyline);
+                
+                if (path.length > 1) {
+                  console.log(`    ✓ Step ${stepIdx} decodificado: ${path.length} puntos`);
+                  lines.push({
+                    rutaId: `${ruta.rutaId}-step-${stepIdx}`,
+                    vehiculoId: ruta.vehiculoId,
+                    path,
+                    color,
+                    weight: 3,
+                    opacity: 0.6
+                  });
+                }
+              }
+            });
           }
         });
       }
+      
+      // PRIORIDAD 2: Polyline principal de la ruta
+      if (ruta.polilinea && ruta.polilinea.length > 10) {
+        console.log(`Ruta ${index} tiene polyline principal`);
+        const path = decodePolyline(ruta.polilinea);
+        
+        if (path.length > 1) {
+          console.log(`  ✓ Polyline principal decodificada: ${path.length} puntos`);
+          lines.push({
+            rutaId: ruta.rutaId,
+            vehiculoId: ruta.vehiculoId,
+            path,
+            color,
+            weight: 4,
+            opacity: 0.9
+          });
+        }
+      }
+      
+      // FALLBACK: Si no hay polylines, crear línea directa entre ubicaciones
+      if (lines.length === 0 || lines.filter(l => l.rutaId.includes(ruta.rutaId)).length === 0) {
+        console.warn(`Ruta ${index} no tiene polylines válidas, creando línea directa`);
+        const directPath = [];
+        
+        // Buscar el pedido correspondiente
+        const pedido = pedidos.find(p => ruta.ordenesIds.includes(p.orden.id));
+        
+        if (pedido) {
+          // Vehículo -> Bodega -> Cliente
+          if (pedido.vehiculoAsignado?.ubicacionGeografica) {
+            directPath.push(pedido.vehiculoAsignado.ubicacionGeografica);
+          }
+          
+          if (pedido.orden?.bodegasOrigen?.[0]?.ubicacion) {
+            directPath.push(pedido.orden.bodegasOrigen[0].ubicacion);
+          }
+          
+          if (pedido.orden?.cliente?.ubicacion) {
+            directPath.push(pedido.orden.cliente.ubicacion);
+          }
+          
+          if (directPath.length >= 2) {
+            console.log(`  ✓ Línea directa creada con ${directPath.length} puntos`);
+            lines.push({
+              rutaId: `${ruta.rutaId}-direct`,
+              vehiculoId: ruta.vehiculoId,
+              path: directPath,
+              color,
+              weight: 3,
+              opacity: 0.5,
+              geodesic: true
+            });
+          }
+        }
+      }
     });
     
+    console.log(`Total de polylines procesadas: ${lines.length}`, lines);
     return lines;
-  }, [rutas]);
+  }, [rutas, pedidos]);
 
   // Íconos personalizados para cada tipo de marcador
   const getMarkerIcon = (type) => {
@@ -294,13 +408,13 @@ function MapaRutas({ rutas, pedidos }) {
           Visualización de Rutas en Mapa
         </Typography>
         <Typography variant="caption">
-          {rutas.length} ruta(s) • {allLocations.length} ubicación(es)
+          {rutas.length} ruta(s) • {allLocations.length} ubicación(es) • {polylines.length} línea(s)
         </Typography>
       </Box>
       
       {/* Leyenda */}
       <Box sx={{ p: 2, bgcolor: 'grey.50', borderBottom: 1, borderColor: 'divider' }}>
-        <Stack direction="row" spacing={2} flexWrap="wrap">
+        <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
           <Chip 
             icon={<TruckIcon />} 
             label="Vehículo (Inicio)" 
@@ -320,6 +434,13 @@ function MapaRutas({ rutas, pedidos }) {
             sx={{ bgcolor: '#4CAF50', color: 'white' }}
           />
         </Stack>
+        
+        {/* Debug info */}
+        {polylines.length === 0 && rutas.length > 0 && (
+          <Alert severity="warning" sx={{ mt: 1 }}>
+            No se pudieron decodificar las polylines. Mostrando solo marcadores.
+          </Alert>
+        )}
       </Box>
 
       <GoogleMap
@@ -347,18 +468,25 @@ function MapaRutas({ rutas, pedidos }) {
         ))}
 
         {/* Renderizar polylines de rutas */}
-        {polylines.map((line, index) => (
-          <Polyline
-            key={`polyline-${index}`}
-            path={line.path}
-            options={{
-              strokeColor: line.color,
-              strokeOpacity: line.opacity || 0.8,
-              strokeWeight: line.weight,
-              geodesic: true
-            }}
-          />
-        ))}
+        {polylines.map((line, index) => {
+          console.log(`Renderizando polyline ${index}:`, {
+            path: line.path.length,
+            color: line.color
+          });
+          
+          return (
+            <Polyline
+              key={`polyline-${line.rutaId || index}`}
+              path={line.path}
+              options={{
+                strokeColor: line.color,
+                strokeOpacity: line.opacity || 0.8,
+                strokeWeight: line.weight,
+                geodesic: true
+              }}
+            />
+          );
+        })}
 
         {/* InfoWindow para marcador seleccionado */}
         {selectedMarker && (

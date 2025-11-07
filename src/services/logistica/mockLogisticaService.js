@@ -115,27 +115,86 @@ const mockLogisticaService = {
       const distancia = 3000 + Math.random() * 5000;
       const duracion = 600 + Math.floor(Math.random() * 1200);
       
+      // Ubicaciones
+      const vehiculoLoc = pedido.vehiculoAsignado.ubicacionGeografica;
+      const bodegaLoc = pedido.orden.bodegasOrigen[0].ubicacion;
+      const clienteLoc = pedido.orden.cliente.ubicacion;
+      
+      // Generar polyline simple entre 3 puntos (simulación)
+      // En producción, esto vendría de Google Routes API
+      const generateSimplePolyline = (start, end, steps = 5) => {
+        const points = [];
+        for (let i = 0; i <= steps; i++) {
+          const ratio = i / steps;
+          points.push({
+            lat: start.lat + (end.lat - start.lat) * ratio,
+            lng: start.lng + (end.lng - start.lng) * ratio
+          });
+        }
+        return encodePolyline(points);
+      };
+      
+      // Función para codificar polyline (inverso de decode)
+      const encodePolyline = (coordinates) => {
+        let result = '';
+        let lastLat = 0;
+        let lastLng = 0;
+
+        coordinates.forEach(coord => {
+          const lat = Math.round(coord.lat * 1e5);
+          const lng = Math.round(coord.lng * 1e5);
+          
+          const dLat = lat - lastLat;
+          const dLng = lng - lastLng;
+          
+          result += encodeNumber(dLat);
+          result += encodeNumber(dLng);
+          
+          lastLat = lat;
+          lastLng = lng;
+        });
+
+        return result;
+      };
+      
+      const encodeNumber = (num) => {
+        let encoded = '';
+        let value = num < 0 ? ~(num << 1) : num << 1;
+        
+        while (value >= 0x20) {
+          encoded += String.fromCharCode((0x20 | (value & 0x1f)) + 63);
+          value >>= 5;
+        }
+        
+        encoded += String.fromCharCode(value + 63);
+        return encoded;
+      };
+      
+      // Generar polylines para cada tramo
+      const polylineVehiculoToBodega = generateSimplePolyline(vehiculoLoc, bodegaLoc, 10);
+      const polylineBodegaToCliente = generateSimplePolyline(bodegaLoc, clienteLoc, 10);
+      
       return {
         vehiculoId: pedido.vehiculoAsignado.id,
         ordenesIds: [pedido.orden.id],
         distancia: Math.round(distancia),
         duracion: duracion.toString(),
-        polilinea: 'u{|~Fzs{kM?A?A?A?A?A?A?A?A',
+        polilinea: polylineVehiculoToBodega + polylineBodegaToCliente, // Concatenar polylines
         legs: [
           {
             steps: [
               {
                 polyline: {
                   polylineType: "encodedPolyline",
-                  encodedPolyline: "u{|~Fzs{kM?A?A"
+                  encodedPolyline: polylineVehiculoToBodega
                 },
                 travelMode: "DRIVE",
                 endLocation: {
-                  latLng: pedido.orden.bodegasOrigen[0].ubicacion,
+                  latLng: bodegaLoc,
                   heading: null
                 },
                 startLocation: {
-                  latLng: pedido.vehiculoAsignado.ubicacionGeografica,
+                  latLng: vehiculoLoc,
                   heading: null
                 },
                 distanceMeters: Math.round(distancia * 0.5),
@@ -163,15 +222,15 @@ const mockLogisticaService = {
               {
                 polyline: {
                   polylineType: "encodedPolyline",
-                  encodedPolyline: "a{|~Fts{kM?A?A"
+                  encodedPolyline: polylineBodegaToCliente
                 },
                 travelMode: "DRIVE",
                 endLocation: {
-                  latLng: pedido.orden.cliente.ubicacion,
+                  latLng: clienteLoc,
                   heading: null
                 },
                 startLocation: {
-                  latLng: pedido.orden.bodegasOrigen[0].ubicacion,
+                  latLng: bodegaLoc,
                   heading: null
                 },
                 distanceMeters: Math.round(distancia * 0.5),
@@ -203,14 +262,14 @@ const mockLogisticaService = {
             },
             polyline: {
               polylineType: "encodedPolyline",
-              encodedPolyline: "u{|~Fzs{kM?A?A?A?A?A?A?A?A"
+              encodedPolyline: polylineVehiculoToBodega + polylineBodegaToCliente
             },
             endLocation: {
-              latLng: pedido.orden.cliente.ubicacion,
+              latLng: clienteLoc,
               heading: null
             },
             startLocation: {
-              latLng: pedido.vehiculoAsignado.ubicacionGeografica,
+              latLng: vehiculoLoc,
               heading: null
             },
             stepsOverview: null,
