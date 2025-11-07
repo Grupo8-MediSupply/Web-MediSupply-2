@@ -41,7 +41,13 @@ export const withAuth = (options = {}) => {
  * @returns {Promise} - Promesa con la respuesta
  */
 export const apiRequest = async (endpoint, options = {}) => {
-  const url = endpoint.startsWith('http') ? endpoint : `${BASE_API_URL}${endpoint}`;
+  let url = endpoint.startsWith('http') ? endpoint : `${BASE_API_URL}${endpoint}`;
+  
+  // Agregar query params si existen
+  if (options.params) {
+    const queryString = new URLSearchParams(options.params).toString();
+    url = `${url}?${queryString}`;
+  }
   
   const requestOptions = {
     ...defaultOptions,
@@ -51,6 +57,9 @@ export const apiRequest = async (endpoint, options = {}) => {
       ...options.headers,
     },
   };
+
+  // Eliminar params de las opciones ya que los agregamos a la URL
+  delete requestOptions.params;
 
   try {
     const response = await fetch(url, requestOptions);

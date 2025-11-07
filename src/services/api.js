@@ -9,6 +9,7 @@ import vendedoresService from './vendedores';
 import proveedoresService from './proveedores';
 import catalogoService from './catalogo/index';
 import reportesService from './reportes';
+import logisticaService from './logistica';
 
 // Exportar todos los servicios agrupados por dominio
 export const api = {
@@ -17,6 +18,7 @@ export const api = {
   proveedores: proveedoresService,
   catalogo: catalogoService,
   reportes: reportesService,
+  logistica: logisticaService,
   // En el futuro, otros dominios se añadirán aquí:
   // inventory: inventoryService,
   // catalog: catalogService,
