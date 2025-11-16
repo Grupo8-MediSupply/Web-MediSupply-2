@@ -231,6 +231,22 @@ function Catalogo() {
           <Stack direction="row" spacing={2}>
             <Button
               variant="outlined"
+              color="secondary"
+              startIcon={<UploadIcon />}
+              onClick={handleOpenCargaMasiva}
+            >
+              Carga Masiva
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              startIcon={<ArticleIcon />}
+              onClick={handleOpenNormativas}
+            >
+              Normativas
+            </Button>
+            <Button
+              variant="outlined"
               color="primary"
               startIcon={<LocalShippingIcon />}
               onClick={handleOpenSolicitarLote}
