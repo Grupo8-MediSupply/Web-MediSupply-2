@@ -18,7 +18,11 @@ import {
   IconButton,
   Alert,
   CircularProgress,
-  Paper
+  Paper,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -114,27 +118,31 @@ const SolicitarLoteDialog = ({ open, onClose, productosDisponibles }) => {
 
         {/* Selector de productos */}
         <Box sx={{ mb: 3, display: 'flex', gap: 2 }}>
-          <TextField
-            select
-            fullWidth
-            label="Seleccionar producto"
-            value={productoAgregar}
-            onChange={(e) => setProductoAgregar(e.target.value)}
-            SelectProps={{ native: true }}
-            disabled={status === 'loading'}
-          >
-            <option value="">-- Seleccione un producto --</option>
-            {productosNoSeleccionados.map(producto => (
-              <option key={producto.productoRegionalId} value={producto.productoRegionalId}>
-                {producto.nombre} ({producto.sku})
-              </option>
-            ))}
-          </TextField>
+          <FormControl fullWidth disabled={status === 'loading'}>
+            <InputLabel id="producto-select-label">Seleccionar producto</InputLabel>
+            <Select
+              labelId="producto-select-label"
+              id="producto-select"
+              value={productoAgregar}
+              onChange={(e) => setProductoAgregar(e.target.value)}
+              label="Seleccionar producto"
+            >
+              <MenuItem value="">
+                <em>-- Seleccione un producto --</em>
+              </MenuItem>
+              {productosNoSeleccionados.map(producto => (
+                <MenuItem key={producto.productoRegionalId} value={producto.productoRegionalId}>
+                  {producto.nombre} ({producto.sku})
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleAgregarProducto}
             disabled={!productoAgregar || status === 'loading'}
+            sx={{ minWidth: '120px' }}
           >
             Agregar
           </Button>
