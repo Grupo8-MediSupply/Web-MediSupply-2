@@ -9,11 +9,13 @@ import {
   Grid,
   Snackbar,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Stack
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import UploadIcon from '@mui/icons-material/Upload';
 import ArticleIcon from '@mui/icons-material/Article';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
 // Componentes personalizados
 import BreadcrumbsNav from '../components/ui/BreadcrumbsNav';
@@ -23,6 +25,7 @@ import ProductosTable from '../components/catalogo/ProductosTable';
 import NuevoProductoForm from '../components/catalogo/NuevoProductoForm';
 import CargaMasivaDialog from '../components/catalogo/CargaMasivaDialog';
 import NormativasDialog from '../components/catalogo/NormativasDialog';
+import SolicitarLoteDialog from '../components/catalogo/SolicitarLoteDialog';
 
 // Redux actions y selectors
 import { 
@@ -71,10 +74,11 @@ function Catalogo() {
   // Estados locales para controlar diálogos y búsquedas
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredProductos, setFilteredProductos] = useState([]);
-  const [isProductoFormOpen, setIsProductoFormOpen] = useState(false);
+  const [isNuevoProductoOpen, setIsNuevoProductoOpen] = useState(false);
   const [isCargaMasivaOpen, setIsCargaMasivaOpen] = useState(false);
   const [isNormativasOpen, setIsNormativasOpen] = useState(false);
-  
+  const [isSolicitarLoteOpen, setIsSolicitarLoteOpen] = useState(false);
+
   // Obtener productos al cargar el componente
   useEffect(() => {
     if (status === 'idle') {
@@ -126,12 +130,12 @@ function Catalogo() {
   };
 
   // Manejadores para modales
-  const handleOpenProductoForm = () => {
-    setIsProductoFormOpen(true);
+  const handleOpenNuevoProducto = () => {
+    setIsNuevoProductoOpen(true);
   };
 
-  const handleCloseProductoForm = () => {
-    setIsProductoFormOpen(false);
+  const handleCloseNuevoProducto = () => {
+    setIsNuevoProductoOpen(false);
   };
 
   const handleOpenCargaMasiva = () => {
@@ -148,6 +152,14 @@ function Catalogo() {
 
   const handleCloseNormativas = () => {
     setIsNormativasOpen(false);
+  };
+
+  const handleOpenSolicitarLote = () => {
+    setIsSolicitarLoteOpen(true);
+  };
+
+  const handleCloseSolicitarLote = () => {
+    setIsSolicitarLoteOpen(false);
   };
 
   // Manejar carga de archivos
@@ -205,50 +217,36 @@ function Catalogo() {
       />
       
       <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-        {/* Encabezado con título */}
-        <Typography variant="h4" component="h1" gutterBottom>
-          Productos
-        </Typography>
-        
-        {/* Botones de acción */}
-        <Grid
-          container
-          spacing={2}
-          justifyContent="flex-end"   // Alinea los botones a la derecha
-          alignItems="center"
-          sx={{ mb: 3 }}
-        >
-          <Grid item>
+        {/* Encabezado con título y botones de acción */}
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          mb: 3
+        }}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Catálogo de productos
+          </Typography>
+          
+          <Stack direction="row" spacing={2}>
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<LocalShippingIcon />}
+              onClick={handleOpenSolicitarLote}
+            >
+              Solicitar lote
+            </Button>
             <Button
               variant="contained"
               color="primary"
               startIcon={<AddIcon />}
-              onClick={handleOpenProductoForm}
+              onClick={handleOpenNuevoProducto}
             >
               Nuevo producto
             </Button>
-          </Grid>
-          <Grid item>
-            <Button
-              variant="contained"
-              color="secondary"
-              startIcon={<UploadIcon />}
-              onClick={handleOpenCargaMasiva}
-            >
-              Carga masiva
-            </Button>
-          </Grid>
-          <Grid item>
-            <Button
-              variant="contained"
-              color="info"
-              startIcon={<ArticleIcon />}
-              onClick={handleOpenNormativas}
-            >
-              Normativas
-            </Button>
-          </Grid>
-        </Grid>
+          </Stack>
+        </Box>
         
         {/* Barra de búsqueda y filtros */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
@@ -274,8 +272,8 @@ function Catalogo() {
       
       {/* Modales y diálogos */}
       <NuevoProductoForm
-        open={isProductoFormOpen}
-        onClose={handleCloseProductoForm}
+        open={isNuevoProductoOpen}
+        onClose={handleCloseNuevoProducto}
       />
       
       <CargaMasivaDialog
@@ -290,6 +288,12 @@ function Catalogo() {
         onClose={handleCloseNormativas}
         onCargar={handleCargarNormativas}
         loading={useSelector(state => state.catalogo.loadingNormativas)}
+      />
+      
+      <SolicitarLoteDialog
+        open={isSolicitarLoteOpen}
+        onClose={handleCloseSolicitarLote}
+        productosDisponibles={productos}
       />
       
       {/* Notificaciones */}

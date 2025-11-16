@@ -99,6 +99,22 @@ export const updateProducto = createAsyncThunk(
   }
 );
 
+// Add solicitarLote thunk
+export const solicitarLote = createAsyncThunk(
+  'catalogo/solicitarLote',
+  async (productosLote, { rejectWithValue }) => {
+    try {
+      const response = await catalogoService.solicitarLote(productosLote);
+      if (!response.success) {
+        return rejectWithValue(response.message || 'Error al solicitar lote');
+      }
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const initialState = {
   productos: [],
   status: 'idle',
@@ -119,7 +135,10 @@ const initialState = {
   productoDetalleStatus: 'idle',
   productoDetalleError: null,
   updateStatus: 'idle',
-  updateError: null
+  updateError: null,
+  solicitarLoteStatus: 'idle',
+  solicitarLoteError: null,
+  productosSeleccionados: [] // Para gestionar productos seleccionados para solicitar
 };
 
 const catalogoSlice = createSlice({
@@ -155,6 +174,40 @@ const catalogoSlice = createSlice({
     resetUpdateStatus: (state) => {
       state.updateStatus = 'idle';
       state.updateError = null;
+    },
+    toggleProductoSeleccionado: (state, action) => {
+      const productoId = action.payload;
+      const index = state.productosSeleccionados.findIndex(p => p.productoRegionalId === productoId);
+      
+      if (index === -1) {
+        // Agregar producto con cantidad por defecto
+        const producto = state.productos.find(p => p.productoRegionalId === productoId);
+        if (producto) {
+          state.productosSeleccionados.push({
+            productoRegionalId: producto.productoRegionalId,
+            sku: producto.sku,
+            nombre: producto.nombre,
+            cantidad: 1
+          });
+        }
+      } else {
+        // Remover producto
+        state.productosSeleccionados.splice(index, 1);
+      }
+    },
+    updateCantidadSeleccionada: (state, action) => {
+      const { productoId, cantidad } = action.payload;
+      const producto = state.productosSeleccionados.find(p => p.productoRegionalId === productoId);
+      if (producto && cantidad > 0) {
+        producto.cantidad = cantidad;
+      }
+    },
+    clearProductosSeleccionados: (state) => {
+      state.productosSeleccionados = [];
+    },
+    resetSolicitarLoteStatus: (state) => {
+      state.solicitarLoteStatus = 'idle';
+      state.solicitarLoteError = null;
     }
   },
   extraReducers: (builder) => {
@@ -337,6 +390,27 @@ const catalogoSlice = createSlice({
       .addCase(updateProducto.rejected, (state, action) => {
         state.updateStatus = 'failed';
         state.updateError = action.payload;
+      })
+      // Add solicitarLote cases
+      .addCase(solicitarLote.pending, (state) => {
+        state.solicitarLoteStatus = 'loading';
+        state.solicitarLoteError = null;
+      })
+      .addCase(solicitarLote.fulfilled, (state, action) => {
+        state.solicitarLoteStatus = 'succeeded';
+        state.productosSeleccionados = [];
+        state.notificacion = {
+          tipo: 'success',
+          mensaje: 'Solicitud de lote enviada correctamente'
+        };
+      })
+      .addCase(solicitarLote.rejected, (state, action) => {
+        state.solicitarLoteStatus = 'failed';
+        state.solicitarLoteError = action.payload;
+        state.notificacion = {
+          tipo: 'error',
+          mensaje: action.payload || 'Error al solicitar lote'
+        };
       });
   }
 });
@@ -347,7 +421,11 @@ export const {
   selectProducto, 
   clearProductoSeleccionado,
   clearNotificacion,
-  clearProductoDetalle
+  clearProductoDetalle,
+  toggleProductoSeleccionado,
+  updateCantidadSeleccionada,
+  clearProductosSeleccionados,
+  resetSolicitarLoteStatus
 } = catalogoSlice.actions;
 
 // Selector para obtener datos básicos
@@ -388,5 +466,9 @@ export const selectProductoDetalleError = (state) => state.catalogo.productoDeta
 // Add update status selector
 export const selectUpdateStatus = state => state.catalogo.updateStatus;
 export const selectUpdateError = state => state.catalogo.updateError;
+// Add selectors for solicitar lote
+export const selectSolicitarLoteStatus = state => state.catalogo.solicitarLoteStatus;
+export const selectSolicitarLoteError = state => state.catalogo.solicitarLoteError;
+export const selectProductosSeleccionados = state => state.catalogo.productosSeleccionados;
 
 export default catalogoSlice.reducer;
