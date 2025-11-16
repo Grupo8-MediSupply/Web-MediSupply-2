@@ -455,6 +455,49 @@ const mockCatalogoService = {
       result: productos[id] || productos["03700796-ef17-4923-8368-22d718c5a5cd"],
       timestamp: new Date().toISOString()
     };
+  },
+
+  solicitarLote: async (productosLote) => {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Validar que el array no esté vacío
+    if (!Array.isArray(productosLote) || productosLote.length === 0) {
+      return {
+        success: false,
+        message: 'Debe incluir al menos un producto en la solicitud',
+        status: 400,
+        timestamp: new Date().toISOString()
+      };
+    }
+
+    // Validar estructura de cada producto
+    for (const producto of productosLote) {
+      if (!producto.sku || typeof producto.sku !== 'string') {
+        return {
+          success: false,
+          message: 'Cada producto debe tener un SKU válido',
+          status: 400,
+          timestamp: new Date().toISOString()
+        };
+      }
+
+      if (!producto.cantidad || typeof producto.cantidad !== 'number' || producto.cantidad <= 0) {
+        return {
+          success: false,
+          message: `La cantidad para el producto ${producto.sku} debe ser un número mayor a 0`,
+          status: 400,
+          timestamp: new Date().toISOString()
+        };
+      }
+    }
+
+    // Simular éxito
+    console.log('📦 Mock - Solicitud de lote procesada:', productosLote);
+    
+    return {
+      success: true,
+      timestamp: new Date().toISOString()
+    };
   }
 };
 

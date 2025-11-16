@@ -13,6 +13,11 @@ const catalogoService = {
   getProductoById: (id) => apiRequest(`/producto/${id}`, {
     method: 'GET',
     ...withAuth()
+  }),
+  solicitarLote: (productosLote) => apiRequest('/producto/solicitar-lote', {
+    method: 'POST',
+    body: JSON.stringify(productosLote),
+    ...withAuth()
   })
 };
 
