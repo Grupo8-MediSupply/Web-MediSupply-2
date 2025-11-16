@@ -2,66 +2,75 @@
  * Implementación simulada de servicios de proveedores para desarrollo
  */
 
-// Datos de ejemplo para proveedores
-const mockProveedores = [
-  { 
-    id: '1', 
-    nombre: 'FarmaLatam', 
-    pais: 'CO',
-    numeroIdentificacion: '901234567',
-    email: 'contacto@farmalatam.com',
-    contactoPrincipal: {
-      nombre: 'Carlos Gutiérrez',
-      telefono: '+57 315 789 4561'
+// Datos de ejemplo para proveedores por país
+const mockProveedoresPorPais = {
+  '10': [ // Colombia
+    { 
+      id: '0d5fdae6-342e-4f70-b641-0f8abcabed57',
+      nombreProveedor: 'Insumos Médicos Bogotá',
+      email: 'contacto@imbogota.com.co',
+      pais: '10',
+      tipoIdentificacion: '1',
+      identificacion: 'CO9001001'
+    },
+    { 
+      id: '154ab403-bd70-4dd8-a316-588b6bed538c',
+      nombreProveedor: 'Proveedora Andina',
+      email: 'ventas@proveedoraandina.com.co',
+      pais: '10',
+      tipoIdentificacion: '1',
+      identificacion: 'CO9001003'
+    },
+    { 
+      id: '6c5c3509-8108-4b68-8b3f-4a2ca89f9051',
+      nombreProveedor: 'Distribuidora Clínica del Caribe',
+      email: 'ventas@dccaribe.com.co',
+      pais: '10',
+      tipoIdentificacion: '1',
+      identificacion: 'CO9001005'
+    },
+    {
+      id: 'cd8b76b4-3402-47fc-b12d-fdb1a5793f66',
+      nombreProveedor: 'FarmaLatam S.A.',
+      email: 'contacto@farmalatam.com',
+      pais: '10',
+      tipoIdentificacion: '2',
+      identificacion: '901234567'
     }
-  },
-  { 
-    id: '2', 
-    nombre: 'CareTech', 
-    pais: 'PE',
-    numeroIdentificacion: '56789123',
-    email: 'info@caretech.com.pe',
-    contactoPrincipal: {
-      nombre: 'María Rojas',
-      telefono: '+51 987 654 321'
+  ],
+  '20': [ // México
+    { 
+      id: 'mx-001',
+      nombreProveedor: 'Distribuidora Médica del Norte',
+      email: 'contacto@dmn.mx',
+      pais: '20',
+      tipoIdentificacion: '3',
+      identificacion: 'MX9001001'
+    },
+    { 
+      id: 'mx-002',
+      nombreProveedor: 'Suministros Clínicos México',
+      email: 'ventas@scmexico.mx',
+      pais: '20',
+      tipoIdentificacion: '3',
+      identificacion: 'MX9001002'
     }
-  },
-  { 
-    id: '3', 
-    nombre: 'SaludGlobal', 
-    pais: 'MX',
-    numeroIdentificacion: '1011112131',
-    email: 'contacto@saludglobal.mx',
-    contactoPrincipal: {
-      nombre: 'Roberto Méndez',
-      telefono: '+52 55 1234 5678'
-    }
-  },
-  { 
-    id: '4', 
-    nombre: 'MediSupply', 
-    pais: 'CL',
-    numeroIdentificacion: '456788012',
-    email: 'info@medisupply.cl',
-    contactoPrincipal: {
-      nombre: 'Alejandra Vargas',
-      telefono: '+56 9 8765 4321'
-    }
-  },
-];
+  ]
+};
 
 // Servicio simulado
 const mockProveedoresService = {
-  // Obtener todos los proveedores
-  getProveedores: async () => {
+  // Obtener proveedores por país
+  getProveedores: async (paisId) => {
     return new Promise((resolve) => {
       setTimeout(() => {
+        const proveedores = mockProveedoresPorPais[paisId] || [];
         resolve({
           success: true,
-          result: mockProveedores,
-          message: 'Proveedores obtenidos correctamente'
+          result: proveedores,
+          timestamp: new Date().toISOString()
         });
-      }, 600); // Simular latencia
+      }, 600);
     });
   },
   
@@ -69,7 +78,7 @@ const mockProveedoresService = {
   getProveedorById: async (id) => {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        const proveedor = mockProveedores.find(p => p.id === id);
+        const proveedor = Object.values(mockProveedoresPorPais).flat().find(p => p.id === id);
         
         if (proveedor) {
           resolve({
@@ -117,15 +126,25 @@ const mockProveedoresService = {
       };
     }
 
-    // Si la validación pasa, retornar respuesta exitosa
+    // Crear el nuevo proveedor
+    const newProveedor = {
+      id: `prov-${Date.now()}`,
+      nombreProveedor: proveedorData.nombreProveedor,
+      email: proveedorData.email,
+      pais: proveedorData.pais,
+      tipoIdentificacion: proveedorData.tipoIdentificacion.toString(),
+      identificacion: proveedorData.numeroIdentificacion
+    };
+
+    // Agregar el proveedor al mock data
+    if (!mockProveedoresPorPais[proveedorData.pais]) {
+      mockProveedoresPorPais[proveedorData.pais] = [];
+    }
+    mockProveedoresPorPais[proveedorData.pais].push(newProveedor);
+
     return {
       success: true,
-      result: {
-        id: Date.now().toString(),
-        nombreProveedor: proveedorData.nombreProveedor,
-        email: proveedorData.email,
-        pais: proveedorData.pais
-      },
+      result: newProveedor,
       timestamp: new Date().toISOString()
     };
   },

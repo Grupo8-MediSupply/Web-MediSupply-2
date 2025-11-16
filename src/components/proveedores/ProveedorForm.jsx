@@ -145,14 +145,14 @@ const ProveedorForm = ({ open, onClose }) => {
       const proveedorData = {
         nombreProveedor: formData.nombreProveedor,
         numeroIdentificacion: formData.numeroIdentificacion,
-        pais: paisConfig.id, // Asegurarse que esto no sea undefined
+        pais: paisConfig.id,
         email: formData.email,
         contactoPrincipal: formData.contactoPrincipal,
         telefonoContacto: formData.telefonoContacto,
         tipoIdentificacion: Number(formData.tipoIdentificacion)
       };
 
-      console.log('Enviando datos:', proveedorData); // Para debugging
+      console.log('Enviando datos:', proveedorData);
       dispatch(addProveedor(proveedorData));
     }
   };

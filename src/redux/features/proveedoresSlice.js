@@ -4,9 +4,17 @@ import api from '../../services/api';
 // Acción asíncrona para obtener proveedores
 export const fetchProveedores = createAsyncThunk(
   'proveedores/fetchProveedores',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
-      const response = await api.proveedores.getProveedores();
+      // Obtener el paisId desde la configuración del estado
+      const state = getState();
+      const paisId = state.configuracion?.pais?.id;
+      
+      if (!paisId) {
+        return rejectWithValue('No se pudo obtener el ID del país desde la configuración');
+      }
+      
+      const response = await api.proveedores.getProveedores(paisId);
       
       if (!response.success) {
         return rejectWithValue(response.message || 'Error al obtener proveedores');

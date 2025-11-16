@@ -96,9 +96,10 @@ function Proveedores() {
     } else {
       const lowercaseSearch = searchTerm.toLowerCase();
       const filtered = proveedores.filter(proveedor => 
-        proveedor.nombre.toLowerCase().includes(lowercaseSearch) ||
+        proveedor.nombreProveedor?.toLowerCase().includes(lowercaseSearch) ||
         (PAISES[proveedor.pais] || proveedor.pais).toLowerCase().includes(lowercaseSearch) ||
-        proveedor.numeroIdentificacion.includes(searchTerm)
+        proveedor.identificacion?.includes(searchTerm) ||
+        proveedor.email?.toLowerCase().includes(lowercaseSearch)
       );
       setFilteredProveedores(filtered);
     }

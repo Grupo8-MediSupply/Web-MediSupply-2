@@ -6,8 +6,8 @@ import { apiRequest, withAuth } from '../apiClient';
 
 // Servicio real conectado a API
 const proveedoresService = {
-  // Obtener todos los proveedores
-  getProveedores: () => apiRequest('/proveedores', {
+  // Obtener proveedores por país
+  getProveedores: (paisId) => apiRequest(`/proveedores/${paisId}`, {
     method: 'GET',
     ...withAuth()
   }),
