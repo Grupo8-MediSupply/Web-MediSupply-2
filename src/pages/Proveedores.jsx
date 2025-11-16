@@ -29,17 +29,7 @@ import {
   clearFiltros,
   selectPaises
 } from '../redux/features/proveedoresSlice';
-
-// Mapeo de códigos de país a nombres
-const PAISES = {
-  'CO': 'Colombia',
-  'MX': 'México',
-  'PE': 'Perú',
-  'CL': 'Chile',
-  'AR': 'Argentina',
-  'EC': 'Ecuador',
-  'BR': 'Brasil'
-};
+import { selectPaisConfig } from '../redux/features/configuracionSlice';
 
 // Navegación para el breadcrumbs
 const breadcrumbsItems = [
@@ -53,6 +43,7 @@ function Proveedores() {
   const error = useSelector(selectProveedoresError);
   const filtros = useSelector(selectFiltros);
   const paises = useSelector(selectPaises);
+  const paisConfig = useSelector(selectPaisConfig);
   
   // Estado local para búsqueda
   const [searchTerm, setSearchTerm] = useState('');
@@ -61,10 +52,18 @@ function Proveedores() {
   // Estado para controlar el modal de nuevo proveedor
   const [isFormOpen, setIsFormOpen] = useState(false);
   
+  // Función para obtener el nombre del país
+  const getPaisNombre = (paisId) => {
+    if (paisConfig && paisConfig.id === paisId) {
+      return paisConfig.nombre;
+    }
+    return `País ${paisId}`;
+  };
+  
   // Transformar códigos de país a nombres para el filtro
   const paisesOptions = paises.map(pais => ({
     value: pais,
-    label: PAISES[pais] || pais
+    label: getPaisNombre(pais)
   }));
   
   // Configuración de filtros
@@ -96,13 +95,14 @@ function Proveedores() {
     } else {
       const lowercaseSearch = searchTerm.toLowerCase();
       const filtered = proveedores.filter(proveedor => 
-        proveedor.nombre.toLowerCase().includes(lowercaseSearch) ||
-        (PAISES[proveedor.pais] || proveedor.pais).toLowerCase().includes(lowercaseSearch) ||
-        proveedor.numeroIdentificacion.includes(searchTerm)
+        proveedor.nombreProveedor?.toLowerCase().includes(lowercaseSearch) ||
+        proveedor.identificacion?.includes(searchTerm) ||
+        proveedor.email?.toLowerCase().includes(lowercaseSearch) ||
+        getPaisNombre(proveedor.pais).toLowerCase().includes(lowercaseSearch)
       );
       setFilteredProveedores(filtered);
     }
-  }, [proveedores, searchTerm]);
+  }, [proveedores, searchTerm, paisConfig]);
 
   // Manejar cambios en la búsqueda
   const handleSearchChange = (e) => {
