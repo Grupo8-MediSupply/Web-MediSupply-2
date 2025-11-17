@@ -32,6 +32,7 @@ import ApiModeIndicator from "./components/ApiModeIndicator";
 // Importar página de vendedores
 import Vendedores from "./pages/ventas/Vendedores";
 import ReportesVentas from "./pages/ventas/ReportesVentas";
+import PlanesVenta from "./pages/ventas/PlanesVenta";
 
 // Importar página de detalle de bodega
 import BodegaDetalle from "./pages/BodegaDetalle";
@@ -143,6 +144,16 @@ function App() {
                       <ProtectedRoute>
                         <RoleBasedRoute allowedRoles={[Roles.ADMIN]}>
                           <Vendedores />
+                        </RoleBasedRoute>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/ventas/planes" 
+                    element={
+                      <ProtectedRoute>
+                        <RoleBasedRoute allowedRoles={[Roles.ADMIN]}>
+                          <PlanesVenta />
                         </RoleBasedRoute>
                       </ProtectedRoute>
                     } 
