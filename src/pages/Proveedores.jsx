@@ -29,7 +29,7 @@ import {
   clearFiltros,
   selectPaises
 } from '../redux/features/proveedoresSlice';
-import { selectPaisConfig } from '../redux/features/configuracionSlice';
+import { selectPaisConfig, fetchConfiguracion, selectConfigStatus } from '../redux/features/configuracionSlice';
 
 // Navegación para el breadcrumbs
 const breadcrumbsItems = [
@@ -44,6 +44,7 @@ function Proveedores() {
   const filtros = useSelector(selectFiltros);
   const paises = useSelector(selectPaises);
   const paisConfig = useSelector(selectPaisConfig);
+  const configStatus = useSelector(selectConfigStatus);
   
   // Estado local para búsqueda
   const [searchTerm, setSearchTerm] = useState('');
@@ -79,12 +80,24 @@ function Proveedores() {
     }
   ];
 
-  // Cargar proveedores al montar el componente
+  // Cargar configuración y proveedores al montar el componente
   useEffect(() => {
-    if (status === 'idle') {
+    const loadData = async () => {
+      // Primero cargar la configuración si no está cargada
+      if (configStatus === 'idle') {
+        await dispatch(fetchConfiguracion()).unwrap();
+      }
+    };
+    
+    loadData();
+  }, [configStatus, dispatch]);
+
+  // Cargar proveedores solo cuando la configuración esté lista
+  useEffect(() => {
+    if (configStatus === 'succeeded' && status === 'idle') {
       dispatch(fetchProveedores());
     }
-  }, [status, dispatch]);
+  }, [configStatus, status, dispatch]);
 
   // Filtrar por búsqueda
   useEffect(() => {
@@ -145,11 +158,17 @@ function Proveedores() {
 
   // Renderizado condicional según el estado
   let content;
-  if (status === 'loading') {
+  if (status === 'loading' || configStatus === 'loading') {
     content = (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
         <CircularProgress />
       </Box>
+    );
+  } else if (configStatus === 'failed') {
+    content = (
+      <Alert severity="error" sx={{ mt: 2 }}>
+        Error al cargar la configuración. No se pueden cargar los proveedores.
+      </Alert>
     );
   } else if (status === 'failed') {
     content = (

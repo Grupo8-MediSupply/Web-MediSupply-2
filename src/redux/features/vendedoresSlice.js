@@ -11,7 +11,7 @@ export const fetchVendedores = createAsyncThunk(
       const paisId = state.configuracion?.pais?.id;
       
       if (!paisId) {
-        return rejectWithValue('No se pudo obtener el ID del país desde la configuración');
+        return rejectWithValue('No se pudo obtener el ID del país desde la configuración. Por favor, recargue la página.');
       }
       
       const response = await api.vendedores.getVendedoresByPais(paisId);

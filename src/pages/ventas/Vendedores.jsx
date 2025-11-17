@@ -31,7 +31,7 @@ import {
   setFiltros,
   clearFiltros
 } from '../../redux/features/vendedoresSlice';
-import { fetchConfiguracion } from '../../redux/features/configuracionSlice';
+import { fetchConfiguracion, selectConfigStatus } from '../../redux/features/configuracionSlice';
 
 // Navegación para el breadcrumbs
 const breadcrumbsItems = [
@@ -48,6 +48,7 @@ function Vendedores() {
   const authState = useSelector(state => state.auth || {});
   const user = authState.user || null;
   const configuracion = useSelector(state => state.configuracion);
+  const configStatus = useSelector(selectConfigStatus);
   
   // Estado local para búsqueda
   const [searchTerm, setSearchTerm] = useState('');
@@ -56,19 +57,21 @@ function Vendedores() {
   // Cargar configuración y vendedores al montar el componente
   useEffect(() => {
     const loadData = async () => {
-      // Primero cargar la configuración para obtener el paisId
-      if (configuracion.status === 'idle') {
-        await dispatch(fetchConfiguracion());
-      }
-      
-      // Luego cargar los vendedores (usará el paisId de la configuración)
-      if (status === 'idle' && configuracion.status === 'succeeded') {
-        dispatch(fetchVendedores());
+      // Primero cargar la configuración si no está cargada
+      if (configStatus === 'idle') {
+        await dispatch(fetchConfiguracion()).unwrap();
       }
     };
     
     loadData();
-  }, [status, configuracion.status, dispatch]);
+  }, [configStatus, dispatch]);
+
+  // Cargar vendedores solo cuando la configuración esté lista
+  useEffect(() => {
+    if (configStatus === 'succeeded' && status === 'idle') {
+      dispatch(fetchVendedores());
+    }
+  }, [configStatus, status, dispatch]);
 
   // Mostrar información de filtrado
   const getUserContextInfo = () => {
@@ -111,22 +114,22 @@ function Vendedores() {
 
   // Renderizado condicional según el estado
   let content;
-  if (status === 'loading' || configuracion.status === 'loading') {
+  if (status === 'loading' || configStatus === 'loading') {
     content = (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
         <CircularProgress />
       </Box>
     );
+  } else if (configStatus === 'failed') {
+    content = (
+      <Alert severity="error" sx={{ mt: 2 }}>
+        Error al cargar la configuración. No se pueden cargar los vendedores.
+      </Alert>
+    );
   } else if (status === 'failed') {
     content = (
       <Alert severity="error" sx={{ mt: 2 }}>
         Error al cargar los vendedores: {error}
-      </Alert>
-    );
-  } else if (configuracion.status === 'failed') {
-    content = (
-      <Alert severity="error" sx={{ mt: 2 }}>
-        Error al cargar la configuración. No se pueden cargar los vendedores.
       </Alert>
     );
   } else {
