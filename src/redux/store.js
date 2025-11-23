@@ -9,6 +9,7 @@ import configuracionReducer from './features/configuracionSlice';
 import reportesReducer from './features/reportesSlice';
 import logisticaReducer from './features/logisticaSlice';
 import planesVentaReducer from './features/planesVentaSlice';
+import auditoriaReducer from './features/auditoriaSlice';
 
 export const store = configureStore({
   reducer: {
@@ -22,6 +23,7 @@ export const store = configureStore({
     reportes: reportesReducer,
     logistica: logisticaReducer,
     planesVenta: planesVentaReducer,
+    auditoria: auditoriaReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -84,6 +84,11 @@ o
 
 - `/src`: Código fuente de la aplicación
   - `/components`: Componentes reutilizables
+    - `/auditoria`: **Componentes de auditoría reutilizables** 
+      - `AuditoriaTable.jsx`: Tabla completa de auditoría
+      - `AuditoriaFilters.jsx`: Sistema de filtros
+      - `AuditoriaRow.jsx`: Fila expandible
+      - `SeverityChip.jsx`: Chip de severidad colorizado
     - `/Navbar.jsx`: Barra de navegación lateral
     - `/ProtectedRoute.jsx`: Componente para rutas protegidas por autenticación
     - `/ApiModeIndicator.jsx`: Indicador del modo API (real o mock)
@@ -91,19 +96,25 @@ o
     - `/Home.jsx`: Página de inicio
     - `/Login.jsx`: Página de autenticación
     - `/About.jsx`: Página de información
+    - `/configuracion/Auditoria.jsx`: Sistema de auditoría (refactorizado) 
     - Varias páginas para cada sección (Inventario, Catálogo, etc.)
   - `/redux`: Configuración y slices de Redux
     - `/store.js`: Configuración del store
     - `/features`: Slices para cada funcionalidad
       - `/authSlice.js`: Manejo de autenticación
+      - `/auditoriaSlice.js`: Gestión de auditoría 
       - `/inventarioSlice.js`: Gestión de inventario
       - `/catalogoSlice.js`: Gestión del catálogo de productos
   - `/services`: Servicios y utilidades
     - `/api.js`: Cliente API central
     - `/mockApi.js`: Simulación de APIs para desarrollo
+    - `/auditoria`: Servicios de auditoría 
+  - `/utils`: Utilidades compartidas
+    - `/dateFormatter.js`: Formateo de fechas y tiempo relativo
   - `/theme`: Configuración del tema
     - `/theme.js`: Tema Material UI personalizado basado en Material Design 3
   - `/assets`: Recursos estáticos (imágenes, logos, etc.)
+  - `/examples`: Ejemplos de uso de componentes 
   - `App.jsx`: Componente principal
   - `main.jsx`: Punto de entrada
 
