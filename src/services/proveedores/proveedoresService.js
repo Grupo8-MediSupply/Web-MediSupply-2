@@ -23,7 +23,21 @@ const proveedoresService = {
     method: 'POST',
     body: JSON.stringify(proveedorData),
     ...withAuth()
-  })
+  }),
+  
+  // Obtener historial de compras de un proveedor
+  getHistorialCompras: ({ proveedorId, fechaInicio, fechaFin }) => {
+    const params = new URLSearchParams({ proveedorId });
+    
+    // Solo agregar fechas si están presentes
+    if (fechaInicio) params.append('fechaInicio', fechaInicio);
+    if (fechaFin) params.append('fechaFin', fechaFin);
+    
+    return apiRequest(`/proveedores/compras/historial?${params.toString()}`, {
+      method: 'GET',
+      ...withAuth()
+    });
+  }
 };
 
 export default proveedoresService;
