@@ -6,6 +6,7 @@
 import mockAuthService from './auth/mockAuthService';
 import mockAuditoriaService from './auditoria/mockAuditoriaService';
 import mockUsuariosService from './usuarios/mockUsuariosService';
+import mockProveedoresService from './proveedores/mockProveedoresService';
 
 /**
  * Simula una petición a la API
@@ -59,6 +60,29 @@ export const mockApiRequest = async (endpoint, options = {}) => {
       return {
         success: false,
         message: 'Error en el formato de la petición',
+        status: 400
+      };
+    }
+  }
+  
+  // Endpoints de proveedores - Historial de compras
+  if (endpoint.startsWith('/api/proveedores/compras/historial')) {
+    try {
+      // Extraer parámetros de query string
+      const url = new URL(`http://localhost${endpoint}`);
+      const proveedorId = url.searchParams.get('proveedorId');
+      const fechaInicio = url.searchParams.get('fechaInicio');
+      const fechaFin = url.searchParams.get('fechaFin');
+      
+      return await mockProveedoresService.getHistorialCompras({
+        proveedorId,
+        fechaInicio,
+        fechaFin
+      });
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Error al obtener historial de compras',
         status: 400
       };
     }

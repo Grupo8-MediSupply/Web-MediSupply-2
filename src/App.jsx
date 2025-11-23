@@ -21,6 +21,7 @@ import Inventarios from "./pages/Inventarios";
 import Catalogo from "./pages/Catalogo";
 import ProductoDetalle from "./pages/ProductoDetalle"; // Añadimos la importación
 import Proveedores from "./pages/Proveedores";
+import ProveedorDetalle from "./pages/ProveedorDetalle";
 import Ordenes from "./pages/Ordenes";
 import Logisticas from "./pages/Logisticas";
 import Ventas from "./pages/Ventas";
@@ -126,6 +127,7 @@ function App() {
                   <Route path="/catalogo" element={<ProtectedRoute><Catalogo /></ProtectedRoute>} />
                   <Route path="/catalogo/productos/:id" element={<ProtectedRoute><ProductoDetalle /></ProtectedRoute>} />
                   <Route path="/proveedores" element={<ProtectedRoute><Proveedores /></ProtectedRoute>} />
+                  <Route path="/proveedores/:id" element={<ProtectedRoute><ProveedorDetalle /></ProtectedRoute>} />
                   <Route path="/ordenes" element={<ProtectedRoute><Ordenes /></ProtectedRoute>} />
                   <Route path="/logisticas" element={<ProtectedRoute><Logisticas /></ProtectedRoute>} />
                   

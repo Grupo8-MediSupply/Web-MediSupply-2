@@ -148,6 +148,64 @@ const mockProveedoresService = {
       timestamp: new Date().toISOString()
     };
   },
+  
+  // Obtener historial de compras de un proveedor
+  getHistorialCompras: async ({ proveedorId, fechaInicio, fechaFin }) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // Generar datos mock basados en el rango de fechas
+        const productos = [
+          'Guantes de nitrilo',
+          'Paracetamol 800mg',
+          'Nebulizador ultrasónico',
+          'Loratadina 700mg',
+          'Ibuprofeno 600mg',
+          'Termómetro digital',
+          'Jeringa 5ml',
+          'Alcohol antiséptico'
+        ];
+        
+        // Si no hay fechas, generar historial completo (últimos 30 días)
+        let inicio, fin;
+        if (!fechaInicio || !fechaFin) {
+          fin = new Date();
+          inicio = new Date();
+          inicio.setDate(inicio.getDate() - 30);
+        } else {
+          inicio = new Date(fechaInicio);
+          fin = new Date(fechaFin);
+        }
+        
+        const compras = [];
+        
+        // Generar entre 10 y 20 compras aleatorias en el rango de fechas
+        const numCompras = Math.floor(Math.random() * 11) + 10;
+        
+        for (let i = 0; i < numCompras; i++) {
+          const randomDate = new Date(
+            inicio.getTime() + Math.random() * (fin.getTime() - inicio.getTime())
+          );
+          
+          compras.push({
+            producto: productos[Math.floor(Math.random() * productos.length)],
+            cantidad: Math.floor(Math.random() * 200) + 1,
+            valorTotal: null,
+            fechaCompra: randomDate.toISOString(),
+            proveedorId
+          });
+        }
+        
+        // Ordenar por fecha descendente
+        compras.sort((a, b) => new Date(b.fechaCompra) - new Date(a.fechaCompra));
+        
+        resolve({
+          success: true,
+          result: compras,
+          timestamp: new Date().toISOString()
+        });
+      }, 600);
+    });
+  }
 };
 
 export default mockProveedoresService;

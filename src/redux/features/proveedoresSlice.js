@@ -45,6 +45,28 @@ export const addProveedor = createAsyncThunk(
   }
 );
 
+// Acción asíncrona para obtener el historial de compras de un proveedor
+export const fetchHistorialCompras = createAsyncThunk(
+  'proveedores/fetchHistorialCompras',
+  async ({ proveedorId, fechaInicio, fechaFin }, { rejectWithValue }) => {
+    try {
+      const response = await api.proveedores.getHistorialCompras({
+        proveedorId,
+        fechaInicio,
+        fechaFin
+      });
+      
+      if (!response.success) {
+        return rejectWithValue(response.message || 'Error al obtener historial de compras');
+      }
+      
+      return response.result;
+    } catch (error) {
+      return rejectWithValue(error.message || 'Error al obtener historial de compras');
+    }
+  }
+);
+
 const initialState = {
   proveedores: [],
   status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
@@ -53,7 +75,10 @@ const initialState = {
     pais: '',
   },
   addStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
-  addError: null
+  addError: null,
+  historialCompras: [],
+  historialStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+  historialError: null
 };
 
 const proveedoresSlice = createSlice({
@@ -69,6 +94,11 @@ const proveedoresSlice = createSlice({
     resetAddStatus: (state) => {
       state.addStatus = 'idle';
       state.addError = null;
+    },
+    clearHistorialCompras: (state) => {
+      state.historialCompras = [];
+      state.historialStatus = 'idle';
+      state.historialError = null;
     }
   },
   extraReducers: (builder) => {
@@ -96,14 +126,31 @@ const proveedoresSlice = createSlice({
       .addCase(addProveedor.rejected, (state, action) => {
         state.addStatus = 'failed';
         state.addError = action.payload || action.error.message;
+      })
+      // Manejar fetchHistorialCompras
+      .addCase(fetchHistorialCompras.pending, (state) => {
+        state.historialStatus = 'loading';
+      })
+      .addCase(fetchHistorialCompras.fulfilled, (state, action) => {
+        state.historialStatus = 'succeeded';
+        state.historialCompras = action.payload;
+      })
+      .addCase(fetchHistorialCompras.rejected, (state, action) => {
+        state.historialStatus = 'failed';
+        state.historialError = action.payload || action.error.message;
       });
   }
 });
 
-export const { setFiltros, clearFiltros, resetAddStatus } = proveedoresSlice.actions;
+export const { setFiltros, clearFiltros, resetAddStatus, clearHistorialCompras } = proveedoresSlice.actions;
 
 // Selector para obtener todos los proveedores
 export const selectAllProveedores = (state) => state.proveedores.proveedores;
+
+// Selectores para historial de compras
+export const selectHistorialCompras = (state) => state.proveedores.historialCompras;
+export const selectHistorialStatus = (state) => state.proveedores.historialStatus;
+export const selectHistorialError = (state) => state.proveedores.historialError;
 
 // Selector para el estado de carga
 export const selectProveedoresStatus = (state) => state.proveedores.status;
