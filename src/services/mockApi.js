@@ -5,6 +5,7 @@
 
 import mockAuthService from './auth/mockAuthService';
 import mockAuditoriaService from './auditoria/mockAuditoriaService';
+import mockUsuariosService from './usuarios/mockUsuariosService';
 
 /**
  * Simula una petición a la API
@@ -42,6 +43,25 @@ export const mockApiRequest = async (endpoint, options = {}) => {
   // Endpoints de auditoría
   if (endpoint === '/api/auditorias') {
     return await mockAuditoriaService.getAuditorias();
+  }
+  
+  // Endpoints de usuarios
+  if (endpoint === '/api/usuarios') {
+    return await mockUsuariosService.getUsuarios();
+  }
+  
+  if (endpoint.startsWith('/api/usuarios/') && options.method === 'PATCH') {
+    const idUsuario = endpoint.split('/').pop();
+    try {
+      const body = JSON.parse(options.body);
+      return await mockUsuariosService.updateUsuarioEstado(idUsuario, body.activo);
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Error en el formato de la petición',
+        status: 400
+      };
+    }
   }
   
   // Si no es un endpoint conocido, devolver error

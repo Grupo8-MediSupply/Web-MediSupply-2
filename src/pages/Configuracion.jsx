@@ -31,8 +31,7 @@ function Configuracion() {
       description: 'Gestionar usuarios y permisos del sistema',
       icon: <UsersIcon fontSize="large" color="success" />,
       path: '/configuracion/usuarios',
-      color: '#2e7d32',
-      disabled: true
+      color: '#2e7d32'
     },
     {
       title: 'General',

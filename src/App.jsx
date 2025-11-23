@@ -28,6 +28,7 @@ import Clientes from "./pages/Clientes";
 import Reportes from "./pages/Reportes";
 import Configuracion from "./pages/Configuracion";
 import Auditoria from "./pages/configuracion/Auditoria";
+import Usuarios from "./pages/configuracion/Usuarios";
 import ApiModeIndicator from "./components/ApiModeIndicator";
 
 // Importar página de vendedores
@@ -178,6 +179,16 @@ function App() {
                       <ProtectedRoute>
                         <RoleBasedRoute allowedRoles={[Roles.ADMIN]}>
                           <Auditoria />
+                        </RoleBasedRoute>
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/configuracion/usuarios" 
+                    element={
+                      <ProtectedRoute>
+                        <RoleBasedRoute allowedRoles={[Roles.ADMIN]}>
+                          <Usuarios />
                         </RoleBasedRoute>
                       </ProtectedRoute>
                     } 
