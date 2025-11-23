@@ -4,6 +4,7 @@
  */
 
 import mockAuthService from './auth/mockAuthService';
+import mockAuditoriaService from './auditoria/mockAuditoriaService';
 
 /**
  * Simula una petición a la API
@@ -36,6 +37,11 @@ export const mockApiRequest = async (endpoint, options = {}) => {
   
   if (endpoint === '/api/logout') {
     return await mockAuthService.logout();
+  }
+  
+  // Endpoints de auditoría
+  if (endpoint === '/api/auditorias') {
+    return await mockAuditoriaService.getAuditorias();
   }
   
   // Si no es un endpoint conocido, devolver error
