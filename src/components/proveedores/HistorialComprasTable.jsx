@@ -23,6 +23,9 @@ import { formatDate } from '../../utils/dateFormatter';
  * @param {string} props.error - Mensaje de error si hay fallo
  */
 const HistorialComprasTable = ({ compras = [], status = 'idle', error = null }) => {
+  // Asegurar que compras siempre sea un array
+  const comprasList = Array.isArray(compras) ? compras : [];
+  
   // Estado de carga
   if (status === 'loading') {
     return (
@@ -42,7 +45,7 @@ const HistorialComprasTable = ({ compras = [], status = 'idle', error = null }) 
   }
 
   // Estado sin datos
-  if (compras.length === 0 && status === 'succeeded') {
+  if (comprasList.length === 0 && status === 'succeeded') {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <Typography variant="body1" color="text.secondary">
@@ -89,7 +92,7 @@ const HistorialComprasTable = ({ compras = [], status = 'idle', error = null }) 
           </TableRow>
         </TableHead>
         <TableBody>
-          {compras.map((compra, index) => (
+          {comprasList.map((compra, index) => (
             <TableRow key={index} hover>
               <TableCell>
                 <Typography variant="body2" fontWeight="medium">

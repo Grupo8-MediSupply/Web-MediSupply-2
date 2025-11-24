@@ -60,7 +60,13 @@ export const fetchHistorialCompras = createAsyncThunk(
         return rejectWithValue(response.message || 'Error al obtener historial de compras');
       }
       
-      return response.result;
+      // Si el resultado es un objeto con mensaje (sin compras), devolver array vacío
+      if (response.result && typeof response.result === 'object' && !Array.isArray(response.result)) {
+        return [];
+      }
+      
+      // Si el resultado es un array, devolverlo
+      return Array.isArray(response.result) ? response.result : [];
     } catch (error) {
       return rejectWithValue(error.message || 'Error al obtener historial de compras');
     }

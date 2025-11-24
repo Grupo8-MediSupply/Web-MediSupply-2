@@ -63,4 +63,12 @@ describe('HistorialComprasTable', () => {
     expect(screen.getByText('Valor Total')).toBeInTheDocument();
     expect(screen.getByText('Fecha de Compra')).toBeInTheDocument();
   });
+
+  it('handles non-array compras gracefully', () => {
+    const invalidCompras = { mensaje: 'No hay compras' };
+    render(<HistorialComprasTable status="succeeded" compras={invalidCompras} />);
+    
+    // Debería mostrar el mensaje de "no se encontraron compras"
+    expect(screen.getByText(/No se encontraron compras para este proveedor/)).toBeInTheDocument();
+  });
 });
