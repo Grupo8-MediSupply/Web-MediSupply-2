@@ -62,9 +62,22 @@ export const apiRequest = async (endpoint, options = {}) => {
   delete requestOptions.params;
 
   try {
+    console.log('📡 API Request:', {
+      url,
+      method: requestOptions.method || 'GET',
+      headers: requestOptions.headers
+    });
+    
     const response = await fetch(url, requestOptions);
     
     const responseData = await response.json();
+    
+    console.log('📥 API Response:', {
+      url,
+      status: response.status,
+      ok: response.ok,
+      data: responseData
+    });
     
     // Si la API devuelve success: false, tratar como error
     if (responseData && responseData.success === false) {

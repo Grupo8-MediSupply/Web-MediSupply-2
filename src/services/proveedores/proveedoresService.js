@@ -33,7 +33,15 @@ const proveedoresService = {
     if (fechaInicio) params.append('fechaInicio', fechaInicio);
     if (fechaFin) params.append('fechaFin', fechaFin);
     
-    return apiRequest(`/proveedores/compras/historial?${params.toString()}`, {
+    const url = `/proveedores/compras/historial?${params.toString()}`;
+    console.log('🔍 Historial Compras Request:', {
+      url,
+      fullUrl: `${import.meta.env.VITE_API_BASE_URL}/${import.meta.env.VITE_API_VERSION}${url}`,
+      params: { proveedorId, fechaInicio, fechaFin },
+      queryString: params.toString()
+    });
+    
+    return apiRequest(url, {
       method: 'GET',
       ...withAuth()
     });
