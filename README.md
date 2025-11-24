@@ -382,49 +382,47 @@ end
 ```
 
 
-### Layer Responsibilities
+### Responsabilidades por capa
 
-#### Presentation Layer
+#### Capa de presentación
 
-The presentation layer is orchestrated by `App.jsx`, which configures the React Router, manages theme state via `ColorModeContext`, and applies Material-UI's `ThemeProvider`. The layout adapts based on authentication state:
+La capa de presentación está orquestada por `App.jsx`, que configura React Router, gestiona el estado del tema mediante `ColorModeContext` y aplica `ThemeProvider` de Material-UI. El diseño se adapta según el estado de autenticación:
 
-* **Authenticated Layout**: Displays `Navbar` (drawer navigation), `MainAppBar` (top bar), and renders protected routes
-* **Unauthenticated Layout**: Shows only the `Login` page, redirecting all other routes to `/login`
+* **Diseño autenticado**: Muestra `Navbar` (navegación en drawer), `MainAppBar` (barra superior) y renderiza rutas protegidas
+* **Diseño no autenticado**: Muestra únicamente la página `Login`, redirigiendo las demás rutas a `/login`
 
-Route protection is enforced at two levels:
+La protección de rutas se aplica en dos niveles:
 
-1. `ProtectedRoute`: Checks `isAuthenticated` from `authSlice` state
-2. `RoleBasedRoute`: Validates user roles (e.g., `Roles.ADMIN` for sales features)
+1. `ProtectedRoute`: Verifica `isAuthenticated` desde el estado `authSlice`
+2. `RoleBasedRoute`: Valida los roles del usuario (por ejemplo, `Roles.ADMIN` para funcionalidades de ventas)
 
-Feature pages are domain-specific views (e.g., `Catalogo`, `Inventarios`, `Proveedores`) that dispatch Redux actions and consume state via `useSelector` and `useDispatch` hooks.
+Las páginas de funcionalidad son vistas específicas de cada dominio (por ejemplo, `Catalogo`, `Inventarios`, `Proveedores`) que despachan acciones de Redux y consumen estado mediante los hooks `useSelector` y `useDispatch`.
 
-**Sources:** [src/App.jsx L85-L201](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/src/App.jsx#L85-L201)
 
-#### State Management Layer
+#### Capa de gestión de estado
 
-State management uses Redux Toolkit with a domain-driven slice architecture. The `configureStore()` function in [src/redux/store.js](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/src/redux/store.js)
+La gestión de estado utiliza Redux Toolkit con una arquitectura basada en "slices" por dominio. La función `configureStore()` en [src/redux/store.js](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/src/redux/store.js)
 
- configures 10 domain-specific reducers:
+configura 10 reductores específicos por dominio:
 
-| Slice | State Domain | Key Responsibilities |
+| Slice | Dominio de estado | Responsabilidades clave |
 | --- | --- | --- |
-| `catalogoSlice` | Product catalog | Product CRUD, search, filtering, batch requests |
-| `bodegasSlice` | Warehouses | Warehouse list, inventory levels |
-| `proveedoresSlice` | Suppliers | Supplier CRUD, country filtering |
-| `vendedoresSlice` | Sales personnel | Vendor list, assignments |
-| `logisticaSlice` | Logistics | Delivery orders, route generation |
-| `authSlice` | Authentication | JWT tokens, user data, login/logout |
-| `configuracionSlice` | Configuration | Country/region settings, app initialization |
-| `reportesSlice` | Reports | Sales KPIs, performance metrics |
-| `planesVentaSlice` | Sales plans | Sales planning data |
+| `catalogoSlice` | Catálogo de productos | CRUD de productos, búsqueda, filtrado, peticiones por lotes |
+| `bodegasSlice` | Bodegas | Lista de bodegas, niveles de inventario |
+| `proveedoresSlice` | Proveedores | CRUD de proveedores, filtrado por país |
+| `vendedoresSlice` | Personal de ventas | Lista de vendedores, asignaciones |
+| `logisticaSlice` | Logística | Pedidos de entrega, generación de rutas |
+| `authSlice` | Autenticación | Tokens JWT, datos de usuario, login/logout |
+| `configuracionSlice` | Configuración | Ajustes por país/región, inicialización de la app |
+| `reportesSlice` | Reportes | KPI de ventas, métricas de rendimiento |
+| `planesVentaSlice` | Planes de venta | Datos de planificación comercial |
 
-Each slice implements `createAsyncThunk` actions for API interactions, automatically managing `loading`, `succeeded`, and `failed` states. The store configuration includes custom middleware to handle non-serializable values (JWT tokens) in the authentication slice.
+Cada slice implementa acciones con `createAsyncThunk` para interacciones con la API, gestionando automáticamente los estados `loading`, `succeeded` y `failed`. La configuración del store incluye middleware personalizado para manejar valores no serializables (por ejemplo, tokens JWT) en la slice de autenticación.
 
-**Sources:** [src/redux/store.js L1-L34](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/src/redux/store.js#L1-L34)
 
-#### Service Layer
+#### Capa de servicios
 
-The service layer abstracts backend communication and implements a mock/real dual-implementation pattern. The `api.js` aggregator exports all services grouped by domain:
+La capa de servicios abstrae la comunicación con el backend e implementa un patrón de doble implementación (mock/real). El agregador `api.js` exporta todos los servicios agrupados por dominio:
 
 ```javascript
 export const api = {
@@ -438,24 +436,20 @@ export const api = {
 };
 ```
 
-Each service has two implementations:
+Cada servicio tiene dos implementaciones:
 
-* **Mock Service**: Returns in-memory data with simulated network latency (500-1200ms)
-* **Real Service**: Makes HTTP requests to backend REST APIs
+* **Servicio mock**: Devuelve datos en memoria con latencia simulada (500–1200 ms)
+* **Servicio real**: Realiza peticiones HTTP a las APIs REST del backend
 
-The `VITE_USE_MOCK_API` environment variable controls which implementation is exported, enabling development without backend dependencies. See [Service Layer & API Integration](/Grupo8-MediSupply/Web-MediSupply-2/2.3-service-layer-and-api-integration) for details.
-
-**Sources:** [src/services/api.js L1-L31](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/src/services/api.js#L1-L31)
-
- [.env.example L23](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/.env.example#L23-L23)
+La variable de entorno `VITE_USE_MOCK_API` controla qué implementación se exporta, permitiendo desarrollar sin depender del backend. Consulte [Service Layer & API Integration](/Grupo8-MediSupply/Web-MediSupply-2/2.3-service-layer-and-api-integration) para más detalles.
 
 ---
 
-## Application Structure and Routing
+## Estructura de la aplicación y enrutamiento
 
-The following diagram maps the application's route structure to specific page components and their authentication requirements:
+El siguiente diagrama mapea la estructura de rutas de la aplicación a componentes de página específicos y sus requisitos de autenticación:
 
-### Route Structure Diagram
+### Diagrama de estructura de rutas
 
 ```mermaid
 flowchart TD
@@ -527,165 +521,133 @@ subgraph subGraph0 ["Unauthenticated Routes"]
 end
 ```
 
-**Sources:** [src/App.jsx L118-L180](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/src/App.jsx#L118-L180)
 
- [src/App.jsx L13-L14](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/src/App.jsx#L13-L14)
+### Implementación de protección de rutas
 
-### Route Protection Implementation
+Las rutas se protegen mediante dos componentes envoltorio:
 
-Routes are protected using two wrapper components:
+1. **ProtectedRoute**: Verifica `isAuthenticated` en el estado de Redux. Si es falso, redirige a `/login`. Envuelve todas las rutas distintas de login.
+2. **RoleBasedRoute**: Compara los roles del usuario con la propiedad `allowedRoles`. Se usa para funcionalidades solo para administradores, por ejemplo:
 
-1. **ProtectedRoute**: Checks `isAuthenticated` from Redux state. If false, redirects to `/login`. Wraps all non-login routes.
-2. **RoleBasedRoute**: Checks user roles against `allowedRoles` prop. Used for admin-only features: ```xml <RoleBasedRoute allowedRoles={[Roles.ADMIN]}>   <Vendedores /> </RoleBasedRoute> ```
-
-The `Roles` constant is imported from `src/constants/auth` and defines available role identifiers.
-
-**Sources:** [src/App.jsx L13-L15](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/src/App.jsx#L13-L15)
-
- [src/App.jsx L131-L170](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/src/App.jsx#L131-L170)
-
----
-
-## Domain-Driven Design
-
-MediSupply implements domain-driven design with six primary business domains, each maintaining its own:
-
-* **UI Pages**: Feature-specific views and detail pages
-* **Redux Slice**: Domain state management with async thunks
-* **Service Module**: API communication with mock/real implementations
-
-### Domain Overview Table
-
-| Domain | Redux Slice | Service Module | Primary Pages | Access Level |
-| --- | --- | --- | --- | --- |
-| **Product Catalog** | `catalogoSlice` | `catalogoService` | `Catalogo`, `ProductoDetalle` | All users |
-| **Inventory** | `bodegasSlice` | `bodegasService` | `Inventarios`, `BodegaDetalle` | All users |
-| **Suppliers** | `proveedoresSlice` | `proveedoresService` | `Proveedores` | All users |
-| **Sales** | `vendedoresSlice` | `vendedoresService` | `Vendedores`, `ReportesVentas`, `PlanesVenta` | Admin only |
-| **Logistics** | `logisticaSlice` | `logisticaService` | `Logisticas` | All users |
-| **Reporting** | `reportesSlice` | `reportesService` | Navbar metrics | All users |
-
-### Cross-Cutting Concerns
-
-Two domains serve cross-cutting purposes:
-
-1. **Authentication** (`authSlice`, `authService`): Manages user identity, JWT tokens, login/logout flows
-2. **Configuration** (`configuracionSlice`, `configuracionService`): Provides country/region settings required by multiple domains
-
-The `configuracionSlice` is a foundational dependency - it must be loaded before other domains can fetch country-specific data.
-
-For detailed information about each domain's implementation, see [Core Business Domains](/Grupo8-MediSupply/Web-MediSupply-2/3-core-business-domains).
-
-**Sources:** [src/redux/store.js L1-L34](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/src/redux/store.js#L1-L34)
-
- [src/services/api.js L1-L31](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/src/services/api.js#L1-L31)
-
----
-
-## Development Environment
-
-### Environment Configuration
-
-The application uses Vite's environment variable system with the `VITE_` prefix. Key configuration variables:
-
-| Variable | Purpose | Example Value |
-| --- | --- | --- |
-| `VITE_API_BASE_URL` | Backend API gateway URL | `https://api-gateway-url-here` |
-| `VITE_USE_MOCK_API` | Toggle mock/real services | `true` or `false` |
-| `VITE_GOOGLE_MAPS_API_KEY` | Google Maps integration | API key string |
-| `VITE_*_ENDPOINT` | Resource-specific endpoints | `/products`, `/suppliers`, etc. |
-
-A development mode indicator (`ApiModeIndicator`) displays when `import.meta.env.DEV` is true, showing whether the application is using mock or real services.
-
-**Sources:** [.env.example L1-L27](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/.env.example#L1-L27)
-
- [src/App.jsx L183-L194](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/src/App.jsx#L183-L194)
-
-### Build and Development Scripts
-
-```markdown
-# Development
-npm run dev          # Default mode
-npm run dev:mock     # Force mock API
-npm run dev:real     # Force real API
-
-# Production builds
-npm run build        # Default production build
-npm run build:mock   # Production with mock services
-npm run build:real   # Production with real backend
-
-# Testing
-npm run test         # Run test suite once
-npm run test:watch   # Watch mode
-npm run test:coverage # Generate coverage report
+```xml
+<RoleBasedRoute allowedRoles={[Roles.ADMIN]}>
+  <Vendedores />
+</RoleBasedRoute>
 ```
 
-The Vite build tool provides:
-
-* Fast hot module replacement (HMR) during development
-* Optimized production builds with code splitting
-* Environment-specific builds via `--mode` flag
-
-**Sources:** [package.json L6-L18](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/package.json#L6-L18)
+La constante `Roles` se importa desde `src/constants/auth` y define los identificadores de rol disponibles.
 
 ---
 
-## Key Integration Points
 
-### Google Maps Integration
+## Diseño dirigido por dominios (Domain-Driven Design)
 
-The logistics domain integrates with Google Maps API for route visualization:
+MediSupply aplica diseño dirigido por dominios con seis dominios de negocio principales, cada uno manteniendo:
 
-* **Component**: `MapaRutas` (referenced in `Logisticas` page)
-* **Library**: `@react-google-maps/api`
-* **Configuration**: `VITE_GOOGLE_MAPS_API_KEY` environment variable
+* **Páginas UI**: Vistas específicas de cada funcionalidad y páginas de detalle
+* **Redux Slice**: Gestión del estado del dominio con thunks asíncronos
+* **Módulo de servicio**: Comunicación con la API con implementaciones mock/real
 
-Routes are displayed with polylines, markers for vehicles, warehouses, and customer locations.
+### Tabla resumen por dominio
 
-**Sources:** [package.json L24](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/package.json#L24-L24)
+| Dominio | Redux Slice | Módulo de servicio | Páginas principales | Nivel de acceso |
+| --- | --- | --- | --- | --- |
+| **Catálogo de productos** | `catalogoSlice` | `catalogoService` | `Catalogo`, `ProductoDetalle` | Todos los usuarios |
+| **Inventario** | `bodegasSlice` | `bodegasService` | `Inventarios`, `BodegaDetalle` | Todos los usuarios |
+| **Proveedores** | `proveedoresSlice` | `proveedoresService` | `Proveedores` | Todos los usuarios |
+| **Ventas** | `vendedoresSlice` | `vendedoresService` | `Vendedores`, `ReportesVentas`, `PlanesVenta` | Solo administradores |
+| **Logística** | `logisticaSlice` | `logisticaService` | `Logisticas` | Todos los usuarios |
+| **Reportes** | `reportesSlice` | `reportesService` | Métricas en la barra de navegación | Todos los usuarios |
 
- [.env.example L26](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/.env.example#L26-L26)
+### Preocupaciones transversales
 
-### Backend API Communication
+Dos dominios tienen funciones transversales:
 
-Real services (when `VITE_USE_MOCK_API=false`) communicate with backend microservices via:
+1. **Autenticación** (`authSlice`, `authService`): Gestiona la identidad de usuarios, tokens JWT y flujos de login/logout
+2. **Configuración** (`configuracionSlice`, `configuracionService`): Proporciona ajustes por país/región requeridos por varios dominios
 
-* RESTful HTTP endpoints configured per resource type
-* JWT bearer token authentication (managed by `authService`)
-* Response format: `{ success: boolean, result: any }`
+La `configuracionSlice` es una dependencia fundamental: debe cargarse antes de que otros dominios puedan solicitar datos específicos por país.
 
-The service layer handles token attachment, error handling, and response normalization.
+Para información detallada sobre la implementación de cada dominio, consulte [Core Business Domains](/Grupo8-MediSupply/Web-MediSupply-2/3-core-business-domains).
 
-**Sources:** [src/services/api.js L1-L31](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/src/services/api.js#L1-L31)
-
- [.env.example L1-L19](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/.env.example#L1-L19)
-
-### Local Storage Usage
-
-The application persists two types of data to `localStorage`:
-
-1. **Authentication Tokens**: JWT access tokens stored by `authSlice`, used for session restoration
-2. **Theme Preference**: Light/dark mode selection stored by `App.jsx`
-
-**Sources:** [src/App.jsx L55-L69](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/src/App.jsx#L55-L69)
-
- [src/redux/store.js L28-L32](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/src/redux/store.js#L28-L32)
 
 ---
 
-## Next Steps
+## Entorno de desarrollo
 
-This overview provides a foundation for understanding MediSupply's architecture and capabilities. For more detailed information:
+### Configuración del entorno
 
-* **Architecture Details**: See [Architecture](/Grupo8-MediSupply/Web-MediSupply-2/2-architecture) for in-depth explanations of each layer
-* **Domain Implementation**: See [Core Business Domains](/Grupo8-MediSupply/Web-MediSupply-2/3-core-business-domains) for comprehensive domain-specific documentation
-* **UI Components**: See [User Interface Components](/Grupo8-MediSupply/Web-MediSupply-2/4-user-interface-components) for reusable component patterns
-* **Development Workflows**: See [Development Guide](/Grupo8-MediSupply/Web-MediSupply-2/6-development-guide) for practical development instructions
+La aplicación utiliza el sistema de variables de entorno de Vite con el prefijo `VITE_`. Variables de configuración clave:
 
-**Sources:** [src/App.jsx L1-L203](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/src/App.jsx#L1-L203)
+| Variable | Propósito | Valor de ejemplo |
+| --- | --- | --- |
+| `VITE_API_BASE_URL` | URL del gateway del backend | `https://api-gateway-url-here` |
+| `VITE_USE_MOCK_API` | Alternar servicios mock/real | `true` o `false` |
+| `VITE_GOOGLE_MAPS_API_KEY` | Integración con Google Maps | Cadena de clave API |
+| `VITE_*_ENDPOINT` | Endpoints específicos de recursos | `/products`, `/suppliers`, etc. |
 
- [src/redux/store.js L1-L34](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/src/redux/store.js#L1-L34)
+Un indicador de modo de desarrollo (`ApiModeIndicator`) se muestra cuando `import.meta.env.DEV` es verdadero, indicando si la aplicación usa servicios mock o reales.
 
- [src/services/api.js L1-L31](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/src/services/api.js#L1-L31)
 
- [package.json L1-L51](https://github.com/Grupo8-MediSupply/Web-MediSupply-2/blob/baf9e66d/package.json#L1-L51)
+### Scripts de build y desarrollo
+
+```markdown
+# Desarrollo
+npm run dev          # Modo por defecto
+npm run dev:mock     # Forzar API mock
+npm run dev:real     # Forzar API real
+
+# Builds de producción
+npm run build        # Build de producción por defecto
+npm run build:mock   # Build de producción con servicios mock
+npm run build:real   # Build de producción con backend real
+
+# Pruebas
+npm run test         # Ejecuta la suite de tests una vez
+npm run test:watch   # Modo watch
+npm run test:coverage # Genera informe de cobertura
+```
+
+Vite ofrece:
+
+* Recarga en caliente rápida (HMR) durante desarrollo
+* Builds de producción optimizadas con code-splitting
+* Builds específicos por entorno mediante la bandera `--mode`
+
+
+---
+
+## Puntos clave de integración
+
+### Integración con Google Maps
+
+El dominio de logística integra la API de Google Maps para visualizar rutas:
+
+* **Componente**: `MapaRutas` (referenciado en la página `Logisticas`)
+* **Librería**: `@react-google-maps/api`
+* **Configuración**: variable de entorno `VITE_GOOGLE_MAPS_API_KEY`
+
+Las rutas se muestran con polilíneas y marcadores para vehículos, bodegas y ubicaciones de clientes.
+
+
+
+### Comunicación con la API del backend
+
+Los servicios reales (cuando `VITE_USE_MOCK_API=false`) se comunican con microservicios del backend mediante:
+
+* Endpoints HTTP RESTful configurados por tipo de recurso
+* Autenticación mediante JWT en cabecera Bearer (gestionada por `authService`)
+* Formato de respuesta: `{ success: boolean, result: any }`
+
+La capa de servicios se encarga de adjuntar tokens, manejar errores y normalizar respuestas.
+
+
+### Uso de localStorage
+
+La aplicación persiste dos tipos de datos en `localStorage`:
+
+1. **Tokens de autenticación**: Tokens JWT de acceso almacenados por `authSlice`, usados para restaurar sesiones
+2. **Preferencia de tema**: Selección claro/oscuro almacenada por `App.jsx`
+
+
+---
